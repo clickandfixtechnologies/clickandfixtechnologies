@@ -4321,9 +4321,22 @@ section,
     70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
-/* মোবাইল স্ক্রিনের জন্য লোগোর নাম ছোট করা */
+/* মোবাইল স্ক্রিনের জন্য লোগো ও হেডার সমন্বয় */
 @media (max-width: 575px) {
   .logo h1.sitename {
-    font-size: 18px !important;
+    font-size: 16px !important;    
+    white-space: nowrap;           
+    margin: 0 !important;          
+  }
+  
+  .header .logo {
+    padding: 0 !important;         
+    margin-right: 5px !important; /* পাশের বাটনের সাথে জায়গা বাড়ানোর জন্য সামান্য গ্যাপ */
+  }
+
+  /* যদি এরপরও সমস্যা হয়, তবে ডানপাশের বাটনটিকে মোবাইলে ছোট করার জন্য এই অংশটি যোগ করতে পারো */
+  .header .btn-get-started {
+    padding: 5px 10px !important; 
+    font-size: 12px !important;
   }
 }
