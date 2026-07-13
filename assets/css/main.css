@@ -4324,6 +4324,6 @@ section,
 /* মোবাইল স্ক্রিনের জন্য লোগোর নাম ছোট করা */
 @media (max-width: 575px) {
   .logo h1.sitename {
-    font-size: 20px !important;
+    font-size: 18px !important;
   }
 }
