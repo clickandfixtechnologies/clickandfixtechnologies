@@ -4321,22 +4321,15 @@ section,
     70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
-/* মোবাইল স্ক্রিনের জন্য লোগো ও হেডার সমন্বয় */
+/* মোবাইল স্ক্রিনের জন্য লোগোর নাম দুই লাইনে করা */
 @media (max-width: 575px) {
   .logo h1.sitename {
-    font-size: 16px !important;    
-    white-space: nowrap;           
-    margin: 0 !important;          
-  }
-  
-  .header .logo {
-    padding: 0 !important;         
-    margin-right: 5px !important; /* পাশের বাটনের সাথে জায়গা বাড়ানোর জন্য সামান্য গ্যাপ */
-  }
-
-  /* যদি এরপরও সমস্যা হয়, তবে ডানপাশের বাটনটিকে মোবাইলে ছোট করার জন্য এই অংশটি যোগ করতে পারো */
-  .header .btn-get-started {
-    padding: 5px 10px !important; 
-    font-size: 12px !important;
+    font-size: 18px !important;    /* ফন্ট সাইজ ১৮px রাখলাম, যা স্পষ্ট দেখা যাবে */
+    line-height: 1.2 !important;   /* দুই লাইনের মাঝের গ্যাপ ঠিক রাখবে */
+    text-align: left;              /* নাম বাম দিকে রাখবে */
+    display: block !important;     /* লেখাকে ব্লকে পরিণত করবে */
+    word-break: break-word;        /* যদি নাম বড় হয় তবে স্বয়ংক্রিয়ভাবে ভেঙে যাবে */
+    max-width: 140px;              /* নামের প্রস্থ ঠিক করে দেবে যাতে বাটন বা মেনুর ওপর উঠে না যায় */
+    margin: 0 !important;
   }
 }
