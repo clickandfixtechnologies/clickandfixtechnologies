@@ -4332,7 +4332,7 @@ section,
 @media (max-width: 575px) {
   /* কোম্পানির নাম মাঝখানে সেট করা */
   .logo h1.sitename {
-    font-size: 17px !important;    
+    font-size: 20px !important;    
     line-height: 1.2 !important;   
     text-align: center !important;
     display: block !important;
@@ -4347,6 +4347,6 @@ section,
   .header .btn-get-started {
     margin-top: 10px !important;
     padding: 5px 15px !important;
-    font-size: 12px !important;
+    font-size: 10px !important;
   }
 }
