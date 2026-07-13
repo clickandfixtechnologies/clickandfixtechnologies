@@ -4322,26 +4322,30 @@ section,
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
 @media (max-width: 575px) {
-  /* হেডারকে পাশাপাশি রাখার জন্য */
+  /* হেডার কন্টেইনার */
   .header .container-xl {
     display: flex !important;
-    flex-direction: row !important; /* পাশাপাশি রাখার জন্য */
+    flex-direction: row !important;
     justify-content: space-between !important;
-    padding: 0 10px !important;
+    align-items: center !important;
+    padding: 0 5px !important;
   }
 
   /* কোম্পানির নাম */
   .logo h1.sitename {
-    font-size: 14px !important;    /* একটু ছোট করে দিলাম যাতে এক লাইনে বা সুন্দরভাবে ধরে */
-    line-height: 1.1 !important;
+    font-size: 16px !important;    /* ফন্ট সাইজ কিছুটা বাড়ালাম */
+    line-height: 1.2 !important;
     margin: 0 !important;
+    padding-left: 5px !important;  /* নামের আগে সামান্য জায়গা তৈরি করা */
+    text-align: left;
   }
 
-  /* রেটিং বাটন */
+  /* Google Rating বাটন */
   .header .btn-get-started {
-    padding: 2px 8px !important; 
-    font-size: 10px !important;
+    padding: 2px 6px !important; 
+    font-size: 9px !important;     /* বাটনটি ছোট করলাম */
     margin: 0 !important;
     white-space: nowrap !important;
+    text-align: center;
   }
 }
