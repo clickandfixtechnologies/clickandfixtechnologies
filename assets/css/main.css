@@ -4321,3 +4321,9 @@ section,
     70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
+/* মোবাইল স্ক্রিনের জন্য লোগোর নাম ছোট করা */
+@media (max-width: 575px) {
+  .logo h1.sitename {
+    font-size: 20px !important;
+  }
+}
