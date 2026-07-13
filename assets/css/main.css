@@ -4322,31 +4322,36 @@ section,
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
 @media (max-width: 575px) {
-  /* হেডার কন্টেইনার */
+  /* হেডার কন্টেইনারের বিন্যাস */
   .header .container-xl {
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 0 2px !important;
+    padding: 0 5px !important;
+  }
+
+  /* লোগো এবং নাম সেকশন */
+  .logo {
+    flex: 1 !important; /* লোগোকে জায়গা বাড়িয়ে দেওয়া */
+    display: flex !important;
+    justify-content: center !important; /* টেক্সটকে মাঝখানে আনা */
   }
 
   /* কোম্পানির নাম */
   .logo h1.sitename {
-    font-size: 15px !important;
-    line-height: 1.1 !important;
+    font-size: 18px !important;    /* ফন্ট সাইজ বাড়িয়ে ১৮px করা হলো */
+    line-height: 1.2 !important;
     margin: 0 !important;
-    padding-left: 8px !important; /* Click & Fix এর আগে স্পেস */
-    text-align: left !important;
+    text-align: center !important; /* লেখা মাঝখানে আনা */
     white-space: normal !important;
   }
 
   /* Google Rating বাটন */
   .header .btn-get-started {
-    padding: 2px 4px !important; 
-    font-size: 9px !important; 
-    margin: 0 !important;
+    padding: 2px 5px !important; 
+    font-size: 9px !important;
     white-space: nowrap !important;
-    transform: scale(0.9) !important; /* বাটনটিকে সামান্য ছোট দেখাবে */
+    flex-shrink: 0 !important; /* বাটনটি যেন ছোট না হয় */
   }
 }
