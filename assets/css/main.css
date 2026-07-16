@@ -863,7 +863,7 @@ section,
   align-items: center;
   /* ব্লু গ্র্যাডিয়েন্ট + টেক ব্যাকগ্রাউন্ড */
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(14, 165, 233, 0.7)), 
-              url('../img/hero-bg.jpg') center center no-repeat;
+               center center no-repeat;
   background-size: cover;
   overflow: hidden;
 }
