@@ -105,9 +105,11 @@
   window.addEventListener('load', () => {
   aosInit();
 
-  setTimeout(() => {
-    AOS.refreshHard();
-  }, 300);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      AOS.refreshHard();
+    });
+  });
 });
 
   /**
