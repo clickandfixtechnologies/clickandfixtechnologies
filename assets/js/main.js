@@ -102,7 +102,13 @@
       mirror: false
     });
   }
-  window.addEventListener('load', aosInit);
+  window.addEventListener('load', () => {
+  aosInit();
+
+  setTimeout(() => {
+    AOS.refreshHard();
+  }, 300);
+});
 
   /**
    * Initiate glightbox
