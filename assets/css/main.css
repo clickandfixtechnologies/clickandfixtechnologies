@@ -4513,7 +4513,7 @@ section,
   .login-dropdown{
     position: absolute;
     top: 70px;
-    left: 1px;
+    left: 50px;
     z-index: 999;
   }
 
