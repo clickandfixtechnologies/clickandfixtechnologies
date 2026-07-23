@@ -95,7 +95,7 @@ togglePassword.addEventListener("click",()=>{
 
 
 /*=========================================
-      CUSTOMER LOGIN (FIXED FOR MOBILE)
+      CUSTOMER LOGIN (UPDATED & SECURE)
 =========================================*/
 
 loginForm.addEventListener("submit", async (e)=>{
@@ -103,7 +103,6 @@ loginForm.addEventListener("submit", async (e)=>{
 
     errorBox.classList.add("d-none");
 
-    // Fix: Ensure proper trimming and lowercasing if username is email/text
     const mobile = username.value.trim();
     const pass = password.value.trim();
 
@@ -120,6 +119,7 @@ loginForm.addEventListener("submit", async (e)=>{
     `;
 
     try{
+        // Firebase থেকে ডেটা ফেচ করা হচ্ছে
         const snapshot = await getDocs(collection(db, "customers"));
 
         let foundCustomer = null;
@@ -127,8 +127,8 @@ loginForm.addEventListener("submit", async (e)=>{
         snapshot.forEach(doc => {
             const customer = doc.data();
             
-            // Database er username/mobile ebong password er extra space clean kore check korchi
-            const dbUsername = String(customer.username || "").trim();
+            // ডেটাবেজ এবং ইনপুটের ডাটা স্ট্রিং-এ রূপান্তর করে এক্সট্রা স্পেস ক্লিন করা হচ্ছে
+            const dbUsername = String(customer.username || customer.mobile || "").trim();
             const dbPassword = String(customer.password || "").trim();
 
             if(dbUsername === mobile && dbPassword === pass){
@@ -140,9 +140,10 @@ loginForm.addEventListener("submit", async (e)=>{
             throw new Error("Invalid Login");
         }
 
+        // সফলভাবে লগইন হলে লোকাল স্টোরেজে ডেটা সেভ করা
         localStorage.setItem(
             "customerLogin",
-            foundCustomer.mobile
+            foundCustomer.mobile || foundCustomer.username
         );
 
         localStorage.setItem(
@@ -150,10 +151,12 @@ loginForm.addEventListener("submit", async (e)=>{
             JSON.stringify(foundCustomer)
         );
 
+        // ড্যাশবোর্ডে রিডাইরেক্ট
         window.location.href = "customer-dashboard.html";
 
     }
     catch(error){
+        console.error("Login Error:", error);
         errorBox.innerHTML = "Invalid Mobile Number or Password.";
         errorBox.classList.remove("d-none");
         loginBtn.disabled = false;
