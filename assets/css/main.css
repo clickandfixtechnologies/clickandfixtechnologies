@@ -4355,3 +4355,164 @@ section,
     flex-shrink: 0 !important; /* বাটনটি যেন ছোট না হয় */
   }
 }
+
+/*=========================================
+      LOGIN DROPDOWN
+=========================================*/
+
+.login-dropdown{
+
+    position: relative;
+
+    margin-left: 18px;
+
+}
+
+.btn-login{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:6px;
+
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:50px;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(12px);
+
+    -webkit-backdrop-filter:blur(12px);
+
+    color:#fff;
+
+    font-weight:600;
+
+    transition:.30s;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.18);
+
+}
+
+.btn-login:hover{
+
+    background:#47b2e4;
+
+    color:#fff;
+
+    transform:translateY(-2px);
+
+}
+
+.login-menu{
+
+    position:absolute;
+
+    top:115%;
+
+    right:0;
+
+    min-width:230px;
+
+    background:#fff;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:0 20px 45px rgba(0,0,0,.15);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transform:translateY(10px);
+
+    transition:.30s;
+
+    z-index:9999;
+
+}
+
+.login-menu.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+    transform:translateY(0);
+
+}
+
+.login-menu a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px 18px;
+
+    text-decoration:none;
+
+    color:#222;
+
+    font-weight:500;
+
+    transition:.25s;
+
+}
+
+.login-menu a i{
+
+    color:#47b2e4;
+
+    font-size:18px;
+
+}
+
+.login-menu a:hover{
+
+    background:#f5f8fc;
+
+    padding-left:24px;
+
+}
+
+/*=========================================
+      MOBILE
+=========================================*/
+
+@media(max-width:991px){
+
+.login-dropdown{
+
+    margin-left:12px;
+
+}
+
+.btn-login{
+
+    padding:10px 16px;
+
+    font-size:14px;
+
+}
+
+.login-menu{
+
+    right:0;
+
+    min-width:210px;
+
+}
+
+}
+

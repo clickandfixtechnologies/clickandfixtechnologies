@@ -238,3 +238,62 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+/*=========================================
+      LOGIN DROPDOWN
+=========================================*/
+
+const loginBtn =
+document.getElementById("loginDropdownBtn");
+
+const loginMenu =
+document.getElementById("loginMenu");
+
+if(loginBtn && loginMenu){
+
+    loginBtn.addEventListener("click",(e)=>{
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+        loginMenu.classList.toggle("show");
+
+    });
+
+    /*=========================
+          Close Outside Click
+    =========================*/
+
+    document.addEventListener("click",(e)=>{
+
+        if(
+
+            !loginMenu.contains(e.target) &&
+
+            !loginBtn.contains(e.target)
+
+        ){
+
+            loginMenu.classList.remove("show");
+
+        }
+
+    });
+
+    /*=========================
+          ESC Key Close
+    =========================*/
+
+    document.addEventListener("keydown",(e)=>{
+
+        if(e.key === "Escape"){
+
+            loginMenu.classList.remove("show");
+
+        }
+
+    });
+
+}
+
