@@ -4412,41 +4412,43 @@ section,
 
 .login-menu{
 
-    position:absolute;
+    position: absolute;
 
-    top:115%;
+    top: 110%;
 
-    right:0;
+    right: 0;
 
-    min-width:230px;
+    left: auto;
 
-    background:#fff;
+    min-width: 210px;
 
-    border-radius:16px;
+    background: rgba(34, 46, 66, 0.97);
 
-    overflow:hidden;
+    border-radius: 14px;
 
-    box-shadow:0 20px 45px rgba(0,0,0,.15);
+    overflow: hidden;
 
-    opacity:0;
+    box-shadow: 0 15px 40px rgba(0,0,0,.25);
 
-    visibility:hidden;
+    opacity: 0;
 
-    transform:translateY(10px);
+    visibility: hidden;
 
-    transition:.30s;
+    transform: translateY(10px);
 
-    z-index:9999;
+    transition: .25s;
+
+    z-index: 9999;
 
 }
 
 .login-menu.show{
 
-    opacity:1;
+    opacity: 1;
 
-    visibility:visible;
+    visibility: visible;
 
-    transform:translateY(0);
+    transform: translateY(0);
 
 }
 
