@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Customers | Click & Fix CRM</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<link rel="stylesheet" href="css/customers.css">
+
+</head>
+
+<body>
+
+<div class="customers-page">
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Header -->
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>Customers</h2>
+
+                <small>Manage customer database</small>
+
+            </div>
+
+            <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#newCustomerModal">
+
+                <i class="bi bi-person-plus-fill"></i>
+
+                Add Customer
+
+            </button>
+
+        </div>
+
+<!-- ===========================
+        CUSTOMER STATISTICS
+=========================== -->
+
+<div class="customer-stats">
+
+    <!-- Total Customers -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-primary">
+
+            <i class="bi bi-people-fill"></i>
+
+        </div>
+
+        <div>
+
+            <h3 id="totalCustomers">0</h3>
+
+            <span>Total Customers</span>
+
+        </div>
+
+    </div>
+
+    <!-- Active Customers -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-success">
+
+            <i class="bi bi-person-check-fill"></i>
+
+        </div>
+
+        <div>
+
+            <h3 id="activeCustomers">0</h3>
+
+            <span>Active Customers</span>
+
+        </div>
+
+    </div>
+
+    <!-- New This Year -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-warning">
+
+            <i class="bi bi-calendar-plus"></i>
+
+        </div>
+
+        <div>
+
+            <h3 id="newCustomers">0</h3>
+
+            <span>New This Year</span>
+
+        </div>
+
+    </div>
+
+    <!-- Total Repair Jobs -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-info">
+
+            <i class="bi bi-tools"></i>
+
+        </div>
+
+        <div>
+
+            <h3 id="customerJobs">0</h3>
+
+            <span>Total Repair Jobs</span>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===========================
+        TOOLBAR
+=========================== -->
+
+<div class="toolbar">
+
+    <div class="search-box">
+
+        <i class="bi bi-search"></i>
+
+        <input
+            type="text"
+            id="searchCustomer"
+            placeholder="Search Customer ID, Name or Mobile">
+
+    </div>
+
+</div>
+
+<!-- ===========================
+        CUSTOMER TABLE
+=========================== -->
+
+<div class="table-card">
+
+<div class="table-responsive">
+
+<table class="table align-middle customer-table">
+
+<thead>
+
+<tr>
+
+<th width="170">Customer ID</th>
+
+<th>Name</th>
+
+<th width="150">Mobile</th>
+
+<th>Email</th>
+
+<th>Address</th>
+
+<th width="90">Jobs</th>
+
+<th width="170" class="text-center">
+
+Action
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="customerTable">
+
+<tr>
+
+<td colspan="7" class="text-center py-5">
+
+No Customers Found
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        NEW CUSTOMER MODAL
+===================================== -->
+
+<div class="modal fade" id="newCustomerModal" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h4 class="modal-title">
+
+                    <i class="bi bi-person-plus-fill"></i>
+
+                    Add New Customer
+
+                </h4>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="customerForm">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+
+                                Customer ID
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customerId"
+                                class="form-control"
+                                readonly>
+
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <label class="form-label">
+
+                                Customer Name
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customerName"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Mobile Number
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customerMobile"
+                                class="form-control"
+                                maxlength="10"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Email Address
+
+                            </label>
+
+                            <input
+                                type="email"
+                                id="customerEmail"
+                                class="form-control">
+
+                        </div>
+
+                        <div class="col-md-12">
+
+                            <label class="form-label">
+
+                                Address
+
+                            </label>
+
+                            <textarea
+                                id="customerAddress"
+                                rows="3"
+                                class="form-control"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-light"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    id="saveCustomer">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Customer
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================
+        EDIT CUSTOMER MODAL
+===================================== -->
+
+<div class="modal fade"
+id="editCustomerModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-lg">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title">
+
+<i class="bi bi-pencil-square"></i>
+
+Edit Customer
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<input
+type="hidden"
+id="editCustomerId">
+
+<div class="row g-3">
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Customer Name
+
+</label>
+
+<input
+type="text"
+id="editCustomerName"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Mobile
+
+</label>
+
+<input
+type="text"
+id="editCustomerMobile"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Email
+
+</label>
+
+<input
+type="email"
+id="editCustomerEmail"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Total Jobs
+
+</label>
+
+<input
+type="text"
+id="editCustomerJobs"
+class="form-control"
+readonly>
+
+</div>
+
+<div class="col-md-12">
+
+<label class="form-label">
+
+Address
+
+</label>
+
+<textarea
+rows="3"
+id="editCustomerAddress"
+class="form-control"></textarea>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+class="btn btn-primary"
+id="updateCustomer">
+
+Save Changes
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        VIEW CUSTOMER MODAL
+===================================== -->
+
+<div class="modal fade"
+id="viewCustomerModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-xl">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title">
+
+<i class="bi bi-person-vcard-fill"></i>
+
+Customer Details
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="row g-4">
+
+<!-- =====================
+     Customer Information
+====================== -->
+
+<div class="col-md-6">
+
+<table class="table table-bordered align-middle">
+
+<tr>
+
+<th width="170">Customer ID</th>
+
+<td id="vCustomerId"></td>
+
+</tr>
+
+<tr>
+
+<th>Name</th>
+
+<td id="vCustomerName"></td>
+
+</tr>
+
+<tr>
+
+<th>Mobile</th>
+
+<td id="vCustomerMobile"></td>
+
+</tr>
+
+<tr>
+
+<th>Email</th>
+
+<td id="vCustomerEmail"></td>
+
+</tr>
+
+<tr>
+
+<th>Total Jobs</th>
+
+<td id="vCustomerJobs"></td>
+
+</tr>
+
+</table>
+
+</div>
+
+<!-- =====================
+        Address
+====================== -->
+
+<div class="col-md-6">
+
+<label class="fw-bold mb-2">
+
+Address
+
+</label>
+
+<div
+class="border rounded p-3 bg-light"
+id="vCustomerAddress"
+style="min-height:170px;">
+
+</div>
+
+</div>
+
+<!-- =====================
+      Repair History
+====================== -->
+
+<div class="col-12">
+
+<h5 class="mt-2 mb-3">
+
+    <i class="bi bi-tools"></i>
+
+    Repair History
+
+</h5>
+
+<div
+id="customerJobHistory"
+class="table-responsive border rounded">
+
+<table class="table table-hover align-middle mb-0">
+
+<thead class="table-light">
+
+<tr>
+
+<th width="170">Job ID</th>
+
+<th>Device</th>
+
+<th>Brand</th>
+
+<th>Model</th>
+
+<th width="170">Status</th>
+
+<th width="130">Date</th>
+
+</tr>
+
+</thead>
+
+<tbody id="customerJobHistoryBody">
+
+<tr>
+
+<td colspan="6"
+class="text-center py-4 text-muted">
+
+No Repair History
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- =====================
+      Warranty History
+====================== -->
+
+<div class="col-12 mt-4">
+
+<h5 class="mb-3">
+
+    <i class="bi bi-shield-check text-success"></i>
+
+    Warranty Details
+
+</h5>
+
+<div
+id="customerWarrantyHistory"
+class="border rounded p-3 bg-light">
+
+<div class="text-center text-muted py-3">
+
+No Warranty Found
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        CUSTOMER LOGIN MODAL
+===================================== -->
+
+<div class="modal fade"
+id="customerLoginModal"
+tabindex="-1">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title">
+
+<i class="bi bi-key-fill"></i>
+
+Customer Login
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Username
+
+</label>
+
+<input
+type="text"
+id="loginUsername"
+class="form-control"
+readonly>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Current Password
+
+</label>
+
+<div class="input-group">
+
+<input
+type="password"
+id="loginCurrentPassword"
+class="form-control"
+readonly>
+
+<button
+class="btn btn-outline-secondary"
+type="button"
+id="toggleCustomerPassword">
+
+<i class="bi bi-eye"></i>
+
+</button>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+New Password
+
+</label>
+
+<input
+type="text"
+id="loginNewPassword"
+class="form-control"
+placeholder="Generate or Type New Password">
+
+</div>
+
+<div class="d-grid gap-2">
+
+<button
+class="btn btn-outline-primary"
+id="generateCustomerPassword">
+
+<i class="bi bi-shuffle"></i>
+
+Generate Strong Password
+
+</button>
+
+<button
+class="btn btn-success"
+id="resetCustomerPassword">
+
+<i class="bi bi-arrow-repeat"></i>
+
+Reset Password
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        DELETE CUSTOMER MODAL
+===================================== -->
+
+<div class="modal fade"
+id="deleteCustomerModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content">
+
+<div class="modal-header bg-danger text-white">
+
+<h5 class="modal-title">
+
+<i class="bi bi-trash"></i>
+
+Delete Customer
+
+</h5>
+
+<button
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body text-center">
+
+<div class="mb-3">
+
+<i class="bi bi-exclamation-triangle-fill text-danger"
+style="font-size:50px;"></i>
+
+</div>
+
+<h5>
+
+Are you sure?
+
+</h5>
+
+<p class="text-muted">
+
+This customer will be permanently deleted.
+
+</p>
+
+<div class="border rounded p-3 text-start">
+
+<p class="mb-2">
+
+<strong>Customer ID :</strong>
+
+<span id="deleteCustomerId"></span>
+
+</p>
+
+<p class="mb-0">
+
+<strong>Customer :</strong>
+
+<span id="deleteCustomerName"></span>
+
+</p>
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+class="btn btn-danger"
+id="confirmDeleteCustomer">
+
+<i class="bi bi-trash"></i>
+
+Delete Permanently
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="module" src="js/auth.js"></script>
+
+<script type="module" src="js/customers.js"></script>
+
+</body>
+
+</html>

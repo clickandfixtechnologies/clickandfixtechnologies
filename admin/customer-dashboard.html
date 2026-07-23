@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>
+
+Customer Dashboard | Click & Fix Technologies
+
+</title>
+
+<!-- Bootstrap -->
+
+<link
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+rel="stylesheet">
+
+<!-- Bootstrap Icons -->
+
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- CSS -->
+
+<link
+rel="stylesheet"
+href="css/customer-dashboard.css">
+
+</head>
+
+<body>
+
+<!-- WhatsApp Hint -->
+
+<div class="whatsapp-tooltip">
+
+    <strong>Need Help?</strong>
+
+    <small>Chat with us</small>
+
+</div>
+
+<!-- WhatsApp Floating Button -->
+
+<a
+href="https://wa.me/917098889990"
+target="_blank"
+class="whatsapp-float">
+
+    <i class="bi bi-whatsapp"></i>
+
+</a>
+
+<!-- Mobile Menu Button -->
+
+<button
+    class="mobile-menu-btn d-lg-none"
+    id="mobileMenuBtn">
+
+    <i class="bi bi-list"></i>
+
+</button>
+
+<!-- Overlay -->
+
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay">
+
+</div>
+
+<!-- =====================================
+        SIDEBAR
+===================================== -->
+
+<div
+    class="sidebar"
+    id="sidebar">
+
+    <div class="logo-area text-center py-4">
+
+        <h3 class="fw-bold mb-0">
+
+            Click & Fix
+
+        </h3>
+
+        <div class="text-primary fw-semibold mb-1">
+
+            Technologies
+
+        </div>
+
+        <small class="text-muted">
+
+            Customer Portal
+
+        </small>
+
+    </div>
+
+    <hr>
+
+    <ul class="nav flex-column">
+
+        <li class="nav-item">
+
+            <a
+            href="#dashboard"
+            class="nav-link active">
+
+                <i class="bi bi-speedometer2"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a
+            href="#repairs"
+            class="nav-link">
+
+                <i class="bi bi-tools"></i>
+
+                My Repairs
+
+            </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+            <a
+            href="#profile"
+            class="nav-link">
+
+                <i class="bi bi-person-circle"></i>
+
+                Profile
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+    <a
+    href="#"
+    id="changePasswordBtn"
+    class="nav-link">
+
+        <i class="bi bi-key-fill"></i>
+
+        Change Password
+
+    </a>
+
+</li>
+
+        <hr>
+
+        <li class="nav-item">
+
+            <a
+    href="#"
+    id="logoutBtn"
+    class="nav-link text-danger">
+
+    <i class="bi bi-box-arrow-right"></i>
+
+    Logout
+
+</a>
+
+        </li>
+
+    </ul>
+
+</div>
+
+<!-- =====================================
+        MAIN CONTENT
+===================================== -->
+
+<div class="main-content">
+
+<!-- =====================================
+        TOPBAR
+===================================== -->
+
+<div class="topbar">
+
+<div>
+
+<h3 class="mb-1">
+
+Customer Dashboard
+
+</h3>
+
+<p class="text-muted mb-0">
+
+Welcome Back 🙏
+
+<span id="customerName">
+
+Loading...
+
+</span>
+
+</p>
+
+</div>
+
+<div class="text-end">
+
+<div id="currentDate">
+
+--
+
+</div>
+
+<div id="currentTime">
+
+--
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        CUSTOMER INFO
+===================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-lg-2 col-md-6">
+
+                <strong>
+
+                    Customer ID
+
+                </strong>
+
+                <br>
+
+                <span id="profile2CustomerId">
+
+                    -
+
+                </span>
+
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+
+                <strong>
+
+                    Mobile
+
+                </strong>
+
+                <br>
+
+                <span id="profile2CustomerMobile">
+
+                    -
+
+                </span>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <strong>
+
+                    Email
+
+                </strong>
+
+                <br>
+
+                <span id="profile2CustomerEmail">
+
+                    -
+
+                </span>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <strong>
+
+                    Address
+
+                </strong>
+
+                <br>
+
+                <span id="profile2CustomerAddress">
+
+                    -
+
+                </span>
+
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+
+                <strong>
+
+                    Account Status
+
+                </strong>
+
+                <br>
+
+                <span id="profile2CustomerStatus">
+
+                    <span class="badge bg-success">
+
+                        Active
+
+                    </span>
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================
+        STATUS BANNER
+===================================== -->
+
+<div
+class="alert alert-primary shadow-sm d-flex align-items-center">
+
+<i class="bi bi-info-circle-fill me-2"></i>
+
+<span id="statusBanner">
+
+Welcome to your Customer Dashboard
+
+</span>
+
+</div>
+
+<!-- =====================================
+        DASHBOARD CARDS
+===================================== -->
+
+<div
+class="row g-3"
+id="dashboard">
+
+<!-- Total Repairs -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-tools display-6"></i>
+
+<h6 class="mt-3">
+
+Total Repairs
+
+</h6>
+
+<h2 id="totalRepairJobs">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Pending -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-hourglass-split display-6"></i>
+
+<h6 class="mt-3">
+
+Pending
+
+</h6>
+
+<h2 id="pendingRepairJobs">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Completed -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-check-circle display-6"></i>
+
+<h6 class="mt-3">
+
+Completed
+
+</h6>
+
+<h2 id="completedRepairJobs">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Active Warranty -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-shield-check display-6"></i>
+
+<h6 class="mt-3">
+
+Active Warranty
+
+</h6>
+
+<h2 id="activeWarranty">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Expired Warranty -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-shield-x display-6"></i>
+
+<h6 class="mt-3">
+
+Expired
+
+</h6>
+
+<h2 id="expiredWarranty">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Expiring Soon -->
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="card dashboard-card h-100">
+
+<div class="card-body text-center">
+
+<i class="bi bi-clock-history display-6"></i>
+
+<h6 class="mt-3">
+
+Expiring Soon
+
+</h6>
+
+<h2 id="expiringWarranty">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        RECENT REPAIRS
+===================================== -->
+
+<div
+class="card shadow-sm border-0 mt-4"
+id="repairs">
+
+<div class="card-header bg-white">
+
+<h5 class="mb-0">
+
+<i class="bi bi-tools"></i>
+
+My Repair Jobs
+
+</h5>
+
+</div>
+
+<div class="card-body p-0">
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle mb-0">
+
+<thead class="table-light">
+
+<tr>
+
+<th>Job ID</th>
+
+<th>Device</th>
+
+<th>Brand / Model</th>
+
+<th>Status</th>
+
+<th>Received</th>
+
+<th class="text-center">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="repairTableBody">
+
+<tr>
+
+<td colspan="6"
+class="text-center py-5 text-muted">
+
+No Repair Jobs Found
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        CUSTOMER PROFILE
+===================================== -->
+
+<div
+class="card shadow-sm border-0 mb-4"
+id="profile">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0">
+
+            <i class="bi bi-person-circle me-2"></i>
+
+            Customer Profile
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <small class="text-muted">
+                    Customer ID
+                </small>
+
+                <h6 id="profileCardCustomerId">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <small class="text-muted">
+                    Customer Name
+                </small>
+
+                <h6 id="customerNameProfile">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <small class="text-muted">
+                    Mobile
+                </small>
+
+                <h6 id="profileCardCustomerMobile">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <small class="text-muted">
+                    Email
+                </small>
+
+                <h6 id="profileCardCustomerEmail">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-8">
+
+                <small class="text-muted">
+                    Address
+                </small>
+
+                <h6 id="profileCardCustomerAddress">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <small class="text-muted">
+                    Customer Since
+                </small>
+
+                <h6 id="customerSince">
+                    -
+                </h6>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <small class="text-muted">
+                    Total Repairs
+                </small>
+
+                <h6 id="profileTotalRepairs">
+                    0
+                </h6>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <small class="text-muted">
+                    Active Warranty
+                </small>
+
+                <h6 id="profileWarranty">
+                    0
+                </h6>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <small class="text-muted">
+                    Account Status
+                </small>
+
+                <div id="profileCardCustomerStatus">
+
+                    <span class="badge bg-success">
+
+                        Active
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================
+        CONTACT SUPPORT
+===================================== -->
+
+<div class="card shadow-sm border-0 mt-4" id="support">
+
+<div class="card-header bg-white">
+
+<h5 class="mb-0">
+
+<i class="bi bi-headset"></i>
+
+Need Help?
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-lg-4">
+
+<div class="border rounded p-3 h-100">
+
+<i class="bi bi-telephone-fill fs-3 text-primary"></i>
+
+<h6 class="mt-3">
+
+Phone Support
+
+</h6>
+
+<p class="mb-0">
+
++917098889990
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-4">
+
+<div class="border rounded p-3 h-100">
+
+<i class="bi bi-envelope-fill fs-3 text-success"></i>
+
+<h6 class="mt-3">
+
+Email
+
+</h6>
+
+<p class="mb-0">
+
+clicknfixtechnologies@gmail.com
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-4">
+
+<div class="border rounded p-3 h-100">
+
+<i class="bi bi-clock-fill fs-3 text-warning"></i>
+
+<h6 class="mt-3">
+
+Support Hours
+
+</h6>
+
+<p class="mb-0">
+
+Mon - Sat
+
+10:00 AM - 7:00 PM
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        FOOTER
+===================================== -->
+
+<footer
+class="text-center py-4 mt-5">
+
+<hr>
+
+<p class="mb-1">
+
+© 2026
+
+<strong>
+
+Click & Fix Technologies
+
+</strong>
+
+</p>
+
+<p class="text-muted small mb-0">
+
+Customer Dashboard v1.0
+
+</p>
+
+</footer>
+
+</div>
+
+<!-- =====================================
+        REPAIR DETAILS MODAL
+===================================== -->
+
+<div
+class="modal fade"
+id="repairDetailsModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+<div class="modal-content border-0 shadow">
+
+<div class="modal-header bg-primary text-white">
+
+<h5 class="modal-title">
+
+<i class="bi bi-tools me-2"></i>
+
+Repair Details
+
+</h5>
+
+<button
+type="button"
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="row g-4">
+
+<!-- BASIC DETAILS -->
+
+<div class="col-lg-6">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Job Details
+
+</strong>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-borderless mb-0">
+
+<tr>
+
+<th width="40%">
+
+Job ID
+
+</th>
+
+<td id="mJobId">-</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Status
+
+</th>
+
+<td id="mStatus">-</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Received Date
+
+</th>
+
+<td id="mReceived">-</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Delivery Date
+
+</th>
+
+<td id="mDelivered">-</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- DEVICE DETAILS -->
+
+<div class="col-lg-6">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Device Details
+
+</strong>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-borderless mb-0">
+
+<tr>
+
+<th width="40%">
+
+Device
+
+</th>
+
+<td id="mDevice">-</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Brand / Model
+
+</th>
+
+<td id="mBrandModel">-</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PROBLEM -->
+
+<div class="col-12">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Reported Problem
+
+</strong>
+
+</div>
+
+<div class="card-body">
+
+<p
+id="mProblem"
+class="mb-0">
+
+-
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- REMARKS -->
+
+<div class="col-12">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Remarks
+
+</strong>
+
+</div>
+
+<div class="card-body">
+
+<p
+id="mRemarks"
+class="mb-0">
+
+-
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- REPAIR TIMELINE -->
+
+<div class="col-12">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Repair Timeline
+
+</strong>
+
+</div>
+
+<div
+class="card-body"
+id="repairTimeline">
+
+Loading...
+
+</div>
+
+</div>
+
+</div>
+
+<!-- WARRANTY -->
+
+<div class="col-12">
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-header bg-light">
+
+<strong>
+
+Warranty Details
+
+</strong>
+
+</div>
+
+<div
+class="card-body"
+id="repairWarranty">
+
+No Warranty Found
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+id="printServiceBtn"
+class="btn btn-primary">
+
+<i class="bi bi-file-earmark-pdf"></i>
+
+View Service Report
+
+</button>
+
+<a
+id="invoiceDownloadBtn"
+href="#"
+target="_blank"
+class="btn btn-success d-none">
+
+<i class="bi bi-file-earmark-pdf"></i>
+
+Download Invoice
+
+</a>
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        CHANGE PASSWORD MODAL
+===================================== -->
+
+<div
+class="modal fade"
+id="changePasswordModal"
+tabindex="-1">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h5 class="modal-title">
+
+<i class="bi bi-key-fill me-2"></i>
+
+Change Password
+
+</h5>
+
+<button
+type="button"
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<p class="text-muted small mb-4">
+
+For your account security, use a strong password containing uppercase, lowercase, numbers and special characters.
+
+</p>
+
+<!-- Current Password -->
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Current Password
+
+</label>
+
+<div class="input-group">
+
+<input
+type="password"
+id="currentPassword"
+class="form-control"
+placeholder="Enter Current Password">
+
+<button
+class="btn btn-outline-secondary"
+type="button"
+id="toggleCurrentPassword">
+
+<i class="bi bi-eye"></i>
+
+</button>
+
+</div>
+
+</div>
+
+<!-- New Password -->
+
+<div class="mb-3">
+
+<label class="form-label">
+
+New Password
+
+</label>
+
+<div class="input-group">
+
+<input
+type="password"
+id="newPassword"
+class="form-control"
+placeholder="Enter New Password">
+
+<button
+class="btn btn-outline-secondary"
+type="button"
+id="toggleNewPassword">
+
+<i class="bi bi-eye"></i>
+
+</button>
+
+</div>
+
+</div>
+
+<!-- Confirm Password -->
+
+<div class="mb-4">
+
+<label class="form-label">
+
+Confirm Password
+
+</label>
+
+<div class="input-group">
+
+<input
+type="password"
+id="confirmPassword"
+class="form-control"
+placeholder="Confirm New Password">
+
+<button
+class="btn btn-outline-secondary"
+type="button"
+id="toggleConfirmPassword">
+
+<i class="bi bi-eye"></i>
+
+</button>
+
+</div>
+
+</div>
+
+<div class="d-grid gap-2">
+
+<button
+class="btn btn-outline-primary"
+id="generateDashboardPassword">
+
+<i class="bi bi-shuffle me-2"></i>
+
+Generate Strong Password
+
+</button>
+
+<button
+class="btn btn-success"
+id="updateDashboardPassword">
+
+<i class="bi bi-check-circle me-2"></i>
+
+Update Password
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Bootstrap -->
+
+<script
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS -->
+
+<script type="module" src="js/customer-dashboard.js"></script>
+
+</body>
+
+</html>

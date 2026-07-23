@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | Click & Fix Technologies</title>
+
+    <meta name="robots" content="noindex,nofollow">
+
+    <!-- Bootstrap -->
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Admin CSS -->
+    <link href="css/admin.css" rel="stylesheet">
+    <link href="css/customers.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+  <!-- ==========================
+        Sidebar
+========================== -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <h3>Click & Fix</h3>
+
+        <span>Technologies</span>
+
+        <small>Admin Panel</small>
+
+    </div>
+
+    <ul class="sidebar-menu">
+
+        <!-- Dashboard -->
+
+        <li class="active">
+
+            <a href="dashboard.html">
+
+                <i class="bi bi-grid-1x2-fill"></i>
+
+                <span>Dashboard</span>
+
+            </a>
+
+        </li>
+
+        <!-- Customers -->
+
+        <li>
+
+            <a href="customers.html">
+
+                <i class="bi bi-people-fill"></i>
+
+                <span>Customers</span>
+
+            </a>
+
+        </li>
+
+        <!-- Jobs -->
+
+        <li>
+
+            <a href="jobs.html">
+
+                <i class="bi bi-tools"></i>
+
+                <span>Jobs</span>
+
+            </a>
+
+        </li>
+
+        <!-- Logout -->
+
+        <li class="logout">
+
+            <a href="../index.html" id="logoutBtn">
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                <span>Logout</span>
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay">
+
+</div>
+
+<!-- ==========================
+        Main Content
+========================== -->
+
+<main class="main-content">
+
+    <!-- ==========================
+        Header
+========================== -->
+
+<header class="topbar">
+
+    <!-- Left -->
+
+    <div class="header-left">
+
+        <!-- Mobile Menu -->
+
+        <button
+            class="menu-toggle"
+            id="menuToggle">
+
+            <i class="bi bi-list"></i>
+
+        </button>
+
+        <div>
+
+            <h2>Dashboard</h2>
+
+            <small>
+                Welcome back, Administrator 👋
+            </small>
+
+        </div>
+
+    </div>
+
+    <!-- Center -->
+
+    <div class="header-center">
+
+        <div class="search-box-new">
+
+            <i class="bi bi-search"></i>
+
+            <input
+                type="text"
+                id="dashboardSearch"
+                placeholder="Search customer, job ID, mobile...">
+
+            <div
+                id="searchResults"
+                class="search-results">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Right -->
+
+    <div class="header-right">
+
+        <!-- Date Time -->
+
+        <div class="datetime">
+
+            <div id="currentDate"></div>
+
+            <div id="currentTime"></div>
+
+        </div>
+
+        <!-- Admin Profile -->
+
+        <div class="admin-profile">
+
+            <i class="bi bi-person-circle profile-icon"></i>
+
+            <div>
+
+                <h6 id="adminName">
+
+                    Super Admin
+
+                </h6>
+
+                <small id="adminEmail">
+
+                    admin@clickandfix.site
+
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+<!-- KPI Cards -->
+
+<section class="cards">
+
+    <!-- Total Customers -->
+
+    <div class="card-box customers-card">
+
+        <div class="card-icon">
+
+            <i class="bi bi-people-fill"></i>
+
+        </div>
+
+        <div class="card-content">
+
+            <h3 id="totalCustomers">0</h3>
+
+            <p>Total Customers</p>
+
+            <small>
+
+                <i class="bi bi-arrow-up-short"></i>
+
+                Customer Database
+
+            </small>
+
+            <div class="progress">
+
+                <div class="progress-bar" style="width:35%"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Today's Jobs -->
+
+    <div class="card-box jobs-card">
+
+        <div class="card-icon">
+            <i class="bi bi-tools"></i>
+        </div>
+
+        <div class="card-content">
+
+            <h3 id="todayJobs">0</h3>
+
+            <p>Today's Jobs</p>
+
+            <small>
+                <i class="bi bi-clock-history"></i>
+                Today's Service
+            </small>
+
+            <div class="progress">
+                <div class="progress-bar" style="width:20%"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Pending -->
+
+    <div class="card-box pending-card">
+
+        <div class="card-icon">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+
+        <div class="card-content">
+
+            <h3 id="pendingJobs">0</h3>
+
+            <p>Pending Jobs</p>
+
+            <small>
+                <i class="bi bi-exclamation-circle"></i>
+                Need Attention
+            </small>
+
+            <div class="progress">
+                <div class="progress-bar" style="width:55%"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Completed -->
+
+    <div class="card-box complete-card">
+
+        <div class="card-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+
+        <div class="card-content">
+
+            <h3 id="completedJobs">0</h3>
+
+            <p>Completed Jobs</p>
+
+            <small>
+                <i class="bi bi-check2-all"></i>
+                Successfully Delivered
+            </small>
+
+            <div class="progress">
+                <div class="progress-bar" style="width:85%"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+
+<div class="card-box quick-card">
+
+    <div class="card-icon">
+        <i class="bi bi-lightning-charge-fill"></i>
+    </div>
+
+    <div class="card-content">
+
+        <h3>Quick Actions</h3>
+
+        <p>Manage CRM Faster</p>
+
+        <div class="d-grid gap-2 mt-3">
+
+            <a href="customers.html?action=add"
+               class="btn btn-primary">
+
+                <i class="bi bi-person-plus-fill me-2"></i>
+
+                Add Customer
+
+            </a>
+
+            <a href="jobs.html?action=new"
+               class="btn btn-success">
+
+                <i class="bi bi-tools me-2"></i>
+
+                New Job
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+<!-- =========================================
+        Dashboard Tables
+========================================== -->
+
+<section class="dashboard-grid">
+
+    <!-- ==========================
+            Recent Customers
+    =========================== -->
+
+    <div class="dashboard-card">
+
+        <div class="card-header-custom">
+
+            <h5>
+
+                <i class="bi bi-people-fill"></i>
+
+                Recent Customers
+
+            </h5>
+
+            <a href="customers.html" class="view-all">
+
+                View All
+
+            </a>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table align-middle mb-0">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Customer ID</th>
+
+                        <th>Name</th>
+
+                        <th>Mobile</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="recentCustomersTable">
+
+                    <tr>
+
+                        <td colspan="4" class="text-center text-muted py-4">
+
+                            No customer found.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ==========================
+            Recent Jobs
+    =========================== -->
+
+    <div class="dashboard-card">
+
+        <div class="card-header-custom">
+
+            <h5>
+
+                <i class="bi bi-tools"></i>
+
+                Recent Jobs
+
+            </h5>
+
+            <a href="jobs.html" class="view-all">
+
+                View All
+
+            </a>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table align-middle mb-0">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Job ID</th>
+
+                        <th>Customer</th>
+
+                        <th>Status</th>
+
+                        <th>Device</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="recentJobsTable">
+
+                    <tr>
+
+                        <td colspan="4" class="text-center text-muted py-4">
+
+                            No jobs found.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+    </main>
+
+</div>
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="module" src="js/auth.js"></script>
+
+<script src="js/dashboard.js"></script>
+
+</body>
+
+</html>

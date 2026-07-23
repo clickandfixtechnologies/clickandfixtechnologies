@@ -1,0 +1,892 @@
+/*=========================================
+      Click & Fix CRM
+      Customers Module v2
+=========================================*/
+
+/*=========================
+        Base
+=========================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+
+    background:
+        radial-gradient(circle at top left,#eef5ff 0%,#f4f7fb 45%,#edf3fb 100%);
+
+    color:#1f2937;
+}
+
+/*=========================
+        Page
+=========================*/
+
+.customers-page{
+
+    padding:30px;
+
+    animation:fadeIn .35s ease;
+
+}
+
+/*=========================
+        Header
+=========================*/
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:28px;
+
+}
+
+.page-header h2{
+
+    font-size:38px;
+
+    font-weight:700;
+
+    color:#1f2937;
+
+    margin-bottom:4px;
+
+}
+
+.page-header small{
+
+    color:#6b7280;
+
+    font-size:15px;
+
+}
+
+/*=========================
+      Add Customer Button
+=========================*/
+
+.add-btn{
+
+    border:none;
+
+    outline:none;
+
+    color:#fff;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    border-radius:12px;
+
+    padding:12px 24px;
+
+    transition:.25s;
+
+    background:#2563eb;
+
+    box-shadow:0 10px 25px rgba(37,99,235,.25);
+
+}
+
+.add-btn i{
+
+    margin-right:8px;
+
+}
+
+.add-btn:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+/*=========================
+      Statistics Area
+=========================*/
+
+.customer-stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:22px;
+
+    margin-bottom:30px;
+
+}
+
+/*=========================
+      Common Card
+=========================*/
+
+.stat-card{
+
+    background:#fff;
+
+    border-radius:20px;
+
+    padding:22px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    transition:.25s;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.stat-card::after{
+
+    content:"";
+
+    position:absolute;
+
+    right:-35px;
+
+    top:-35px;
+
+    width:120px;
+
+    height:120px;
+
+    border-radius:50%;
+
+    background:rgba(37,99,235,.05);
+
+}
+
+.stat-card{
+    background:rgba(255,255,255,.68);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+
+    border:1px solid rgba(255,255,255,.45);
+
+    border-radius:22px;
+
+    box-shadow:0 12px 35px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 40px rgba(0,0,0,.12);
+}
+
+.stat-icon{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:16px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:26px;
+
+    color:#fff;
+
+    margin-bottom:16px;
+
+}
+
+.stat-card h2{
+
+    font-size:38px;
+
+    font-weight:700;
+
+    margin-bottom:8px;
+
+    color:#1f2937;
+
+}
+
+.stat-card p{
+
+    color:#6b7280;
+
+    font-size:15px;
+
+    margin:0;
+
+}
+
+/*=========================
+      Card Colors
+=========================*/
+
+.blue{
+
+    background:linear-gradient(135deg,#2563eb,#0ea5e9);
+
+}
+
+.green{
+
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+
+}
+
+.orange{
+
+    background:linear-gradient(135deg,#f59e0b,#fb923c);
+
+}
+
+.purple{
+
+    background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+
+}
+
+/*=========================
+      Fade Animation
+=========================*/
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/*=========================
+        Toolbar
+=========================*/
+
+.toolbar{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.search-box{
+
+    width:380px;
+
+    height:55px;
+
+    background:#fff;
+
+    border-radius:16px;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:0 18px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.search-box i{
+
+    color:#2563eb;
+
+    font-size:20px;
+
+    margin-right:12px;
+
+}
+
+.search-box input{
+
+    width:100%;
+
+    border:none;
+
+    outline:none;
+
+    background:transparent;
+
+    font-size:15px;
+
+    color:#1f2937;
+
+}
+
+.search-box input::placeholder{
+
+    color:#9ca3af;
+
+}
+.search-box{
+
+    background:rgba(255,255,255,.70);
+
+    backdrop-filter:blur(18px);
+
+    -webkit-backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,.45);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+}
+
+/*=========================
+        Table Card
+=========================*/
+
+.table-card{
+
+    background:#fff;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:0 12px 35px rgba(0,0,0,.08);
+
+}
+.table-card{
+    background:rgba(255,255,255,.72);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 15px 45px rgba(0,0,0,.08);
+}
+
+/*=========================
+        Table
+=========================*/
+
+.table{
+
+    margin:0;
+
+    vertical-align:middle;
+
+}
+
+.table thead{
+
+    background:#f8fafc;
+
+}
+
+.table thead th{
+
+    padding:18px 20px;
+
+    border:none;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    color:#374151;
+
+    white-space:nowrap;
+
+}
+
+.table tbody td{
+
+    padding:18px 20px;
+
+    border-color:#eef2f7;
+
+    font-size:14px;
+
+    color:#374151;
+
+    vertical-align:middle;
+
+}
+
+.table tbody tr{
+
+    transition:.25s;
+
+}
+
+.table tbody tr:hover{
+
+    background:#f8fbff;
+
+}
+
+/*=========================
+      Customer ID Badge
+=========================*/
+
+.customer-id{
+
+    font-weight:700;
+
+    color:#2563eb;
+
+}
+
+/*=========================
+      Jobs Badge
+=========================*/
+
+.jobs-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:42px;
+
+    padding:6px 12px;
+
+    border-radius:30px;
+
+    background:#e8f0ff;
+
+    color:#2563eb;
+
+    font-size:13px;
+
+    font-weight:700;
+
+}
+
+/*=========================
+    Action Buttons
+=========================*/
+
+.action-buttons{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+}
+
+.action-btn{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    color:#fff;
+    transition:.25s;
+}
+
+.action-btn i{
+    font-size:14px;
+}
+
+.action-btn:hover{
+    transform:translateY(-2px);
+}
+
+.btn-view{
+    background:#06b6d4;
+}
+
+.btn-edit{
+    background:#16a34a;
+}
+
+.btn-delete{
+    background:#ef4444;
+}
+
+/*=========================
+        Empty Table
+=========================*/
+
+.empty-state{
+
+    text-align:center;
+
+    padding:60px 20px;
+
+    color:#9ca3af;
+
+    font-size:15px;
+
+}
+
+/*=========================
+        Modal
+=========================*/
+
+.modal-content{
+
+    border:none;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:0 20px 50px rgba(0,0,0,.12);
+
+}
+.modal-content{
+
+    background:rgba(255,255,255,.82);
+
+    backdrop-filter:blur(22px);
+
+    -webkit-backdrop-filter:blur(22px);
+
+    border:1px solid rgba(255,255,255,.5);
+
+    border-radius:24px;
+
+}
+
+.modal-header{
+
+    padding:20px 25px;
+
+    border-bottom:1px solid #eef2f7;
+
+}
+
+.modal-header h4{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    color:#1f2937;
+
+}
+
+.modal-body{
+
+    padding:25px;
+
+}
+
+.modal-footer{
+
+    padding:18px 25px;
+
+    border-top:1px solid #eef2f7;
+
+}
+
+/*=========================
+        Form
+=========================*/
+
+.form-label{
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+    margin-bottom:8px;
+
+}
+
+.form-control{
+
+    height:48px;
+
+    border-radius:12px;
+
+    border:1px solid #dbe3ef;
+
+    font-size:14px;
+
+    box-shadow:none !important;
+
+    transition:.25s;
+
+}
+
+textarea.form-control{
+
+    height:110px;
+
+    resize:none;
+
+}
+
+.form-control:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.12) !important;
+
+}
+
+/*=========================
+        Buttons
+=========================*/
+
+.btn{
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    padding:10px 22px;
+
+}
+
+.btn-primary{
+
+    background:#2563eb;
+
+    border-color:#2563eb;
+
+}
+
+.btn-primary:hover{
+
+    background:#1d4ed8;
+
+    border-color:#1d4ed8;
+
+}
+
+.btn-danger{
+
+    background:#ef4444;
+
+    border-color:#ef4444;
+
+}
+
+.btn-danger:hover{
+
+    background:#dc2626;
+
+    border-color:#dc2626;
+
+}
+.btn-primary{
+
+    background:rgba(37,99,235,.95);
+
+    border:none;
+
+    box-shadow:0 10px 25px rgba(37,99,235,.25);
+
+}
+
+.btn-primary:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/*=========================
+        Scrollbar
+=========================*/
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#edf2f7;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#cbd5e1;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#94a3b8;
+
+}
+
+/*=========================
+      Responsive
+=========================*/
+
+@media(max-width:1200px){
+
+.customer-stats{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:768px){
+
+.customers-page{
+
+padding:20px;
+
+}
+
+.page-header{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+gap:18px;
+
+}
+
+.add-btn{
+
+width:100%;
+
+}
+
+.toolbar{
+
+justify-content:center;
+
+}
+
+.search-box{
+
+width:100%;
+
+}
+
+.customer-stats{
+
+grid-template-columns:1fr;
+
+}
+
+.table-card{
+
+overflow-x:auto;
+
+}
+
+.table{
+
+min-width:950px;
+
+}
+
+.modal-dialog{
+
+margin:15px;
+
+}
+
+}
+
+@media(max-width:480px){
+
+.page-header h1{
+
+font-size:30px;
+
+}
+
+.stat-card h2{
+
+font-size:30px;
+
+}
+
+.search-box{
+
+height:50px;
+
+}
+
+.form-control{
+
+height:46px;
+
+}
+
+}
+.customer-table td{
+    font-size:14px;
+    padding:14px 18px;
+}
+
+.customer-table th{
+    font-size:14px;
+    padding:16px 18px;
+}
+
+.btn-login{
+
+    background:#0d6efd;
+    color:#fff;
+
+}
+
+.btn-login:hover{
+
+    background:#0b5ed7;
+    color:#fff;
+
+}
+

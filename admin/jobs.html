@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Jobs | Click & Fix CRM</title>
+
+<link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<link rel="stylesheet" href="css/jobs.css">
+
+</head>
+
+<body>
+
+<div class="jobs-page">
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <div class="page-header">
+
+    <div>
+
+        <h2>Repair Jobs</h2>
+
+        <small>Manage all repair jobs</small>
+
+    </div>
+
+    <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#newJobModal">
+
+        <i class="bi bi-plus-circle"></i>
+        New Job
+
+    </button>
+
+</div>
+<!-- ===========================
+        JOB STATISTICS
+=========================== -->
+
+<div class="job-stats">
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-primary">
+            <i class="bi bi-tools"></i>
+        </div>
+
+        <div>
+
+            <h3 id="totalJobs">0</h3>
+
+            <span>Total Jobs</span>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-warning">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+
+        <div>
+
+            <h3 id="pendingJobs">0</h3>
+
+            <span>Pending</span>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-success">
+            <i class="bi bi-check-circle"></i>
+        </div>
+
+        <div>
+
+            <h3 id="readyJobs">0</h3>
+
+            <span>Ready</span>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon bg-info">
+            <i class="bi bi-truck"></i>
+        </div>
+
+        <div>
+
+            <h3 id="deliveredJobs">0</h3>
+
+            <span>Delivered</span>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="toolbar">
+
+    <div class="search-box">
+
+        <i class="bi bi-search"></i>
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search Job ID, Customer or Mobile">
+
+    </div>
+
+    <select class="form-select" id="statusFilter">
+
+        <option value="">All Status</option>
+
+        <option>Item Received</option>
+        <option>Diagnosis</option>
+        <option>Waiting Parts</option>
+        <option>Repair In Progress</option>
+        <option>Ready</option>
+        <option>Delivered</option>
+
+    </select>
+
+</div>
+            
+        <div class="table-card">
+
+<div class="table-responsive">
+
+<table class="table align-middle jobs-table">
+
+<thead>
+
+<tr>
+
+<th width="180">Job ID</th>
+
+<th>Customer</th>
+
+<th>Device</th>
+
+<th width="170">Status</th>
+
+<th width="150">Received</th>
+
+<th width="170" class="text-center">Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td colspan="6" class="text-center py-5">
+
+No Jobs Found
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+<!-- =====================================
+        NEW JOB MODAL
+===================================== -->
+
+<div class="modal fade" id="newJobModal" tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h4 class="modal-title">
+                    <i class="bi bi-tools"></i>
+                    Create Repair Job
+                </h4>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="jobForm">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">Job ID</label>
+                            <input type="text"
+                                   id="jobId"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-4">
+
+    <label class="form-label">Customer *</label>
+
+    <select
+        id="customer"
+        class="form-select"
+        required>
+
+        <option value="">
+            Select Customer
+        </option>
+
+    </select>
+
+</div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Mobile</label>
+                            <input type="text"
+                                   id="mobile"
+                                   class="form-control"
+                                   required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Device</label>
+
+                            <select id="device"
+                                    class="form-select">
+
+                                <option>Laptop</option>
+                                <option>Desktop</option>
+                                <option>Printer</option>
+                                <option>Monitor</option>
+                                <option>CCTV DVR</option>
+                                <option>Other</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Brand</label>
+                            <input type="text"
+                                   id="brand"
+                                   class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Model</label>
+                            <input type="text"
+                                   id="model"
+                                   class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Problem</label>
+
+                            <textarea
+                                id="problem"
+                                rows="4"
+                                class="form-control"></textarea>
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Remarks</label>
+
+                            <textarea
+                                id="remarks"
+                                rows="4"
+                                class="form-control"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-light"
+                        data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button class="btn btn-primary"
+                        id="saveJob">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Job
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- =====================================
+        EDIT JOB MODAL
+===================================== -->
+
+<div class="modal fade"
+id="editJobModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-xl">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title">
+
+<i class="bi bi-pencil-square"></i>
+
+Edit Repair Job
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal">
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<input
+type="hidden"
+id="editJobId">
+
+<div class="row g-3">
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Customer
+
+</label>
+
+<input
+type="text"
+id="editCustomer"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Mobile
+
+</label>
+
+<input
+type="text"
+id="editMobile"
+class="form-control">
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">
+
+Device
+
+</label>
+
+<input
+type="text"
+id="editDevice"
+class="form-control">
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">
+
+Brand
+
+</label>
+
+<input
+type="text"
+id="editBrand"
+class="form-control">
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">
+
+Model
+
+</label>
+
+<input
+type="text"
+id="editModel"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Invoice Number
+
+</label>
+
+<input
+type="text"
+id="editInvoice"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Invoice PDF Link
+
+</label>
+
+<input
+type="text"
+id="editInvoiceFile"
+class="form-control"
+placeholder="Paste Google Drive PDF Link">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+View Service Report (PDF)
+
+</label>
+
+<input
+type="text"
+id="editServiceReport"
+class="form-control"
+placeholder="Paste Service Report PDF Link">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Status
+
+</label>
+
+<select
+id="editStatus"
+class="form-select">
+
+<option>Item Received</option>
+<option>Diagnosis</option>
+<option>Waiting Parts</option>
+<option>Repair In Progress</option>
+<option>Ready</option>
+<option>Delivered</option>
+
+</select>
+
+</div>
+
+<div class="col-md-12">
+
+<label class="form-label">
+
+Problem
+
+</label>
+
+<textarea
+rows="3"
+id="editProblem"
+class="form-control"></textarea>
+
+</div>
+
+<div class="col-md-12">
+
+<label class="form-label">
+
+Remarks
+
+</label>
+
+<textarea
+rows="3"
+id="editRemarks"
+class="form-control"></textarea>
+
+</div>
+
+<!-- =====================================
+        INSTALLED PARTS & WARRANTY
+===================================== -->
+
+<div class="col-md-12 mt-4">
+
+<hr>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<h5 class="mb-0">
+
+<i class="bi bi-shield-check"></i>
+
+Installed Parts & Warranty
+
+</h5>
+
+<button
+type="button"
+class="btn btn-outline-primary btn-sm"
+id="addPartBtn">
+
+<i class="bi bi-plus-circle"></i>
+
+Add Part
+
+</button>
+
+</div>
+
+<div id="partsContainer">
+
+<div class="text-muted">
+
+No Parts Added
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+class="btn btn-primary"
+id="updateJob">
+
+Save Changes
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        VIEW JOB MODAL
+===================================== -->
+
+<div class="modal fade"
+id="viewJobModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-xl">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title">
+
+<i class="bi bi-receipt-cutoff"></i>
+
+Service Report
+
+</h4>
+
+<button
+class="btn btn-primary"
+onclick="printJobReport()">
+
+<i class="bi bi-printer"></i>
+
+Print
+
+</button>
+
+
+<button
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div id="printArea">
+
+    <div class="text-center mb-4 company-header">
+
+
+<h3 class="fw-bold">
+Click & Fix Technologies
+</h3>
+
+
+<p class="mb-1">
+Computer Repair | IT Solutions | CCTV Installation
+</p>
+
+
+<p class="mb-1">
+📍 Burdwan, West Bengal
+</p>
+
+
+<p class="mb-1">
+📞 Phone: 7098889990
+</p>
+
+
+<p class="mb-2">
+🌐 clickandfix.site
+</p>
+
+
+<hr>
+
+
+<h5 class="fw-bold">
+Repair Service Report
+</h5>
+
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-md-6">
+
+<h6 class="text-primary">
+Customer Information
+</h6>
+
+<table class="table table-sm">
+
+<tr>
+
+<th width="170">Job ID</th>
+
+<td id="vJobId"></td>
+
+</tr>
+
+<tr>
+
+<th>Customer</th>
+
+<td id="vCustomer"></td>
+
+</tr>
+
+<tr>
+
+<th>Mobile</th>
+
+<td id="vMobile"></td>
+
+</tr>
+
+<tr>
+
+<th>Status</th>
+
+<td id="vStatus"></td>
+
+</tr>
+
+<tr>
+
+<th>Invoice</th>
+
+<td>
+
+<div id="vInvoice"></div>
+
+<div id="invoiceDownloadBox" class="mt-2"></div>
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<div class="col-md-6">
+
+<h6 class="text-primary">
+
+Device Information
+
+</h6>
+
+<table class="table table-sm">
+
+<tr>
+
+<th width="170">Device</th>
+
+<td id="vDevice"></td>
+
+</tr>
+
+<tr>
+
+<th>Brand</th>
+
+<td id="vBrand"></td>
+
+</tr>
+
+<tr>
+
+<th>Model</th>
+
+<td id="vModel"></td>
+
+</tr>
+
+<tr>
+
+<th>Received</th>
+
+<td id="vReceived"></td>
+
+</tr>
+
+</table>
+
+</div>
+
+<div class="col-md-12">
+
+<h6 class="text-primary">
+
+Problem Description
+
+</h6>
+
+<div
+class="border rounded p-3"
+id="vProblem">
+
+</div>
+
+</div>
+
+<div class="col-md-12">
+
+<h6 class="text-primary">
+
+Remarks
+
+</h6>
+
+<div
+class="border rounded p-3"
+id="vRemarks">
+
+</div>
+
+</div>
+
+<div class="col-md-12">
+
+<h6 class="text-primary">
+
+Status Timeline
+
+</h6>
+
+<div
+id="timelineBox"
+class="border rounded p-3">
+
+Timeline Not Available
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div> <!-- printArea end -->
+<div class="modal-footer">
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div> <!-- View Modal End -->
+
+
+<!-- =====================================
+        DELETE JOB MODAL
+===================================== -->
+
+<div class="modal fade"
+id="deleteJobModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content">
+
+
+<div class="modal-header bg-danger text-white">
+
+<h5 class="modal-title">
+
+<i class="bi bi-trash"></i>
+
+Delete Repair Job
+
+</h5>
+
+
+<button
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+
+<div class="modal-body text-center">
+
+<div class="mb-3">
+
+<i class="bi bi-exclamation-triangle-fill text-danger"
+style="font-size:50px;"></i>
+
+</div>
+
+
+<h5>
+Are you sure?
+</h5>
+
+
+<p class="text-muted">
+
+You are about to delete this repair job permanently.
+
+</p>
+
+
+<div class="border rounded p-3 text-start">
+
+
+<p class="mb-2">
+
+<strong>Job ID:</strong>
+
+<span id="deleteJobId"></span>
+
+</p>
+
+
+<p class="mb-0">
+
+<strong>Customer:</strong>
+
+<span id="deleteCustomer"></span>
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+<div class="modal-footer">
+
+
+<button
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+
+<button
+class="btn btn-danger"
+id="confirmDeleteBtn">
+
+<i class="bi bi-trash"></i>
+
+Delete Permanently
+
+</button>
+
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="module" src="js/auth.js"></script>
+
+<script type="module" src="js/jobs.js"></script>
+
+</body>
+</html>

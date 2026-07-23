@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Customer Login | Click & Fix Technologies</title>
+
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" href="../assets/img/favicon.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customer Login CSS -->
+    <link href="css/customer-login.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<main class="d-flex align-items-center justify-content-center min-vh-100">
+
+    <div class="main-container">
+
+        <!-- ==========================
+             Login Form
+        =========================== -->
+
+        <div class="form-section">
+
+            <h2 class="login-title">Customer Login</h2>
+
+            <p class="login-subtitle">
+                Sign in to access your repair history,
+                invoices and warranty information.
+            </p>
+
+            <form id="loginForm" novalidate>
+
+                <!-- Mobile Number / Username -->
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Mobile Number / Username
+    </label>
+
+    <div class="input-group">
+
+        <span class="input-group-text">
+            <i class="bi bi-phone-fill"></i>
+        </span>
+
+        <input
+            type="text"
+            class="form-control"
+            id="customerUsername"
+            placeholder="Enter your mobile number"
+            autocomplete="username"
+            required>
+
+    </div>
+
+</div>
+
+                <!-- Password -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Password
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+                            <i class="bi bi-lock-fill"></i>
+                        </span>
+
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="customerPassword"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+
+                        <button
+                            class="btn btn-outline-secondary"
+                            type="button"
+                            id="togglePassword">
+
+                            <i class="bi bi-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Remember -->
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div class="form-check">
+
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="rememberMe">
+
+                        <label
+                            class="form-check-label"
+                            for="rememberMe">
+
+                            Remember Me
+
+                        </label>
+
+                    </div>
+
+                    <a
+                        href="#"
+                        id="forgotPassword"
+                        data-bs-toggle="modal"
+                        data-bs-target="#forgotPasswordModal">
+
+                        Forgot Password?
+
+                    </a>
+
+                </div>
+
+                <!-- Error -->
+
+                <div
+                    class="alert alert-danger d-none"
+                    id="loginError">
+
+                    Invalid mobile number or password.
+
+                </div>
+
+                <!-- Login -->
+
+                <button
+    class="btn btn-primary w-100"
+    id="loginBtn"
+    type="submit">
+
+    Login
+
+</button>
+
+            </form>
+
+            <!-- Footer -->
+
+            <div class="login-footer">
+
+                © 2026 Click & Fix Technologies
+
+            </div>
+
+        </div>
+
+        <!-- ==========================
+             Right Panel
+        =========================== -->
+
+        <div class="overlay-section">
+
+            <div class="overlay-content">
+
+                <div class="portal-icon">
+
+                    <i class="bi bi-person-check-fill"></i>
+
+                </div>
+
+                <h1>Customer Portal</h1>
+
+                <p>
+
+                    Secure access to your
+                    service records.
+
+                </p>
+
+                <div class="feature-box">
+
+                    <i class="bi bi-tools"></i>
+
+                    <span>Track Repair Status</span>
+
+                </div>
+
+                <div class="feature-box">
+
+                    <i class="bi bi-receipt"></i>
+
+                    <span>Download Invoice</span>
+
+                </div>
+
+                <div class="feature-box">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    <span>Warranty Information</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- =====================================
+        PASSWORD ASSISTANCE MODAL
+===================================== -->
+
+<div
+class="modal fade"
+id="forgotPasswordModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-lg modal-dialog-centered">
+
+<div class="modal-content border-0 shadow-lg">
+
+<div class="modal-header bg-primary text-white">
+
+<h5 class="modal-title">
+
+<i class="bi bi-shield-lock-fill me-2"></i>
+
+Password Assistance
+
+</h5>
+
+<button
+type="button"
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body p-4">
+
+<p class="text-muted mb-4">
+
+Forgot your password?
+
+Fill in the details below.
+
+Our support team will verify your request and send a new login password to your registered email address.
+
+</p>
+
+<form
+id="forgotPasswordForm"
+action="https://formspree.io/f/meeyjnqg"
+method="POST">
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Username / Mobile Number
+
+</label>
+
+<input
+type="text"
+class="form-control"
+name="Username"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Customer Name
+
+</label>
+
+<input
+type="text"
+class="form-control"
+name="Customer Name"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Registered Email Address
+
+</label>
+
+<input
+type="email"
+class="form-control"
+name="Email"
+required>
+
+</div>
+
+<input
+type="hidden"
+name="Request From"
+value="Customer Portal">
+
+<input
+type="hidden"
+name="Browser"
+id="browserInfo">
+
+<input
+type="hidden"
+name="Platform"
+id="platformInfo">
+
+<input
+type="hidden"
+name="Language"
+id="languageInfo">
+
+<input
+type="hidden"
+name="Request Date"
+id="requestDate">
+
+<input
+type="hidden"
+name="Request Time"
+id="requestTime">
+
+<button
+type="submit"
+id="forgotSubmitBtn"
+class="btn btn-primary w-100">
+
+<span id="forgotBtnText">
+
+<i class="bi bi-send-fill me-2"></i>
+
+Submit Password Request
+
+</span>
+
+</button>
+
+</form>
+
+<div class="alert alert-warning mt-4 mb-3">
+
+<strong>
+
+<i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+Manual Verification
+
+</strong>
+
+<hr>
+
+Your password request will be reviewed by our support team.
+
+<br><br>
+
+A new login password is usually sent to your registered email within a few minutes during business hours.
+
+<br><br>
+
+If our team is assisting other customers, it may take a little longer.
+
+Thank you for your patience.
+
+</div>
+
+<div class="text-center">
+
+<h6 class="mb-3">
+
+Need Immediate Help?
+
+</h6>
+
+<a
+href="tel:+917098889990"
+class="btn btn-outline-primary me-2">
+
+<i class="bi bi-telephone-fill"></i>
+
+Call
+
+</a>
+
+<a
+href="https://wa.me/917098889990"
+target="_blank"
+class="btn btn-success">
+
+<i class="bi bi-whatsapp"></i>
+
+WhatsApp
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Bootstrap JS -->
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- Customer Login JS -->
+
+<script type="module" src="js/customer-login.js"></script>
+
+</body>
+</html>

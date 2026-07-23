@@ -1,0 +1,493 @@
+/*=========================================
+        Customer Login
+=========================================*/
+
+body{
+    margin:0;
+    background:#f4f7fb;
+    font-family:'Inter',sans-serif;
+}
+
+/*=========================
+      Main Container
+=========================*/
+
+.main-container{
+
+    width:900px;
+    max-width:95%;
+    min-height:560px;
+
+    background:#fff;
+
+    display:flex;
+
+    overflow:hidden;
+
+    border-radius:30px;
+
+    box-shadow:0 18px 45px rgba(0,0,0,.08);
+
+}
+
+/*=========================
+      Login Section
+=========================*/
+
+.form-section{
+
+    width:50%;
+
+    padding:55px 50px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+}
+
+.login-title{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#1f2937;
+
+    margin-bottom:8px;
+
+}
+
+.login-subtitle{
+
+    color:#6b7280;
+
+    font-size:15px;
+
+    line-height:25px;
+
+    margin-bottom:35px;
+
+}
+
+/*=========================
+      Form
+=========================*/
+
+.form-label{
+
+    font-weight:600;
+
+    color:#374151;
+
+    margin-bottom:8px;
+
+}
+
+.input-group-text{
+
+    background:#fff;
+
+    border:none;
+
+    border-radius:12px 0 0 12px;
+
+}
+
+.input-group-text i{
+
+    color:#0d6efd;
+
+}
+
+.form-control{
+
+    height:52px;
+
+    border:none;
+
+    border-radius:0 12px 12px 0;
+
+    box-shadow:none;
+
+}
+
+.form-control:focus{
+
+    border-color:#0d6efd;
+
+    box-shadow:0 0 0 .15rem rgba(13,110,253,.15);
+
+}
+
+.input-group .btn{
+
+    border-radius:0 12px 12px 0;
+
+}
+
+/*=========================
+     Remember & Forgot
+=========================*/
+
+.form-check-label{
+
+    font-size:14px;
+
+}
+
+#forgotPassword{
+
+    text-decoration:none;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#0d6efd;
+
+}
+
+#forgotPassword:hover{
+
+    text-decoration:underline;
+
+}
+
+/*=========================
+      Button
+=========================*/
+
+.btn-primary{
+
+    height:52px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.btn-primary{
+
+    transition:all .3s ease;
+
+}
+
+.btn-primary:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 25px rgba(13,110,253,.35);
+
+}
+
+.btn-primary:active{
+
+    transform:scale(.98);
+
+}
+
+/*=========================
+      Alert
+=========================*/
+
+.alert{
+
+    border-radius:12px;
+
+    font-size:14px;
+
+}
+
+/*=========================
+      Footer
+=========================*/
+
+.login-footer{
+
+    margin-top:35px;
+
+    text-align:center;
+
+    font-size:13px;
+
+    color:#9ca3af;
+
+}
+
+/*=========================
+      Right Panel
+=========================*/
+
+.overlay-section{
+
+    width:50%;
+
+    background:linear-gradient(135deg,#0d6efd,#c0156a);
+
+    color:#fff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:45px;
+
+    text-align:center;
+
+    border-top-left-radius:100px;
+
+    border-bottom-left-radius:100px;
+
+}
+
+.overlay-content{
+
+    width:100%;
+
+}
+
+.portal-icon{
+
+    width:95px;
+
+    height:95px;
+
+    margin:auto auto 25px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.15);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    backdrop-filter:blur(12px);
+
+}
+
+.portal-icon i{
+
+    font-size:42px;
+
+}
+
+.overlay-content h1{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+.overlay-content p{
+
+    opacity:.9;
+
+    line-height:28px;
+
+    margin-bottom:35px;
+
+}
+
+/*=========================
+      Feature Box
+=========================*/
+
+.feature-box{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:15px 18px;
+
+    margin-bottom:15px;
+
+    border-radius:15px;
+
+    background:rgba(255,255,255,.14);
+
+    backdrop-filter:blur(14px);
+
+    border:1px solid rgba(255,255,255,.18);
+
+    transition:all .3s ease;
+
+    cursor:default;
+
+}
+
+.feature-box:hover{
+
+    transform:translateY(-6px);
+
+    background:rgba(255,255,255,.22);
+
+    box-shadow:0 12px 25px rgba(0,0,0,.15);
+
+}
+
+.feature-box i{
+
+    font-size:20px;
+
+    transition:.3s;
+
+}
+
+.feature-box:hover i{
+
+    transform:scale(1.15);
+
+}
+
+/*=========================
+      Modal
+=========================*/
+
+.modal-content{
+
+    border:none;
+
+    border-radius:18px;
+
+}
+
+.modal-header{
+
+    border-bottom:1px solid #ececec;
+
+}
+
+.modal-footer{
+
+    border-top:1px solid #ececec;
+
+}
+
+/*=========================
+      Responsive
+=========================*/
+
+@media(max-width:768px){
+
+.main-container{
+
+    flex-direction:column;
+
+}
+
+.form-section{
+
+    width:100%;
+
+    padding:35px 28px;
+
+}
+
+.overlay-section{
+
+    width:100%;
+
+    border-radius:0;
+
+    padding:40px 30px;
+
+}
+
+.login-title{
+
+    font-size:26px;
+
+}
+
+.overlay-content h1{
+
+    font-size:26px;
+
+}
+
+}
+
+/*=========================================
+        Page Load Animation
+=========================================*/
+
+.main-container{
+
+    animation: loginFade .7s ease;
+}
+
+@keyframes loginFade{
+
+    from{
+
+        opacity:0;
+        transform:translateY(35px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+/*=========================================
+        Premium Input Focus
+=========================================*/
+
+.input-group{
+
+    border:1px solid #dfe5ef;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    transition:.3s ease;
+
+}
+
+.input-group:focus-within{
+
+    border-color:#0d6efd;
+
+    box-shadow:0 0 0 .2rem rgba(13,110,253,.15);
+
+    transform:translateY(-2px);
+
+}
+
+.input-group:focus-within .input-group-text{
+
+    background:#0d6efd;
+
+    color:#fff;
+
+}
+
+.input-group:focus-within .input-group-text i{
+
+    color:#fff;
+
+}
+
