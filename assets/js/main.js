@@ -297,3 +297,24 @@ if(loginBtn && loginMenu){
 
 }
 
+/*=========================================
+      MOBILE LOGIN BUTTON
+=========================================*/
+
+@media (max-width: 768px) {
+
+  .login-dropdown{
+    position: absolute;
+    top: 88px;
+    left: 20px;
+    right: auto;
+    z-index: 999;
+  }
+
+  .btn-login{
+    padding: 10px 22px;
+    font-size: 15px;
+    border-radius: 50px;
+  }
+
+}
