@@ -4492,29 +4492,15 @@ section,
       MOBILE
 =========================================*/
 
-@media(max-width:991px){
+@media (max-width: 768px){
 
-.login-dropdown{
+    .login-menu{
 
-    margin-left:12px;
+        right: -20px;
 
-}
+        left: auto;
 
-.btn-login{
-
-    padding:10px 16px;
-
-    font-size:14px;
-
-}
-
-.login-menu{
-
-    right:0;
-
-    min-width:210px;
-
-}
+    }
 
 }
 
