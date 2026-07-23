@@ -4428,11 +4428,11 @@ section,
 
     left: auto;
 
-    min-width: 175px;      /* আগে 210px */
+    min-width: 165px;      /* আগে 210px */
 
     background: rgba(19, 37, 70, 0.97);
 
-    border-radius: 12px;   /* আগে 14px */
+    border-radius: 10px;   /* আগে 14px */
 
     overflow: hidden;
 
