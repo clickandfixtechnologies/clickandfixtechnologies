@@ -4512,8 +4512,8 @@ section,
 
   .login-dropdown{
     position: absolute;
-    top: 78px;
-    left: 22px;
+    top: 70px;
+    left: 30px;
     z-index: 999;
   }
 
