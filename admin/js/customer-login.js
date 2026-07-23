@@ -95,70 +95,127 @@ togglePassword.addEventListener("click",()=>{
 
 
 /*=========================================
-      CUSTOMER LOGIN (FIXED FOR MOBILE)
+        CUSTOMER LOGIN
 =========================================*/
 
+
 loginForm.addEventListener("submit", async (e)=>{
+
+
     e.preventDefault();
+
+
 
     errorBox.classList.add("d-none");
 
-    // Fix: Ensure proper trimming and lowercasing if username is email/text
-    const mobile = username.value.trim();
-    const pass = password.value.trim();
+
+
+    const mobile =
+    username.value.trim();
+
+
+
+    const pass =
+    password.value.trim();
+
+
 
     if(mobile === "" || pass === ""){
-        errorBox.innerHTML = "Please enter Mobile Number and Password.";
+
+
+        errorBox.innerHTML =
+        "Please enter Mobile Number and Password.";
+
+
         errorBox.classList.remove("d-none");
+
+
         return;
+
+
     }
 
-    loginBtn.disabled = true;
-    loginBtn.innerHTML = `
+
+
+    loginBtn.disabled=true;
+
+
+    loginBtn.innerHTML =
+
+    `
     <span class="spinner-border spinner-border-sm me-2"></span>
     Login...
     `;
 
+
+
     try{
-        const snapshot = await getDocs(collection(db, "customers"));
 
-        let foundCustomer = null;
+    const snapshot =
+        await getDocs(
+            collection(db,"customers")
+        );
 
-        snapshot.forEach(doc => {
-            const customer = doc.data();
-            
-            // Database er username/mobile ebong password er extra space clean kore check korchi
-            const dbUsername = String(customer.username || "").trim();
-            const dbPassword = String(customer.password || "").trim();
+    let foundCustomer = null;
 
-            if(dbUsername === mobile && dbPassword === pass){
-                foundCustomer = customer;
-            }
-        });
+    snapshot.forEach(doc=>{
 
-        if(!foundCustomer){
-            throw new Error("Invalid Login");
+        const customer = doc.data();
+
+        if(
+
+            customer.username === mobile &&
+
+            customer.password === pass
+
+        ){
+
+            foundCustomer = customer;
+
         }
 
-        localStorage.setItem(
-            "customerLogin",
-            foundCustomer.mobile
-        );
+    });
 
-        localStorage.setItem(
-            "customerData",
-            JSON.stringify(foundCustomer)
-        );
+    if(!foundCustomer){
 
-        window.location.href = "customer-dashboard.html";
+        throw new Error("Invalid Login");
 
     }
-    catch(error){
-        errorBox.innerHTML = "Invalid Mobile Number or Password.";
-        errorBox.classList.remove("d-none");
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = "Login";
-    }
+
+    localStorage.setItem(
+
+        "customerLogin",
+
+        foundCustomer.mobile
+
+    );
+
+    localStorage.setItem(
+
+        "customerData",
+
+        JSON.stringify(foundCustomer)
+
+    );
+
+    window.location.href =
+        "customer-dashboard.html";
+
+}
+
+catch(error){
+
+    errorBox.innerHTML =
+    "Invalid Mobile Number or Password.";
+
+    errorBox.classList.remove("d-none");
+
+    loginBtn.disabled = false;
+
+    loginBtn.innerHTML = "Login";
+
+}
+
 });
 
 /*=========================================
