@@ -4463,22 +4463,11 @@ section,
 .login-menu a{
 
     display:flex;
-
     align-items:center;
+    gap:8px;
 
-    gap:7px;
-
-    padding:11px 14px;   /* আগে 14px 18px */
-
-    text-decoration:none;
-
-    color:#12f5f5a8;
-
-    font-size:11px;      /* নতুন */
-
-    font-weight:500;
-
-    transition:.25s;
+    padding:8px 14px;
+    margin:0;
 
 }
 
