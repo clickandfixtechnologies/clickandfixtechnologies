@@ -4466,7 +4466,7 @@ section,
 
     align-items:center;
 
-    gap:12px;
+    gap:7px;
 
     padding:11px 14px;   /* আগে 14px 18px */
 
@@ -4474,7 +4474,7 @@ section,
 
     color:#12f5f5a8;
 
-    font-size:10px;      /* নতুন */
+    font-size:11px;      /* নতুন */
 
     font-weight:500;
 
