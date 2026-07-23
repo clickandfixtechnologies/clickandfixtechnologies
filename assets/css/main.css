@@ -4524,9 +4524,30 @@ section,
 
   .login-dropdown{
     position: absolute;
-    top: 105px;
-    left: 20px;
+    top: 82px;
+    left: 18px;
     z-index: 999;
+  }
+
+  .btn-login{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+
+    border-radius: 30px;
+  }
+
+  .btn-login i{
+    font-size: 15px;
+  }
+
+  .login-menu{
+    min-width: 190px;
+    margin-top: 8px;
   }
 
 }
