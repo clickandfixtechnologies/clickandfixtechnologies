@@ -4524,16 +4524,9 @@ section,
 
   .login-dropdown{
     position: absolute;
-    top: 88px;
+    top: 105px;
     left: 20px;
-    right: auto;
     z-index: 999;
-  }
-
-  .btn-login{
-    padding: 10px 22px;
-    font-size: 15px;
-    border-radius: 50px;
   }
 
 }
