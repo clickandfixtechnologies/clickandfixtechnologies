@@ -4511,31 +4511,19 @@ section,
 @media (max-width: 768px) {
 
   .login-dropdown{
+
     position: absolute;
+
     top: 70px;
+
     left: 10px;
+
+    margin-left: 0;      /* এটা খুব গুরুত্বপূর্ণ */
+
+    transform: translateX(-10px);
+
     z-index: 999;
-  }
 
-  .btn-login{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    padding: 8px 18px;
-    font-size: 14px;
-    font-weight: 600;
-
-    border-radius: 30px;
-  }
-
-  .btn-login i{
-    font-size: 15px;
-  }
-
-  .login-menu{
-    min-width: 190px;
-    margin-top: 8px;
   }
 
 }
