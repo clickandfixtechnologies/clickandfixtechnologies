@@ -4368,29 +4368,43 @@ section,
 
 }
 
-@media (max-width: 768px) {
+.btn-login{
 
-  .btn-login{
+    display:flex;
 
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    align-items:center;
 
-    padding: 6px 14px;      /* আগে 8px 18px ছিল */
+    justify-content:center;
 
-    font-size: 13px;        /* আগে 14px ছিল */
+    gap:6px;
 
-    font-weight: 600;
+    padding:8px 16px;     /* আগে 12px 22px ছিল */
 
-    border-radius: 25px;
+    border:none;
 
-  }
+    border-radius:50px;
 
-  .btn-login i{
+    background:rgba(255,255,255,.12);
 
-    font-size: 14px;        /* আগে 15px ছিল */
+    backdrop-filter:blur(12px);
 
-  }
+    -webkit-backdrop-filter:blur(12px);
+
+    color:#fff;
+
+    font-weight:600;
+
+    font-size:14px;       /* নতুন */
+
+    transition:.30s;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.18);
+
+}
+
+.btn-login i{
+
+    font-size:14px;
 
 }
 
