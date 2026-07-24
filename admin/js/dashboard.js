@@ -1,3 +1,11 @@
+import { db } from "./firebase.js";
+
+import {
+    collection,
+    getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 /*==============================
     LIVE DATE & TIME
 ==============================*/
@@ -29,6 +37,46 @@ function updateDateTime(){
 updateDateTime();
 
 setInterval(updateDateTime,1000);
+
+async function syncDashboardData(){
+
+    /* Customers */
+
+    const customerSnapshot =
+        await getDocs(collection(db,"customers"));
+
+    const customers = [];
+
+    customerSnapshot.forEach(doc=>{
+
+        customers.push(doc.data());
+
+    });
+
+    localStorage.setItem(
+        "cf_customers",
+        JSON.stringify(customers)
+    );
+
+    /* Jobs */
+
+    const jobSnapshot =
+        await getDocs(collection(db,"jobs"));
+
+    const jobs = [];
+
+    jobSnapshot.forEach(doc=>{
+
+        jobs.push(doc.data());
+
+    });
+
+    localStorage.setItem(
+        "cf_jobs",
+        JSON.stringify(jobs)
+    );
+
+}
 
 /*=========================================
         DASHBOARD LIVE STATS
@@ -74,7 +122,7 @@ function loadDashboardStats(){
 
 }
 
-loadDashboardStats();
+
 
 /*=========================================
       RECENT CUSTOMERS
@@ -132,7 +180,7 @@ function loadRecentCustomers() {
 
 }
 
-loadRecentCustomers();
+
 
 /*=========================================
         RECENT JOBS
@@ -199,7 +247,7 @@ function loadRecentJobs(){
 
 }
 
-loadRecentJobs();
+
 
 /*=========================================
       DASHBOARD SEARCH
@@ -442,4 +490,16 @@ window.addEventListener("resize",()=>{
     }
 
 });
+
+(async () => {
+
+    await syncDashboardData();
+
+    loadDashboardStats();
+
+    loadRecentCustomers();
+
+    loadRecentJobs();
+
+})();
 
