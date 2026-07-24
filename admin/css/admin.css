@@ -4,124 +4,99 @@
    Version : 1.0
 ========================================== */
 
-body{
-
-    margin:0;
-
-    background:#eef3f9;
-
-    font-family:'Inter',sans-serif;
-
-    color:#1f2937;
-
+body {
+    margin: 0;
+    background: #eef3f9;
+    font-family: 'Inter', sans-serif;
+    color: #1f2937;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
 /*=========================================
         LOGIN
 =========================================*/
-
-.main-container{
-
-    background:#fff;
-
-    border-radius:30px;
-
-    box-shadow:0 25px 60px rgba(15,23,42,.15);
-
-    position:relative;
-
-    overflow:hidden;
-
-    width:768px;
-
-    max-width:100%;
-
-    min-height:480px;
-
-    display:flex;
-
+.main-container {
+    background: #fff;
+    border-radius: 30px;
+    box-shadow: 0 25px 60px rgba(15,23,42,.15);
+    position: relative;
+    overflow: hidden;
+    width: 768px;
+    max-width: 100%;
+    min-height: 480px;
+    display: flex;
 }
 
-.form-section{
-
-    padding:50px;
-
-    width:50%;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
+.form-section {
+    padding: 50px;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.overlay-section{
-
-    width:50%;
-
-    background:linear-gradient(135deg,#00c6ff,#0d6efd);
-
-    color:#fff;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    text-align:center;
-
-    border-top-left-radius:160px;
-
-    border-bottom-left-radius:160px;
-
+.overlay-section {
+    width: 50%;
+    background: linear-gradient(135deg,#00c6ff,#0d6efd);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-top-left-radius: 160px;
+    border-bottom-left-radius: 160px;
 }
 
-.overlay-content{
-
-    padding:40px;
-
+.overlay-content {
+    padding: 40px;
 }
 
-.btn-primary{
-
-    background:#0d6efd;
-
-    border:none;
-
-    padding:12px 30px;
-
-    border-radius:10px;
-
-    transition:.3s;
-
+.btn-primary {
+    background: #0d6efd;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    transition: .3s;
 }
 
-.btn-primary:hover{
-
-    transform:translateY(-2px);
-
+.btn-primary:hover {
+    transform: translateY(-2px);
 }
 
-.form-control{
-
-    background:#f5f7fb;
-
-    border:none;
-
-    padding:13px 16px;
-
-    border-radius:10px;
-
+.form-control {
+    background: #f5f7fb;
+    border: none;
+    padding: 13px 16px;
+    border-radius: 10px;
 }
 
+/*=========================================
+        MOBILE RESPONSIVE FIX
+=========================================*/
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
 
+    .main-container {
+        flex-direction: column;
+        width: 100%;
+        min-height: auto;
+    }
 
+    .form-section {
+        width: 100%;
+        padding: 30px 20px;
+    }
 
-
-
-
-
-
-
+    .overlay-section {
+        width: 100%;
+        padding: 40px 20px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+}
