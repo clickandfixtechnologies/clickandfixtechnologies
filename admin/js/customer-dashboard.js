@@ -62,8 +62,12 @@ if(currentCustomerMobile === ""){
       LOAD DATA
 =========================================*/
 
-const customers =
-    JSON.parse(localStorage.getItem(CUSTOMER_KEY)) || [];
+/*=========================================
+      CUSTOMER DATA
+=========================================*/
+
+const customer =
+    JSON.parse(localStorage.getItem("customerData"));
 
 const jobs =
     JSON.parse(localStorage.getItem(JOB_KEY)) || [];
@@ -72,10 +76,7 @@ const jobs =
       FIND CUSTOMER
 =========================================*/
 
-const customer =
-    customers.find(c =>
-        String(c.mobile).trim() === currentCustomerMobile
-    );
+
 
 /*=========================================
       LOGIN CHECK
