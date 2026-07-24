@@ -606,16 +606,12 @@
     display: block;
 }
 
-@media (max-width: 992px) {
-    .cards {
-        grid-template-columns: repeat(2,1fr);
-    }
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 @media (max-width: 768px) {
+    .dashboard {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
     .sidebar {
         left: -260px;
     }
@@ -625,15 +621,17 @@
     }
 
     .main-content {
-        width: 100%;
-        margin-left: 0;
-        padding: 18px;
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 15px !important;
+        box-sizing: border-box;
     }
 
     .topbar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 15px;
+        width: 100%;
     }
 
     .mobile-menu-btn {
@@ -642,32 +640,41 @@
 
     .header-center {
         width: 100%;
-        justify-content: flex-start;
     }
 
     .search-box-new {
-        width: 100%;
+        width: 100% !important;
     }
 
     .header-right {
         width: 100%;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
     .admin-profile {
-        width: 100%;
-        min-width: auto;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
     }
 
     .cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        width: 100%;
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        width: 100%;
     }
 
-    .table-responsive {
+    .dashboard-card {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .table-responsive, .table-card {
+        width: 100%;
         overflow-x: auto;
+        box-sizing: border-box;
     }
 }
