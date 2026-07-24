@@ -164,17 +164,19 @@ saveJobBtn.addEventListener("click", async () => {
 
         timeline: [
 
-            {
+        {
 
-                status: "Item Received",
+            status: "Item Received",
 
-                date: now.toLocaleString("en-GB")
+            date: now.toLocaleString("en-GB")
 
-            }
+        }
 
-        ]
+    ],
 
-    };
+    warrantyProducts: []
+
+};
 
     jobs.push(newJob);
 
@@ -565,6 +567,32 @@ function editJob(jobId){
     document.getElementById("editProblem").value = job.problem || "";
 
     document.getElementById("editRemarks").value = job.remarks || "";
+
+    /*=========================================
+      LOAD WARRANTY PRODUCTS
+=========================================*/
+
+partCount = 0;
+
+const container = document.getElementById("partsContainer");
+
+container.innerHTML = `
+<div class="text-muted">
+    No Parts Added
+</div>
+`;
+
+if(job.warrantyProducts && job.warrantyProducts.length){
+
+    container.innerHTML = "";
+
+    job.warrantyProducts.forEach(part=>{
+
+        addPartRow(part);
+
+    });
+
+}
 
     new bootstrap.Modal(
         document.getElementById("editJobModal")
