@@ -605,7 +605,6 @@
 .sidebar-overlay.show {
     display: block;
 }
-
 @media (max-width: 768px) {
     .dashboard {
         width: 100%;
@@ -625,6 +624,7 @@
         margin-left: 0 !important;
         padding: 15px !important;
         box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .topbar {
@@ -644,6 +644,7 @@
 
     .search-box-new {
         width: 100% !important;
+        box-sizing: border-box;
     }
 
     .header-right {
@@ -664,17 +665,22 @@
 
     .dashboard-grid {
         grid-template-columns: 1fr !important;
-        width: 100%;
-    }
-
-    .dashboard-card {
-        width: 100%;
+        width: 100% !important;
+        gap: 20px;
         box-sizing: border-box;
     }
 
-    .table-responsive, .table-card {
-        width: 100%;
-        overflow-x: auto;
+    .dashboard-card, .table-card {
+        width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box;
+        overflow-x: auto !important; /* টেবিল বা কার্ডের ভেতরের অংশ স্ক্রল করার সুবিধা দিবে */
+        padding: 15px;
+    }
+
+    /* টেবিল যেন ফ্রেমের ভেতরে থাকে এবং ডান দিক দিয়ে কেটে না যায় */
+    .dashboard-card table, .table {
+        width: 100% !important;
+        min-width: 500px; 
     }
 }
