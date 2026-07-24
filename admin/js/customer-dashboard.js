@@ -9,6 +9,12 @@ import {
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /*=========================================
+      GLOBAL JOBS ARRAY
+=========================================*/
+
+let jobs = [];
+
+/*=========================================
       LOGIN GUARD
 =========================================*/
 
@@ -97,7 +103,7 @@ async function loadDashboard() {
 
     const snapshot = await getDocs(collection(db, "jobs"));
 
-    const jobs = [];
+    jobs = [];
 
     snapshot.forEach(doc => {
         jobs.push(doc.data());
