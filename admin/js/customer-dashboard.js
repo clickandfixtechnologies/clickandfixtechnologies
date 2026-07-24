@@ -2,7 +2,9 @@ import { db } from "./firebase.js";
 
 import {
     doc,
-    updateDoc
+    updateDoc,
+    getDocs,
+    collection
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -34,7 +36,7 @@ if(!customerSession){
 
 const CUSTOMER_KEY = "cf_customers";
 
-const JOB_KEY = "cf_jobs";
+
 
 /*=========================================
       CUSTOMER SESSION
@@ -69,8 +71,6 @@ if(currentCustomerMobile === ""){
 const customer =
     JSON.parse(localStorage.getItem("customerData"));
 
-const jobs =
-    JSON.parse(localStorage.getItem(JOB_KEY)) || [];
 
 /*=========================================
       FIND CUSTOMER
@@ -91,6 +91,26 @@ if(!customer){
 
 }
 
+loadDashboard();
+
+async function loadDashboard() {
+
+    const snapshot = await getDocs(collection(db, "jobs"));
+
+    const jobs = [];
+
+    snapshot.forEach(doc => {
+        jobs.push(doc.data());
+    });
+
+    const myJobs = jobs.filter(job =>
+        job.customerId === customer.customerId
+    );
+
+    loadCustomerDashboard(myJobs);
+
+}
+
 /*=========================================
       START
 =========================================*/
@@ -101,7 +121,7 @@ loadDashboard();
       LOAD DASHBOARD
 =========================================*/
 
-function loadDashboard(){
+function loadCustomerDashboard(myJobs){
 
     /*=========================
         Welcome
@@ -179,10 +199,7 @@ document.getElementById("profile2CustomerStatus").innerHTML = `
     Customer Jobs
 =========================*/
 
-const myJobs =
-    jobs.filter(job =>
-        job.customerId === customer.customerId
-    );
+
 
 /*=========================
     Customer Since
