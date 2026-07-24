@@ -25,6 +25,8 @@
     background: linear-gradient(180deg,#4f8df7,#2f6fdd);
     color: #fff;
     box-shadow: 8px 0 30px rgba(13,110,253,.18);
+    z-index: 999;
+    transition: .35s;
 }
 
 .logo {
@@ -576,7 +578,7 @@
 }
 
 /*=========================================
-      MOBILE ADMIN (CRM v1.0) & RESPONSIVE
+      MOBILE ADMIN & RESPONSIVE FIX
 =========================================*/
 .mobile-menu-btn {
     display: none;
@@ -615,14 +617,7 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        display: flex !important;
-        position: fixed;
-        left: -270px;
-        top: 0;
-        width: 260px;
-        height: 100vh;
-        z-index: 999;
-        transition: .35s;
+        left: -260px;
     }
 
     .sidebar.show {
@@ -636,16 +631,18 @@
     }
 
     .topbar {
+        flex-direction: column;
         align-items: flex-start;
+        gap: 15px;
     }
 
     .mobile-menu-btn {
         display: flex;
-        margin-bottom: 15px;
     }
 
     .header-center {
         width: 100%;
+        justify-content: flex-start;
     }
 
     .search-box-new {
@@ -659,7 +656,7 @@
 
     .admin-profile {
         width: 100%;
-        min-width: unset;
+        min-width: auto;
     }
 
     .cards {
@@ -672,15 +669,5 @@
 
     .table-responsive {
         overflow-x: auto;
-    }
-
-    .sidebar.show .logo h3,
-    .sidebar.show .logo span,
-    .sidebar.show .logo small {
-        display: block;
-    }
-
-    .sidebar.show .sidebar-menu li a span {
-        display: inline;
     }
 }
