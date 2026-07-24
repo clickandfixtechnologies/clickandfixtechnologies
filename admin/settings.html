@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Settings | Click & Fix Technologies</title>
+
+    <meta name="robots" content="noindex,nofollow">
+
+    <!-- Bootstrap -->
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- CSS -->
+    <link href="css/admin.css" rel="stylesheet">
+
+    <link href="css/dashboard.css" rel="stylesheet">
+
+    <link href="css/settings.css" rel="stylesheet">
+
+</head>
+
+<!-- Restore Confirmation Modal -->
+
+<div
+    class="modal fade"
+    id="restoreModal"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Restore Database
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="alert alert-warning mb-0">
+
+                    <strong>Warning!</strong>
+
+                    <br><br>
+
+                    Current database will be replaced.
+
+                    <br>
+
+                    An automatic backup will be created
+                    before restore starts.
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    id="confirmRestoreBtn"
+                    class="btn btn-warning">
+
+                    Continue Restore
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h3>Click & Fix</h3>
+
+            <span>Technologies</span>
+
+            <small>Admin Panel</small>
+
+        </div>
+
+        <ul class="sidebar-menu">
+
+            <li>
+
+                <a href="dashboard.html">
+
+                    <i class="bi bi-grid-1x2-fill"></i>
+
+                    <span>Dashboard</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="customers.html">
+
+                    <i class="bi bi-people-fill"></i>
+
+                    <span>Customers</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="jobs.html">
+
+                    <i class="bi bi-tools"></i>
+
+                    <span>Jobs</span>
+
+                </a>
+
+            </li>
+
+            <li class="active">
+
+                <a href="settings.html">
+
+                    <i class="bi bi-gear-fill"></i>
+
+                    <span>Settings</span>
+
+                </a>
+
+            </li>
+
+            <li class="logout">
+
+                <a href="index.html">
+
+                    <i class="bi bi-box-arrow-right"></i>
+
+                    <span>Logout</span>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+
+    <!-- Main Content -->
+
+    <main class="main-content">
+
+        <div class="topbar">
+
+            <div class="header-left">
+
+                <h2>Settings</h2>
+
+                <small>
+
+                    Database Backup & System Management
+
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Database Management -->
+
+        <div class="settings-card">
+
+            <div class="settings-title">
+
+                <i class="bi bi-database-fill-gear"></i>
+
+                <h4>Database Management</h4>
+
+            </div>
+
+
+
+            <div class="settings-actions">
+
+                <button
+                    id="backupBtn"
+                    class="btn btn-primary">
+
+                    <i class="bi bi-cloud-arrow-down-fill"></i>
+
+                    Backup Now
+
+                </button>
+
+
+
+                <button
+                    id="restoreBtn"
+                    class="btn btn-warning">
+
+                    <i class="bi bi-arrow-repeat"></i>
+
+                    Restore Backup
+
+                </button>
+
+
+
+                <button
+                    id="customerExcelBtn"
+                    class="btn btn-success">
+
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    Download Customers (Excel)
+
+                </button>
+
+
+
+                <button
+                    id="jobExcelBtn"
+                    class="btn btn-success">
+
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    Download Jobs (Excel)
+
+                </button>
+
+            </div>
+
+
+
+            <hr>
+
+
+
+            <div class="database-info">
+
+                <div class="info-box">
+
+                    <small>Last Backup</small>
+
+                    <h6 id="lastBackup">
+
+                        Never
+
+                    </h6>
+
+                </div>
+
+
+
+                <div class="info-box">
+
+                    <small>Database Status</small>
+
+                    <h6 id="databaseStatus">
+
+                        <span class="text-success">
+
+                            ● Connected
+
+                        </span>
+
+                    </h6>
+
+                </div>
+
+            </div>
+
+                </div>
+
+    </main>
+
+    <!-- Hidden Restore File Input -->
+
+    <input
+        type="file"
+        id="restoreFile"
+        accept=".json"
+        hidden>
+
+</div>
+
+<script type="module" src="js/settings.js"></script>
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
