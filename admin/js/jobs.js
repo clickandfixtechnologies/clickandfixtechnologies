@@ -182,51 +182,27 @@ saveJobBtn.addEventListener("click", async () => {
 
     /*=========================================
         Update Customer Job Count
-=========================================*/
+    =========================================*/
 
-selectedCustomer.jobs = (selectedCustomer.jobs || 0) + 1;
+    selectedCustomer.jobs = (selectedCustomer.jobs || 0) + 1;
 
-/*=========================================
-        Save Local Storage
-=========================================*/
+    localStorage.setItem(
+        CUSTOMER_KEY,
+        JSON.stringify(customers)
+    );
 
-localStorage.setItem(
-    CUSTOMER_KEY,
-    JSON.stringify(customers)
-);
-
-localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(jobs)
-);
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(jobs)
+    );
 
 try {
-
-    /*=========================================
-            Save Job
-    =========================================*/
 
     await setDoc(
 
         doc(db, "jobs", newJob.jobId),
 
         newJob
-
-    );
-
-    /*=========================================
-            Update Customer Job Count
-    =========================================*/
-
-    await updateDoc(
-
-        doc(db, "customers", selectedCustomer.customerId),
-
-        {
-
-            jobs: selectedCustomer.jobs
-
-        }
 
     );
 
@@ -239,10 +215,9 @@ catch (error) {
     console.error(error);
 
 }
+    bootstrap.Modal.getInstance(newJobModal).hide();
 
-bootstrap.Modal.getInstance(newJobModal).hide();
-
-loadJobs();
+    loadJobs();
 
 });
 
@@ -1151,112 +1126,51 @@ document
 .getElementById("confirmDeleteBtn")
 .addEventListener("click", async () => {
 
-    if (!selectedDeleteJob) return;
+
+    if(!selectedDeleteJob) return;
+
 
     let jobs = JSON.parse(
         localStorage.getItem(STORAGE_KEY)
     ) || [];
 
-    let customers = JSON.parse(
-        localStorage.getItem(CUSTOMER_KEY)
-    ) || [];
 
-    /*=========================================
-            Find Deleted Job
-    =========================================*/
-
-    const deletedJob = jobs.find(
-        job => job.jobId === selectedDeleteJob
+    jobs = jobs.filter(job =>
+        job.jobId !== selectedDeleteJob
     );
 
-    /*=========================================
-            Decrease Customer Job Count
-    =========================================*/
-
-    if (deletedJob) {
-
-        const customer = customers.find(
-            c => c.customerId === deletedJob.customerId
-        );
-
-        if (customer) {
-
-            customer.jobs = Math.max(
-                (customer.jobs || 0) - 1,
-                0
-            );
-
-            try {
-
-                await updateDoc(
-
-                    doc(
-                        db,
-                        "customers",
-                        customer.customerId
-                    ),
-
-                    {
-                        jobs: customer.jobs
-                    }
-
-                );
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-            }
-
-        }
-
-    }
-
-    /*=========================================
-            Delete Job
-    =========================================*/
-
-    jobs = jobs.filter(
-        job => job.jobId !== selectedDeleteJob
-    );
 
     localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(jobs)
+    STORAGE_KEY,
+    JSON.stringify(jobs)
+);
+
+try {
+
+    await deleteDoc(
+
+        doc(db, "jobs", selectedDeleteJob)
+
     );
 
-    localStorage.setItem(
-        CUSTOMER_KEY,
-        JSON.stringify(customers)
-    );
+    console.log("Job Deleted");
 
-    try {
+}
 
-        await deleteDoc(
+catch (error) {
 
-            doc(db, "jobs", selectedDeleteJob)
+    console.error(error);
 
-        );
+}
 
-        console.log("Job Deleted");
+selectedDeleteJob = null;
 
-    }
+bootstrap.Modal.getInstance(
+    document.getElementById("deleteJobModal")
+).hide();
 
-    catch (error) {
+loadJobs();
 
-        console.error(error);
-
-    }
-
-    selectedDeleteJob = null;
-
-    bootstrap.Modal.getInstance(
-        document.getElementById("deleteJobModal")
-    ).hide();
-
-    loadJobs();
 
 });
 
