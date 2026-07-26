@@ -222,7 +222,6 @@ function renderCustomers(list = customers) {
 
 <td>${customer.address || "-"}</td>
 
-<td>${customer.jobs || 0}</td>
 
 <td class="text-center">
 
