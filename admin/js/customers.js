@@ -665,6 +665,13 @@ function viewCustomer(customerId) {
             job.customerId === customer.customerId
         );
 
+        /*=========================================
+        Total Repair Jobs
+=========================================*/
+
+document.getElementById("totalRepairJobs").textContent =
+    customerJobs.length;
+
     const historyBody =
         document.getElementById("customerJobHistoryBody");
 
