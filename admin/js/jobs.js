@@ -1219,13 +1219,13 @@ function printJobReport(){
     `;
 
 
-    window.print();
-
+   setTimeout(() => {
 
     document.body.innerHTML = originalContent;
 
-
     location.reload();
+
+}, 2000);
 
 
 }
