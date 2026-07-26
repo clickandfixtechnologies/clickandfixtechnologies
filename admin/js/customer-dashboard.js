@@ -1019,7 +1019,8 @@ const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
 
 if(mobileMenuBtn){
-    mobileMenuBtn.onclick = ()=>{
+    mobileMenuBtn.onclick = (e)=>{
+        e.stopPropagation();
         sidebar.classList.add("show");
         sidebarOverlay.classList.add("show");
     };
@@ -1049,18 +1050,6 @@ window.addEventListener("scroll", function() {
         }
     }
 }, false);
-
-if(sidebarOverlay){
-
-    sidebarOverlay.onclick = ()=>{
-
-        sidebar.classList.remove("show");
-
-        sidebarOverlay.classList.remove("show");
-
-    };
-
-}
 
 /*=========================================
       Generate Strong Password
