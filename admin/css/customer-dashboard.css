@@ -690,6 +690,7 @@ footer p{
         flex-direction:column;
         align-items:flex-start;
         gap:12px;
+        padding-top: 25px; /* মোবাইল ভিউতে ওপরের দিকে একটু জায়গা দেওয়ার জন্য */
     }
 }
 
@@ -727,20 +728,20 @@ footer p{
 }
 
 /* MOBILE MENU & OVERLAY */
+/* MOBILE MENU & OVERLAY */
 .mobile-menu-btn{
     display:none;
-    position:fixed;
-    top:18px;
-    left:18px;
-    width:50px;
-    height:50px;
+    position: relative; /* fixed থেকে relative বা margin দিয়ে টপবারের বাইরে করা হলো */
+    width:45px;
+    height:45px;
     border:none;
-    border-radius:14px;
+    border-radius:12px;
     background:linear-gradient(135deg, #7c3aed, #0284c7);
     color:#fff;
-    font-size:26px;
+    font-size:22px;
     z-index:1200;
-    box-shadow:0 10px 25px rgba(0,0,0,.18);
+    box-shadow:0 5px 15px rgba(0,0,0,.18);
+    margin-bottom: 12px; /* টপবারের লেখার সাথে দূরত্ব বজায় রাখতে */
 }
 
 .sidebar-overlay{

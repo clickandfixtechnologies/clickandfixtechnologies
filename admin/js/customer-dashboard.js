@@ -892,7 +892,7 @@ Expired
 }
 
 /*=========================================
-        CUSTOMER LOGOUT
+        CUSTOMER LOGOUT (SweetAlert Integration)
 =========================================*/
 
 const logoutBtn =
@@ -904,16 +904,23 @@ if(logoutBtn){
 
         e.preventDefault();
 
-        if(confirm("Are you sure you want to logout?")){
-
-            localStorage.removeItem("customerLogin");
-
-            localStorage.removeItem("customerData");
-
-            window.location.href =
-            "customer-login.html";
-
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to logout from your account?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#7c3aed',
+            cancelButtonColor: '#f87171',
+            confirmButtonText: 'Yes, Logout!',
+            background: '#0f172a',
+            color: '#ffffff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem("customerLogin");
+                localStorage.removeItem("customerData");
+                window.location.href = "customer-login.html";
+            }
+        });
 
     });
 
