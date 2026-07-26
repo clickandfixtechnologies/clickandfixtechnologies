@@ -665,6 +665,20 @@ function viewCustomer(customerId) {
             job.customerId === customer.customerId
         );
 
+/*========== DEBUG START ==========*/
+
+jobs.forEach(job => {
+
+    console.log("---------------");
+
+    console.log("Job ID :", job.jobId);
+
+    console.log("Job Customer ID :", job.customerId);
+
+    console.log("Job Customer Name :", job.customer);
+
+});
+
         /*=========================================
         Total Repair Jobs
 =========================================*/
