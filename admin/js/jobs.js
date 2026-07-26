@@ -1225,7 +1225,7 @@ function printJobReport(){
 
     location.reload();
 
-}, 2000);
+}, 1500);
 
 
 }
