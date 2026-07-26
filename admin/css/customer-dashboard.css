@@ -727,55 +727,81 @@ footer p{
     }
 }
 
-/* MOBILE MENU & OVERLAY */
-/* MOBILE MENU & OVERLAY */
-.mobile-menu-btn{
-    display:none;
-    position: relative; /* fixed থেকে relative বা margin দিয়ে টপবারের বাইরে করা হলো */
-    width:45px;
-    height:45px;
-    border:none;
-    border-radius:12px;
-    background:linear-gradient(135deg, #7c3aed, #0284c7);
-    color:#fff;
-    font-size:22px;
-    z-index:1200;
-    box-shadow:0 5px 15px rgba(0,0,0,.18);
-    margin-bottom: 12px; /* টপবারের লেখার সাথে দূরত্ব বজায় রাখতে */
+/*=========================================
+      MOBILE MENU & GLASS BUTTON ANIMATION
+=========================================*/
+
+.mobile-menu-btn {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08); /* Glass effect background */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    color: #fff;
+    font-size: 24px;
+    z-index: 1200;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.sidebar-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    opacity:0;
-    visibility:hidden;
-    transition:.3s;
-    z-index:999;
+.mobile-menu-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(192, 132, 252, 0.5);
+    transform: scale(1.05);
 }
 
-.sidebar-overlay.show{
-    opacity:1;
-    visibility:visible;
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.35s ease;
+    z-index: 998;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media(max-width:992px){
+    .main-content{
+        margin-left:0;
+        padding:18px;
+    }
+    .sidebar{
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 260px;
+        height: 100vh;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.6);
+    }
+    .sidebar.show{
+        left: 0;
+        transform: translateX(0);
+    }
+    .topbar{
+        flex-direction:row;
+        align-items:center;
+        justify-content: space-between;
+    }
 }
 
 @media(max-width:768px){
     .mobile-menu-btn{
-        display:flex;
-        align-items:center;
-        justify-content:center;
-    }
-    .sidebar{
-        position:fixed;
-        left:-270px;
-        top:0;
-        width:260px;
-        height:100vh;
-        transition:.35s;
-        z-index:1000;
-    }
-    .sidebar.show{
-        left:0;
+        display:flex; /* মোবাইল ডিভাইসে শো করবে */
     }
 }
 

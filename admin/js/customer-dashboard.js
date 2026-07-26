@@ -1358,6 +1358,33 @@ localStorage.setItem(
 
 });
 
+/*=========================================
+      SCROLL FADE-OUT EFFECT FOR MENU BUTTON
+=========================================*/
+
+let lastScrollTop = 0;
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+
+if (mobileMenuBtn) {
+    window.addEventListener("scroll", function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 50) {
+            // স্ক্রল করে নিচে নামলে বাটনটি ছোট হয়ে ভ্যানিশ হবে
+            mobileMenuBtn.style.opacity = "0";
+            mobileMenuBtn.style.transform = "scale(0.8)";
+            mobileMenuBtn.style.visibility = "hidden";
+            mobileMenuBtn.style.transition = "all 0.3s ease";
+        } else {
+            // আবার ওপরে ফিরে আসলে বাটনটি দৃশ্যমান হবে
+            mobileMenuBtn.style.opacity = "1";
+            mobileMenuBtn.style.transform = "scale(1)";
+            mobileMenuBtn.style.visibility = "visible";
+        }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
+}
+
 // File er ekdom seshe (ba viewRepair function er baire niche) ei line ti add korun:
 window.viewRepair = viewRepair;
 
