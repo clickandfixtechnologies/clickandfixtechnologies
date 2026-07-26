@@ -214,15 +214,17 @@
         <h1>Computer Repair | CCTV Installation | IT Solutions</h1>
         <p>Professional Computer Repair, Laptop Repair, CCTV Installation, Networking, Data Recovery and Annual Maintenance Services.</p>
         
-        <!-- Buttons Section -->
-        <div class="d-flex align-items-center mt-4">
-  <a href="tel:+917098889990" class="btn-call">
-    <i class="bi bi-telephone-fill"></i> Call Now
-  </a>
-  <a href="#services" class="btn-services">
-    <i class="bi bi-tools"></i> Our Services
-  </a>
-</div>
+        <!-- Buttons Section (Updated: Our Services replaced with Book Now modal trigger) -->
+  <div class="d-flex align-items-center mt-4">
+    <a href="tel:+917098889990" class="btn-call me-3">
+      <i class="bi bi-telephone-fill"></i> Call Now
+    </a>
+    
+    <!-- Book Now Button with Inspection Modal Trigger -->
+    <button type="button" class="btn-services" data-bs-toggle="modal" data-bs-target="#inspectionModal" style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+      <i class="bi bi-calendar-check"></i> Book Now
+    </button>
+  </div>
 
         <!-- Trusted Badges Section (আপডেট করা) -->
         <div class="mt-4 text-white" style="font-size: 15px; opacity: 0.9;">
@@ -347,9 +349,7 @@
         <p>We help individuals and businesses stay connected and secure with expert computer services, CCTV surveillance, networking solutions, and dedicated technical support. </p>
         
         <!-- Button trigger modal -->
-        <button type="button" class="read-more" data-bs-toggle="modal" data-bs-target="#inspectionModal" style="border: none; background: none; cursor: pointer; color: var(--accent-color); font-weight: 600;">
-          <span>🛠️ Book Your Free Inspection</span> <i class="bi bi-arrow-right"></i>
-        </button>
+        
       </div>
 
     </div>

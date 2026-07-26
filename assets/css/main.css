@@ -4537,3 +4537,24 @@ section,
   }
 
 }
+
+/* Book Now Button Styling */
+.btn-services {
+    background: linear-gradient(135deg, #7c3aed, #0284c7);
+    color: #ffffff !important;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
+}
+
+/* Book Now Hover Effect */
+.btn-services:hover {
+    background: linear-gradient(135deg, #6d28d9, #0369a1);
+    color: #ffffff !important;
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
+}
+
