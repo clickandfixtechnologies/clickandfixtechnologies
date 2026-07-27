@@ -116,13 +116,6 @@ async function loadDashboard() {
     loadCustomerDashboard(myJobs);
 
 }
-
-/*=========================================
-      START
-=========================================*/
-
-loadDashboard();
-
 /*=========================================
       LOAD DASHBOARD
 =========================================*/
@@ -1289,14 +1282,8 @@ document
 
     }
 
-    /*=========================
+ /*=========================
       Update Password
-=========================*/
-
-customer.password = newPassword;
-
-/*=========================
-      Firestore Update
 =========================*/
 
 try{
@@ -1315,6 +1302,15 @@ try{
 
     );
 
+    // Update Local Customer Object
+    customer.password = newPassword;
+
+    // Update Logged-in Customer Data
+    localStorage.setItem(
+        "customerData",
+        JSON.stringify(customer)
+    );
+
 }
 catch(error){
 
@@ -1330,12 +1326,11 @@ catch(error){
       LocalStorage Update
 =========================*/
 
+customer.password = newPassword;
+
 localStorage.setItem(
-
-    CUSTOMER_KEY,
-
-    JSON.stringify(customers)
-
+    "customerData",
+    JSON.stringify(customer)
 );
 
     /*=========================
