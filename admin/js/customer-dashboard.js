@@ -1324,12 +1324,13 @@ catch(error){
       LocalStorage Update
 =========================*/
 
+// Update current customer object
+customer.password = newPassword;
+
+// Save updated customer session
 localStorage.setItem(
-
-    CUSTOMER_KEY,
-
-    JSON.stringify(customers)
-
+    "customerData",
+    JSON.stringify(customer)
 );
 
     /*=========================
@@ -1352,7 +1353,14 @@ localStorage.setItem(
         )
         .hide();
 
-    alert("Password Updated Successfully.");
+    Swal.fire({
+    icon: "success",
+    title: "Password Updated",
+    text: "Your password has been updated successfully.",
+    confirmButtonColor: "#7c3aed",
+    background: "#0f172a",
+    color: "#ffffff"
+});
 
 });
 
