@@ -1316,7 +1316,7 @@ catch(error){
 
     console.error(error);
 
-    alert(error.code + "\n\n" + error.message);
+    alert("Failed to update password.");
 
     return;
 
