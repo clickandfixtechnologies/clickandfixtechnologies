@@ -1,0 +1,487 @@
+/*=========================================
+        Click & Fix Technologies
+        Secure Payment Portal
+=========================================*/
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+body{
+
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+
+    background:#f5f7fb;
+
+    color:#222;
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px 20px;
+
+}
+
+.payment-container{
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+.payment-card{
+
+    width:100%;
+
+    max-width:560px;
+
+    background:#ffffff;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.10);
+
+}
+
+/*=========================================
+            Header
+=========================================*/
+
+.payment-header{
+
+    background:#0d6efd;
+
+    color:#fff;
+
+    padding:35px 30px;
+
+    text-align:center;
+
+}
+
+.payment-header h1{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+.payment-header p{
+
+    opacity:.9;
+
+    font-size:15px;
+
+}
+
+/*=========================================
+        Sections
+=========================================*/
+
+.invoice-section,
+
+.upi-section,
+
+.qr-section,
+
+.button-section,
+
+.payment-methods,
+
+.help-section,
+
+.instruction-section{
+
+    padding:28px 30px;
+
+    border-bottom:1px solid #ececec;
+
+}
+
+/*=========================================
+        Invoice Box
+=========================================*/
+
+.row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:12px 0;
+
+}
+
+.row:not(:last-child){
+
+    border-bottom:1px dashed #ddd;
+
+}
+
+.row span{
+
+    color:#666;
+
+    font-size:15px;
+
+}
+
+.row strong{
+
+    color:#111;
+
+    font-size:16px;
+
+    font-weight:700;
+
+}
+
+/*=========================================
+            UPI
+=========================================*/
+
+.upi-section h2{
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    color:#0d6efd;
+
+    font-size:22px;
+
+}
+
+.upi-box{
+
+    display:flex;
+
+    gap:12px;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+}
+
+#upiId{
+
+    background:#f4f4f4;
+
+    padding:12px 18px;
+
+    border-radius:8px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    letter-spacing:.3px;
+
+}
+
+#copyUpi{
+
+    background:#198754;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    padding:12px 18px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+#copyUpi:hover{
+
+    background:#157347;
+
+}
+
+/*=========================================
+            QR
+=========================================*/
+
+.qr-section{
+
+    text-align:center;
+
+}
+
+.qr-section img{
+
+    width:220px;
+
+    max-width:100%;
+
+    border-radius:12px;
+
+    border:1px solid #ddd;
+
+    padding:8px;
+
+    background:#fff;
+
+}
+
+.qr-section p{
+
+    margin-top:15px;
+
+    color:#666;
+
+}
+
+/*=========================================
+        PAY NOW Button
+=========================================*/
+
+#payNowButton{
+
+    width:100%;
+
+    border:none;
+
+    cursor:pointer;
+
+    background:#0d6efd;
+
+    color:#fff;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    padding:16px;
+
+    border-radius:10px;
+
+    transition:.3s;
+
+}
+
+#payNowButton:hover{
+
+    background:#0b5ed7;
+
+}
+
+/*=========================================
+        Payment Methods
+=========================================*/
+
+.payment-methods{
+
+    text-align:center;
+
+    background:#f8f9fa;
+
+}
+
+.payment-methods p{
+
+    color:#444;
+
+    line-height:1.8;
+
+    font-size:15px;
+
+}
+
+.payment-methods strong{
+
+    color:#0d6efd;
+
+}
+
+/*=========================================
+        Help
+=========================================*/
+
+.help-section{
+
+    text-align:center;
+
+}
+
+.help-section h3{
+
+    color:#0d6efd;
+
+    margin-bottom:18px;
+
+    font-size:22px;
+
+}
+
+.help-section p{
+
+    margin:10px 0;
+
+}
+
+.help-section a{
+
+    text-decoration:none;
+
+    color:#198754;
+
+    font-weight:600;
+
+}
+
+.help-section a:hover{
+
+    text-decoration:underline;
+
+}
+
+/*=========================================
+        Instruction
+=========================================*/
+
+.instruction-section{
+
+    background:#fff8e6;
+
+    text-align:center;
+
+}
+
+.instruction-section p{
+
+    color:#8a6d3b;
+
+    line-height:1.7;
+
+    font-size:15px;
+
+}
+
+/*=========================================
+        Footer
+=========================================*/
+
+footer{
+
+    background:#f5f5f5;
+
+    padding:20px;
+
+    text-align:center;
+
+    color:#777;
+
+    font-size:14px;
+
+}
+
+/*=========================================
+        Mobile
+=========================================*/
+
+@media(max-width:600px){
+
+.payment-card{
+
+    border-radius:10px;
+
+}
+
+.payment-header{
+
+    padding:28px 20px;
+
+}
+
+.payment-header h1{
+
+    font-size:24px;
+
+}
+
+.invoice-section,
+
+.upi-section,
+
+.qr-section,
+
+.button-section,
+
+.payment-methods,
+
+.help-section,
+
+.instruction-section{
+
+    padding:22px;
+
+}
+
+.row{
+
+    flex-direction:column;
+
+    gap:8px;
+
+    text-align:center;
+
+}
+
+#payNowButton{
+
+    font-size:18px;
+
+}
+
+.qr-section img{
+
+    width:180px;
+
+}
+
+}
+
+.payment-status{
+
+    text-align:center;
+
+    color:#198754;
+
+    font-weight:600;
+
+    margin-top:15px;
+
+}
+
