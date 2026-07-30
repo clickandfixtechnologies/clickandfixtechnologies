@@ -159,31 +159,33 @@ function isMobile(){
 
 document
 .getElementById("payNowButton")
-.addEventListener("click",()=>{
+.addEventListener("click", () => {
 
-    if(isMobile()){
+    const upiLink = createUpiLink();
 
-        window.location.href =
-            createUpiLink();
+    if (isMobile()) {
 
-        setTimeout(()=>{
+        const a = document.createElement("a");
 
-            window.location.href =
-                RAZORPAY_LINK;
+        a.href = upiLink;
 
-        },2000);
+        a.style.display = "none";
 
-    }
+        document.body.appendChild(a);
 
-    else{
+        a.click();
 
-        window.open(
+        document.body.removeChild(a);
 
-            RAZORPAY_LINK,
+        setTimeout(() => {
 
-            "_blank"
+            window.location.href = RAZORPAY_LINK;
 
-        );
+        }, 2500);
+
+    } else {
+
+        window.open(RAZORPAY_LINK, "_blank");
 
     }
 
