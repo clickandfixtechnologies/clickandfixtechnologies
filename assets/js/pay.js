@@ -27,8 +27,18 @@ const customer =
 const invoice =
     params.get("invoice") || "--";
 
-const amount =
-    params.get("amount") || "";
+const rawAmount = params.get("amount") || "";
+
+const amount = rawAmount
+    .replace(/[₹,\s]/g, "")
+    .trim();
+
+const formattedAmount = amount
+    ? Number(amount).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })
+    : "";
 
 
 
@@ -39,8 +49,8 @@ document.getElementById("invoiceNo").textContent =
     invoice;
 
 document.getElementById("amountDue").textContent =
-    amount
-        ? `₹${Number(amount).toLocaleString("en-IN")}`
+    formattedAmount
+        ? `₹${formattedAmount}`
         : "Custom Amount";
 
 
