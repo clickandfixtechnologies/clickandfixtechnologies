@@ -361,7 +361,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="inspectionModalLabel">Book Your Free Inspection</h5>
+        <h5 class="modal-title" id="inspectionModalLabel">Book Your Inspection</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -398,9 +398,31 @@
           </div>
           
           <div class="mb-2">
-            <label class="form-label">Service Address *</label>
-            <textarea name="address" class="form-control" rows="2" required></textarea>
-          </div>
+
+    <label class="form-label d-flex justify-content-between align-items-center">
+
+        Service Address *
+
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            id="getLocation">
+
+            <i class="bi bi-geo-alt-fill"></i>
+            Use Current Location
+
+        </button>
+
+    </label>
+
+    <textarea
+        id="serviceAddress"
+        name="address"
+        class="form-control"
+        rows="2"
+        required></textarea>
+
+</div>
           
           <div class="row">
             <div class="col-md-6 mb-2">
@@ -418,7 +440,7 @@
             <textarea name="description" class="form-control" rows="2"></textarea>
           </div>
           
-          <button type="submit" class="btn btn-primary w-100">Book Free Inspection</button>
+          <button type="submit" class="btn btn-primary w-100">Book Your Inspection</button>
           
           <p class="text-muted mt-2" style="font-size: 0.8rem; text-align: center;">
             ✅ Our team will contact you within 15–30 minutes to confirm your appointment.

@@ -261,6 +261,50 @@ if(loginBtn && loginMenu){
 
     });
 
+    /*=========================================
+      USE CURRENT LOCATION
+=========================================*/
+
+const getLocationBtn = document.getElementById("getLocation");
+
+if(getLocationBtn){
+
+    getLocationBtn.addEventListener("click", () => {
+
+        if(!navigator.geolocation){
+
+            alert("Geolocation is not supported by your browser.");
+
+            return;
+
+        }
+
+        navigator.geolocation.getCurrentPosition(
+
+            async(position)=>{
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                alert(
+                    "Latitude : " + lat +
+                    "\nLongitude : " + lng
+                );
+
+            },
+
+            ()=>{
+
+                alert("Location permission denied.");
+
+            }
+
+        );
+
+    });
+
+}
+
     /*=========================
           Close Outside Click
     =========================*/
