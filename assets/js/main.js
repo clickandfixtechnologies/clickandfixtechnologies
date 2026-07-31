@@ -267,11 +267,11 @@ if(loginBtn && loginMenu){
 
 const getLocationBtn = document.getElementById("getLocation");
 
-if(getLocationBtn){
+if (getLocationBtn) {
 
     getLocationBtn.addEventListener("click", () => {
 
-        if(!navigator.geolocation){
+        if (!navigator.geolocation) {
 
             alert("Geolocation is not supported by your browser.");
 
@@ -279,24 +279,71 @@ if(getLocationBtn){
 
         }
 
+        // Change Button Text
+        getLocationBtn.disabled = true;
+        getLocationBtn.innerHTML =
+        '<i class="bi bi-geo-alt-fill"></i> Detecting...';
+
         navigator.geolocation.getCurrentPosition(
 
-            async(position)=>{
+            (position) => {
 
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
 
-                alert(
-                    "Latitude : " + lat +
-                    "\nLongitude : " + lng
-                );
+                // Save Latitude & Longitude
+                document.getElementById("latitude").value = lat;
+                document.getElementById("longitude").value = lng;
+
+                // Create Google Maps Link
+                const mapLink =
+                `https://www.google.com/maps?q=${lat},${lng}`;
+
+                document.getElementById("mapLink").value = mapLink;
+
+                
+
+                // Restore Button
+                getLocationBtn.disabled = false;
+                getLocationBtn.innerHTML =
+                '<i class="bi bi-geo-alt-fill"></i> Use Current Location';
+
+                alert("Location captured successfully.");
 
             },
 
-            ()=>{
+            (error) => {
 
-                alert("Location permission denied.");
+                // Restore Button
+                getLocationBtn.disabled = false;
+                getLocationBtn.innerHTML =
+                '<i class="bi bi-geo-alt-fill"></i> Use Current Location';
 
+                switch (error.code) {
+
+                    case error.PERMISSION_DENIED:
+                        alert("Location permission denied.");
+                        break;
+
+                    case error.POSITION_UNAVAILABLE:
+                        alert("Location information is unavailable.");
+                        break;
+
+                    case error.TIMEOUT:
+                        alert("Location request timed out.");
+                        break;
+
+                    default:
+                        alert("Unable to detect your location.");
+
+                }
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
 
         );
