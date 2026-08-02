@@ -13,7 +13,7 @@ const welcomeEmailDefaults = {
     footerText: "Thank you for choosing Click & Fix Technologies.",
     companyName: "Click & Fix Technologies",
     companyWebsite: "https://clickandfix.site",
-    supportEmail: "support@clickandfix.site",
+    supportEmail: "clicknfixtechnologies@gmail.com",
     supportPhone: "+91 70988 89990",
     advertisementTitle: "Need a repair or service?",
     advertisementText: "Our technicians are ready to help with reliable device repair and support.",
