@@ -10,19 +10,19 @@ const SESSION_SECONDS = 60 * 60 * 12;
 const VERIFICATION_TOKEN_SECONDS = 60 * 60 * 24;
 const RESET_TOKEN_SECONDS = 60 * 30;
 
-function cors(origin) {
-    return origin === ORIGIN ? {
+function cors() {
+    return {
         "Access-Control-Allow-Origin": ORIGIN,
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type",
         "Vary": "Origin"
-    } : {};
+    };
 }
 
 function json(body, status = 200, origin = "") {
     return new Response(JSON.stringify(body), {
         status,
-        headers: { "Content-Type": "application/json; charset=UTF-8", ...cors(origin) }
+        headers: { "Content-Type": "application/json; charset=UTF-8", ...cors() }
     });
 }
 
@@ -264,7 +264,11 @@ export default { async fetch(request, env) {
         await ref.update({ emailVerified: true, emailVerificationTokenHash: FieldValue.delete(), emailVerificationExpiresAt: FieldValue.delete() });
         return Response.redirect(`${loginUrl}?verified=success`, 302);
     }
-    if (request.method === "OPTIONS") return origin === ORIGIN ? new Response(null, { status: 204, headers: cors(origin) }) : json({ success: false, error: "Origin is not allowed." }, 403, origin);
+    if (request.method === "OPTIONS") {
+        return origin === ORIGIN
+            ? new Response(null, { status: 204, headers: cors() })
+            : json({ success: false, error: "Origin is not allowed." }, 403, origin);
+    }
     if (origin !== ORIGIN) return json({ success: false, error: "Origin is not allowed." }, 403, origin);
     if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405, origin);
     if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) return json({ success: false, error: "Content-Type must be application/json." }, 415, origin);
