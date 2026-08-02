@@ -7,6 +7,7 @@ const welcomeEmailDefaults = {
     headerTitle: "Welcome to Click & Fix",
     greeting: "Hello {{customerName}},",
     bodyText: "Your customer portal account is ready. Use the secure login details below to view repair updates, service history, and warranty information.",
+    message: "",
     loginButtonText: "Open Customer Portal",
     closingText: "For your security, please change your temporary password immediately after your first login.",
     footerText: "Thank you for choosing Click & Fix Technologies.",
@@ -102,7 +103,7 @@ function createWelcomeEmailHtml(options = {}) {
 
     const headerTitle = replaceTokens(config.headerTitle);
     const greeting = replaceTokens(config.greeting);
-    const bodyText = replaceTokens(config.bodyText).replace(/\n/g, "<br>");
+    const bodyText = replaceTokens(options.data?.message || config.message || config.bodyText).replace(/\n/g, "<br>");
     const closingText = replaceTokens(config.closingText).replace(/\n/g, "<br>");
     const footerText = replaceTokens(config.footerText).replace(/\n/g, "<br>");
     const loginButtonText = replaceTokens(config.loginButtonText);

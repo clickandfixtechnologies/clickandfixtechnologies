@@ -31,10 +31,13 @@ async function resolveEmailTemplate(templateKey, values, env) {
         env
     );
 
-    if (override?.fields?.subject?.stringValue && override?.fields?.html?.stringValue) {
+    if (override?.fields?.subject?.stringValue && override?.fields?.message?.stringValue) {
         return {
             subject: replaceEmailPlaceholders(override.fields.subject.stringValue, values),
-            html: replaceEmailPlaceholders(override.fields.html.stringValue, values),
+            html: definition.render({
+                ...values,
+                message: replaceEmailPlaceholders(override.fields.message.stringValue, values)
+            }),
             source: "firestore"
         };
     }
