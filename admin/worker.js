@@ -143,6 +143,73 @@ async function getFirestoreRestDocument(documentPath, env) {
     return response.json();
 }
 
+function firestoreRestValueToJavaScript(value) {
+    if (Object.hasOwn(value, "stringValue")) return value.stringValue;
+    if (Object.hasOwn(value, "integerValue")) return Number(value.integerValue);
+    if (Object.hasOwn(value, "doubleValue")) return Number(value.doubleValue);
+    if (Object.hasOwn(value, "booleanValue")) return value.booleanValue;
+    if (Object.hasOwn(value, "timestampValue")) return value.timestampValue;
+    if (Object.hasOwn(value, "nullValue")) return null;
+    if (Object.hasOwn(value, "mapValue")) {
+
+        return Object.fromEntries(Object.entries(value.mapValue.fields || {})
+        .map(([key, nestedValue]) => [key, firestoreRestValueToJavaScript(nestedValue)]));
+
+    }
+    if (Object.hasOwn(value, "arrayValue")) {
+
+        return (value.arrayValue.values || []).map(firestoreRestValueToJavaScript);
+
+    }
+
+    return null;
+}
+
+function firestoreRestDocumentToCustomer(document) {
+    return {
+        id: String(document.name || "").split("/").pop(),
+        data: Object.fromEntries(Object.entries(document.fields || {})
+        .map(([key, value]) => [key, firestoreRestValueToJavaScript(value)]))
+    };
+}
+
+async function findCustomerByUsername(username, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:runQuery`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                structuredQuery: {
+                    from: [{ collectionId: "customers" }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: "username" },
+                            op: "EQUAL",
+                            value: { stringValue: String(username).trim() }
+                        }
+                    },
+                    limit: 1
+                }
+            })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore username query failed (${response.status}).`);
+
+    const results = (await response.text())
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map(line => JSON.parse(line));
+    const match = results.find(result => result.document);
+
+    return match ? firestoreRestDocumentToCustomer(match.document) : null;
+}
+
 async function commitFirestoreWrites(writes, env) {
     const accessToken = await getFirestoreRestAccessToken(env);
     const writeMetadata = writes.map(({ diagnosticLabel, ...write }) => ({
@@ -978,15 +1045,15 @@ export default { async fetch(request, env) {
             if (!await verifyTurnstile(body.turnstileToken, request, env)) return json({ success: false, error: "Verification failed." }, 401, origin);
             if (!body.username || !body.password) return json({ success: false, error: "Username and password are required." }, 400, origin);
             diagnosticStep = "login_username_lookup";
-            const query = await getDb(env).collection("customers").where("username", "==", String(body.username).trim()).limit(1).get();
-            console.info("Customer login username lookup completed.", { found: !query.empty });
-            if (query.empty) {
+            const customerRecord = await findCustomerByUsername(body.username, env);
+            console.info("Customer login username lookup completed.", { found: Boolean(customerRecord) });
+            if (!customerRecord) {
 
                 console.info("Customer login failed.", { stage: "username_not_found" });
                 return json({ success: false, error: "Invalid username or password." }, 401, origin);
 
             }
-            const doc = query.docs[0], customer = doc.data();
+            const doc = { id: customerRecord.id }, customer = customerRecord.data;
             const [hashAlgorithm, hashIterations] = String(customer.passwordHash || "").split("$");
             console.info("Customer login credential record loaded.", {
                 customerDocumentId: doc.id,
