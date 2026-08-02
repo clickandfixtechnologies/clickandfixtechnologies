@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { createWelcomeEmailHtml, getWelcomeEmailConfig } from "./js/welcome-email-template.js";
 import { createEmailVerificationHtml } from "./js/email-verification-template.js";
 import { createPasswordResetEmailHtml } from "./js/password-reset-email-template.js";
+import { emailTemplateRegistry } from "./js/email-template-registry.js";
 
 const ORIGIN = "https://clickandfix.site";
 const SESSION_SECONDS = 60 * 60 * 12;
@@ -13,6 +14,37 @@ const WEB_CRYPTO_PBKDF2_MAX_ITERATIONS = 100000;
 
 let firestoreAccessToken = "";
 let firestoreAccessTokenExpiresAt = 0;
+
+function replaceEmailPlaceholders(template, values = {}) {
+    return String(template || "").replace(/{{\s*([a-z_]+)\s*}}/gi, (match, key) => {
+        const value = values[key.toLowerCase()];
+        return value === undefined || value === null ? match : String(value);
+    });
+}
+
+async function resolveEmailTemplate(templateKey, values, env) {
+    const definition = emailTemplateRegistry.find(template => template.key === templateKey);
+    if (!definition) throw new Error("Email template is not registered.");
+
+    const override = await getFirestoreRestDocument(
+        `system/emailTemplates/templates/${definition.key}`,
+        env
+    );
+
+    if (override?.fields?.subject?.stringValue && override?.fields?.html?.stringValue) {
+        return {
+            subject: replaceEmailPlaceholders(override.fields.subject.stringValue, values),
+            html: replaceEmailPlaceholders(override.fields.html.stringValue, values),
+            source: "firestore"
+        };
+    }
+
+    return {
+        subject: replaceEmailPlaceholders(definition.defaultSubject, values),
+        html: definition.render(values),
+        source: "built_in"
+    };
+}
 
 function cors() {
     return {
@@ -924,6 +956,49 @@ export default { async fetch(request, env) {
                 }
             }, 200, origin);
 
+        }
+
+        if (path === "/admin/email-templates") {
+            const admin = await requireAdmin(request, env);
+            const action = String(body.action || "list");
+            const template = emailTemplateRegistry.find(item => item.key === body.templateKey);
+
+            if (action === "list") {
+                const templates = await Promise.all(emailTemplateRegistry.map(async item => {
+                    const override = await getFirestoreRestDocument(`system/emailTemplates/templates/${item.key}`, env);
+                    return { key: item.key, name: item.name, subject: override?.fields?.subject?.stringValue || item.defaultSubject, hasOverride: Boolean(override) };
+                }));
+                return json({ success: true, templates }, 200, origin);
+            }
+
+            if (!template) return json({ success: false, error: "Unknown email template." }, 404, origin);
+            const documentPath = `system/emailTemplates/templates/${template.key}`;
+
+            if (action === "load") {
+                const override = await getFirestoreRestDocument(documentPath, env);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, html: override?.fields?.html?.stringValue || "", hasOverride: Boolean(override) } }, 200, origin);
+            }
+
+            if (action === "save") {
+                if (!String(body.subject || "").trim() || !String(body.html || "").trim()) return json({ success: false, error: "Subject and HTML are required." }, 400, origin);
+                await patchFirestoreRestDocument(documentPath, { subject: { stringValue: String(body.subject) }, html: { stringValue: String(body.html) }, updatedBy: { stringValue: admin.uid }, updatedAt: firestoreTimestampValue(), version: { integerValue: String(Number(body.version || 0) + 1) } }, env);
+                return json({ success: true, message: "Email template saved successfully." }, 200, origin);
+            }
+
+            if (action === "reset") {
+                const accessToken = await getFirestoreRestAccessToken(env);
+                const response = await fetch(`https://firestore.googleapis.com/v1/${firestoreDocumentName(documentPath, env)}`, { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } });
+                if (!response.ok && response.status !== 404) throw new Error(`Email template reset failed (${response.status}).`);
+                return json({ success: true, message: "Built-in email template restored." }, 200, origin);
+            }
+
+            if (action === "send-test") {
+                if (!body.email) return json({ success: false, error: "Test email address is required." }, 400, origin);
+                const resolved = await resolveEmailTemplate(template.key, { customer_name: "Test Customer", customer_id: "TEST-001", username: "9999999999", temporary_password: "TestPassword@1", verification_link: "https://clickandfix.site", reset_link: "https://clickandfix.site", company_name: env.APP_NAME || "Click & Fix Technologies", current_year: new Date().getFullYear() }, env);
+                const response = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ email: String(body.email) }], subject: resolved.subject, htmlContent: resolved.html }) });
+                if (!response.ok) throw new Error("Test email delivery failed.");
+                return json({ success: true, message: "Test email sent successfully." }, 200, origin);
+            }
         }
 
         const adminPasswordMatch = path.match(
