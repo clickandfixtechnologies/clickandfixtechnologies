@@ -734,10 +734,23 @@ async function sendWelcomeEmail(customer, temporaryPassword, emailConfig, env) {
 async function requireSession(request, env) {
     const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") || "";
     const claims = await verifyJwt(token, env.JWT_SECRET);
-    const ref = getDb(env).collection("customers").doc(claims.sub);
-    const snap = await ref.get();
-    if (!snap.exists || Number(snap.data().sessionVersion || 0) !== Number(claims.sv || 0)) throw new Error("Session expired.");
-    return { claims, ref, customer: snap.data() };
+    const customerPath = `customers/${claims.sub}`;
+    const document = await getFirestoreRestDocument(customerPath, env);
+    const customerRecord = document
+        ? firestoreRestDocumentToCustomer(document)
+        : null;
+
+    if (!customerRecord || Number(customerRecord.data.sessionVersion || 0) !== Number(claims.sv || 0)) {
+
+        throw new Error("Session expired.");
+
+    }
+
+    return {
+        claims,
+        customerPath,
+        customer: customerRecord.data
+    };
 }
 
 async function requireAdmin(request, env) {
@@ -1080,6 +1093,7 @@ export default { async fetch(request, env) {
             const session = await signJwt({ sub: doc.id, sv: Number(customer.sessionVersion || 0), exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS }, env.JWT_SECRET);
             return json({ success: true, session }, 200, origin);
         }
+        diagnosticStep = "session_validation";
         const session = await requireSession(request, env);
         if (path === "/resend-verification-email") {
             if (session.customer.emailVerified) return json({ success: true, message: "Email is already verified." }, 200, origin);
