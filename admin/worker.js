@@ -145,6 +145,10 @@ async function getFirestoreRestDocument(documentPath, env) {
 
 async function commitFirestoreWrites(writes, env) {
     const accessToken = await getFirestoreRestAccessToken(env);
+    const writeMetadata = writes.map(({ diagnosticLabel, ...write }) => ({
+        diagnosticLabel,
+        write
+    }));
     const response = await fetch(
         `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:commit`,
         {
@@ -153,14 +157,39 @@ async function commitFirestoreWrites(writes, env) {
                 Authorization: `Bearer ${accessToken}`,
                 "content-type": "application/json"
             },
-            body: JSON.stringify({ writes })
+            body: JSON.stringify({ writes: writeMetadata.map(({ write }) => write) })
         }
     );
 
     if (!response.ok) {
 
+        const responseBody = await response.text();
+        let firestoreError;
+
+        try {
+
+            firestoreError = JSON.parse(responseBody);
+
+        } catch {
+
+            firestoreError = { raw: responseBody };
+
+        }
+
+        console.error("Firestore REST commit failed.", {
+            status: response.status,
+            statusText: response.statusText,
+            firestoreError,
+            writes: writeMetadata.map(({ diagnosticLabel, write }) => ({
+                diagnosticLabel,
+                currentDocument: write.currentDocument || null,
+                document: write.update?.name || null
+            }))
+        });
+
         const error = new Error(`Firestore commit failed (${response.status}).`);
         error.status = response.status;
+        error.firestoreError = firestoreError;
         throw error;
 
     }
@@ -280,6 +309,7 @@ async function createCustomerWithFirestoreRest({ name, mobile, email, address, p
             setDiagnosticStep("firestore_transaction_commit");
             await commitFirestoreWrites([
                 {
+                    diagnosticLabel: "customer_document_create",
                     update: {
                         name: firestoreDocumentName(customerPath, env),
                         fields: customerFields
@@ -287,6 +317,7 @@ async function createCustomerWithFirestoreRest({ name, mobile, email, address, p
                     currentDocument: { exists: false }
                 },
                 {
+                    diagnosticLabel: "username_reservation_create",
                     update: {
                         name: firestoreDocumentName(usernamePath, env),
                         fields: {
@@ -296,14 +327,25 @@ async function createCustomerWithFirestoreRest({ name, mobile, email, address, p
                     },
                     currentDocument: { exists: false }
                 },
-                counterWrite
+                {
+                    diagnosticLabel: "customer_counter_update",
+                    ...counterWrite
+                }
             ], env);
 
             return { customerData, customerPath };
 
         } catch (error) {
 
-            if (error.status === 409 && attempt < 4) continue;
+            if (error.status === 409 && attempt < 4) {
+
+                console.warn("Firestore REST commit conflict; retrying customer counter transaction.", {
+                    attempt: attempt + 1,
+                    firestoreError: error.firestoreError || null
+                });
+                continue;
+
+            }
             throw error;
 
         }
