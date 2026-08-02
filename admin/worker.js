@@ -1029,6 +1029,33 @@ export default { async fetch(request, env) {
             /^\/admin\/customers\/([^/]+)\/password$/
         );
 
+        const adminCustomerDeleteMatch = path.match(/^\/admin\/customers\/([^/]+)$/);
+
+        if (adminCustomerDeleteMatch) {
+            const admin = await requireAdmin(request, env);
+            const customerId = decodeURIComponent(adminCustomerDeleteMatch[1]);
+            const customerPath = `customers/${customerId}`;
+            const customerDocument = await getFirestoreRestDocument(customerPath, env);
+
+            if (!customerDocument) {
+                return json({ success: false, error: "Customer not found." }, 404, origin);
+            }
+
+            const customer = firestoreRestDocumentToCustomer(customerDocument).data;
+            const writes = [{ delete: firestoreDocumentName(customerPath, env) }];
+            if (customer.mobile) {
+                writes.push({
+                    delete: firestoreDocumentName(
+                        `system/customerUsernames/entries/${customer.mobile}`,
+                        env
+                    )
+                });
+            }
+            await commitFirestoreWrites(writes, env);
+            await writeFirestoreRestAuditLog("customer_deleted", admin.uid, customerId, {}, env);
+            return json({ success: true, message: "Customer deleted successfully." }, 200, origin);
+        }
+
         if (adminPasswordMatch) {
 
             const admin = await requireAdmin(request, env);

@@ -1034,10 +1034,9 @@ document.getElementById("confirmDeleteCustomer")
 
     try {
 
-    await deleteDoc(
-
-        doc(db, "customers", deleteCustomerId)
-
+    await adminWorkerRequest(
+        `/admin/customers/${encodeURIComponent(deleteCustomerId)}`,
+        {}
     );
 
     
