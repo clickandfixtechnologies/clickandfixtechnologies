@@ -776,7 +776,8 @@ async function sendVerificationEmail(customerPath, customer, env) {
     const verificationUrl = `${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").origin}${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").pathname}`;
     const workerUrl = new URL(env.WORKER_PUBLIC_URL || "https://jolly-thunder-4929cf-auth-worker.clicknfixtechnologies.workers.dev");
     const verifyLink = `${workerUrl.origin}/verify-email?customerId=${encodeURIComponent(customer.customerId)}&token=${encodeURIComponent(token)}`;
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ name: customer.name, email: customer.email }], subject: "Verify your Click & Fix email address", htmlContent: createEmailVerificationHtml({ companyName: env.APP_NAME || "Click & Fix Technologies", customerName: customer.name, verificationUrl: verifyLink, loginUrl: verificationUrl }) }) });
+    const resolved = await resolveEmailTemplate("verification", { customer_name: customer.name, verification_link: verifyLink, company_name: env.APP_NAME || "Click & Fix Technologies", current_year: new Date().getFullYear(), customerName: customer.name, verificationUrl: verifyLink, companyName: env.APP_NAME || "Click & Fix Technologies", loginUrl: verificationUrl }, env);
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ name: customer.name, email: customer.email }], subject: resolved.subject, htmlContent: resolved.html }) });
     if (!response.ok) throw new Error("Verification email delivery failed.");
 }
 
@@ -800,6 +801,8 @@ async function sendWelcomeEmail(customer, temporaryPassword, emailConfig, env) {
     config.companyName = env.APP_NAME || config.companyName;
     config.companyWebsite = env.COMPANY_WEBSITE || config.companyWebsite;
 
+    const values = { customer_name: customer.name, customer_id: customer.customerId, username: customer.username, temporary_password: temporaryPassword, company_name: config.companyName, company_website: config.companyWebsite, login_url: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html", current_year: new Date().getFullYear(), customerName: customer.name, customerId: customer.customerId, temporaryPassword, companyName: config.companyName, companyWebsite: config.companyWebsite, loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html" };
+    const resolved = await resolveEmailTemplate("welcome", values, env);
     const response = await fetch(
         "https://api.brevo.com/v3/smtp/email",
         {
@@ -814,20 +817,8 @@ async function sendWelcomeEmail(customer, temporaryPassword, emailConfig, env) {
                     email: env.BREVO_SENDER_EMAIL
                 },
                 to: [{ name: customer.name, email: customer.email }],
-                subject: config.subject,
-                htmlContent: createWelcomeEmailHtml({
-                    config,
-                    data: {
-                        customerName: customer.name,
-                        customerId: customer.customerId,
-                        username: customer.username,
-                        temporaryPassword,
-                        companyName: config.companyName,
-                        companyWebsite: config.companyWebsite,
-                        loginUrl: env.LOGIN_URL ||
-                        "https://clickandfix.site/admin/customer-login.html"
-                    }
-                })
+                subject: resolved.subject,
+                htmlContent: resolved.html
             })
         }
     );
@@ -1193,7 +1184,8 @@ export default { async fetch(request, env) {
                 await updateCustomerDocumentWithFirestoreRest("forgot-password", `customers/${customerRecord.id}`, { passwordResetTokenHash: { stringValue: await hashToken(token) }, passwordResetExpiresAt: { integerValue: String(Date.now() + (RESET_TOKEN_SECONDS * 1000)) } }, env);
                 const base = new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html");
                 const resetUrl = `${base.origin}/admin/reset-password.html?customerId=${encodeURIComponent(customer.customerId)}&token=${encodeURIComponent(token)}`;
-                await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ name: customer.name, email: customer.email }], subject: "Reset your Click & Fix password", htmlContent: createPasswordResetEmailHtml({ companyName: env.APP_NAME, customerName: customer.name, resetUrl }) }) });
+                const resolved = await resolveEmailTemplate("passwordReset", { customer_name: customer.name, reset_link: resetUrl, company_name: env.APP_NAME || "Click & Fix Technologies", current_year: new Date().getFullYear(), customerName: customer.name, resetUrl, companyName: env.APP_NAME || "Click & Fix Technologies" }, env);
+                await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ name: customer.name, email: customer.email }], subject: resolved.subject, htmlContent: resolved.html }) });
             }
             return json({ success: true, message: "If an account exists, a reset link has been sent." }, 200, origin);
         }
