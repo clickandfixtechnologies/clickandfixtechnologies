@@ -201,10 +201,12 @@ async function findCustomerByUsername(username, env) {
 
     if (!response.ok) throw new Error(`Firestore username query failed (${response.status}).`);
 
-    const results = (await response.text())
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .map(line => JSON.parse(line));
+    const responseText = await response.text();
+    console.info("Firestore REST JSON parsing started.", { field: "runQueryResponse" });
+    const parsedResponse = JSON.parse(responseText);
+    const results = Array.isArray(parsedResponse)
+        ? parsedResponse
+        : [parsedResponse];
     const match = results.find(result => result.document);
 
     return match ? firestoreRestDocumentToCustomer(match.document) : null;
