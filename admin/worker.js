@@ -991,7 +991,7 @@ export default { async fetch(request, env) {
                     loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
                 };
                 const resolved = await resolveEmailTemplate(template.key, previewValues, env);
-                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, headerTitle: override?.fields?.headerTitle?.stringValue || "", greeting: override?.fields?.greeting?.stringValue || "", body: override?.fields?.body?.stringValue || template.defaultMessage, buttonText: override?.fields?.buttonText?.stringValue || "", closing: override?.fields?.closing?.stringValue || "", footer: override?.fields?.footer?.stringValue || "", html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, headerTitle: override?.fields?.headerTitle?.stringValue || template.defaults.headerTitle, greeting: override?.fields?.greeting?.stringValue || template.defaults.greeting, body: override?.fields?.body?.stringValue || template.defaults.body, buttonText: override?.fields?.buttonText?.stringValue || template.defaults.buttonText, closing: override?.fields?.closing?.stringValue || template.defaults.closing, footer: override?.fields?.footer?.stringValue || template.defaults.footer, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 
             if (action === "save") {

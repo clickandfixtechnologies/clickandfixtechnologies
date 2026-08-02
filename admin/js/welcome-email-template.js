@@ -20,6 +20,15 @@ const welcomeEmailDefaults = {
     showAdvertisement: true
 };
 
+const welcomeEmailStructuredDefaults = {
+    headerTitle: welcomeEmailDefaults.headerTitle,
+    greeting: welcomeEmailDefaults.greeting,
+    body: welcomeEmailDefaults.bodyText,
+    buttonText: welcomeEmailDefaults.loginButtonText,
+    closing: welcomeEmailDefaults.closingText,
+    footer: welcomeEmailDefaults.footerText
+};
+
 const welcomeEmailPlaceholders = [
     "{{companyName}}",
     "{{customerName}}",
@@ -201,5 +210,6 @@ export {
     createWelcomeEmailHtml,
     getWelcomeEmailConfig,
     welcomeEmailDefaults,
+    welcomeEmailStructuredDefaults,
     welcomeEmailPlaceholders
 };
