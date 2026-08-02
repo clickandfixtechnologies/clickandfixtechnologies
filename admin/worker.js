@@ -967,7 +967,28 @@ export default { async fetch(request, env) {
 
             if (action === "load") {
                 const override = await getFirestoreRestDocument(documentPath, env);
-                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, html: override?.fields?.html?.stringValue || "", hasOverride: Boolean(override) } }, 200, origin);
+                const previewValues = {
+                    customer_name: "Test Customer",
+                    customer_id: "TEST-001",
+                    username: "9999999999",
+                    temporary_password: "TestPassword@1",
+                    verification_link: "https://clickandfix.site/verify-email",
+                    reset_link: "https://clickandfix.site/reset-password",
+                    company_name: env.APP_NAME || "Click & Fix Technologies",
+                    company_website: env.COMPANY_WEBSITE || "https://clickandfix.site",
+                    login_url: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html",
+                    current_year: new Date().getFullYear(),
+                    customerName: "Test Customer",
+                    customerId: "TEST-001",
+                    temporaryPassword: "TestPassword@1",
+                    verificationUrl: "https://clickandfix.site/verify-email",
+                    resetUrl: "https://clickandfix.site/reset-password",
+                    companyName: env.APP_NAME || "Click & Fix Technologies",
+                    companyWebsite: env.COMPANY_WEBSITE || "https://clickandfix.site",
+                    loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
+                };
+                const resolved = await resolveEmailTemplate(template.key, previewValues, env);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: resolved.subject, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 
             if (action === "save") {
