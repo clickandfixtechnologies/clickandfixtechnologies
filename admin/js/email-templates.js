@@ -31,6 +31,7 @@ document.getElementById("save").onclick = async () => {
     await adminWorkerRequest("/admin/email-templates", payload);
     show("Template saved.");
     await load(key);
+    preview.srcdoc = preview.srcdoc;
 };
 document.getElementById("reset").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "reset", templateKey: key }); show("Built-in template restored."); await load(key); };
 document.getElementById("test").onclick = async () => { const email = prompt("Send test email to:"); if (email) { await adminWorkerRequest("/admin/email-templates", { action: "send-test", templateKey: key, email, ...values() }); show("Test email sent."); } };

@@ -31,12 +31,20 @@ async function resolveEmailTemplate(templateKey, values, env) {
         env
     );
 
-    if (override?.fields?.subject?.stringValue && override?.fields?.message?.stringValue) {
+    if (override?.fields?.subject?.stringValue) {
+        const editableFields = {
+            headerTitle: override.fields.headerTitle?.stringValue,
+            greeting: override.fields.greeting?.stringValue,
+            body: override.fields.body?.stringValue || override.fields.message?.stringValue,
+            buttonText: override.fields.buttonText?.stringValue,
+            closing: override.fields.closing?.stringValue,
+            footer: override.fields.footer?.stringValue
+        };
         return {
             subject: replaceEmailPlaceholders(override.fields.subject.stringValue, values),
             html: definition.render({
                 ...values,
-                message: replaceEmailPlaceholders(override.fields.message.stringValue, values)
+                ...Object.fromEntries(Object.entries(editableFields).map(([key, value]) => [key, value === undefined ? undefined : replaceEmailPlaceholders(value, values)]))
             }),
             source: "firestore"
         };
