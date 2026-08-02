@@ -974,12 +974,40 @@ export default { async fetch(request, env) {
             return json({ success: true, message: "Password reset successfully." }, 200, origin);
         }
         if (path === "/login") {
+            diagnosticStep = "turnstile_verification";
             if (!await verifyTurnstile(body.turnstileToken, request, env)) return json({ success: false, error: "Verification failed." }, 401, origin);
             if (!body.username || !body.password) return json({ success: false, error: "Username and password are required." }, 400, origin);
+            diagnosticStep = "login_username_lookup";
             const query = await getDb(env).collection("customers").where("username", "==", String(body.username).trim()).limit(1).get();
-            if (query.empty) return json({ success: false, error: "Invalid username or password." }, 401, origin);
+            console.info("Customer login username lookup completed.", { found: !query.empty });
+            if (query.empty) {
+
+                console.info("Customer login failed.", { stage: "username_not_found" });
+                return json({ success: false, error: "Invalid username or password." }, 401, origin);
+
+            }
             const doc = query.docs[0], customer = doc.data();
-            if (!customer.passwordHash || !await passwordMatches(body.password, customer.passwordHash)) return json({ success: false, error: "Invalid username or password." }, 401, origin);
+            const [hashAlgorithm, hashIterations] = String(customer.passwordHash || "").split("$");
+            console.info("Customer login credential record loaded.", {
+                customerDocumentId: doc.id,
+                passwordHashExists: Boolean(customer.passwordHash),
+                hashAlgorithm: hashAlgorithm || null,
+                hashIterations: hashIterations || null
+            });
+            if (!customer.passwordHash) {
+
+                console.info("Customer login failed.", { stage: "password_hash_missing", customerDocumentId: doc.id });
+                return json({ success: false, error: "Invalid username or password." }, 401, origin);
+
+            }
+            diagnosticStep = "password_hash_verification";
+            const passwordVerified = await passwordMatches(body.password, customer.passwordHash);
+            console.info("Customer login password verification completed.", {
+                customerDocumentId: doc.id,
+                passwordVerified
+            });
+            if (!passwordVerified) return json({ success: false, error: "Invalid username or password." }, 401, origin);
+            diagnosticStep = "jwt_session_creation";
             const session = await signJwt({ sub: doc.id, sv: Number(customer.sessionVersion || 0), exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS }, env.JWT_SECRET);
             return json({ success: true, session }, 200, origin);
         }
