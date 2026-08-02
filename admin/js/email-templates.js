@@ -2,20 +2,15 @@ import { adminWorkerRequest } from "./admin-worker-client.js";
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+const fields = ["subject", "headerTitle", "greeting", "body", "buttonText", "closing", "footer"];
 const list = document.getElementById("templateList");
-const subject = document.getElementById("subject");
-const message = document.getElementById("message");
 const preview = document.getElementById("preview");
 const notice = document.getElementById("notice");
 let key = "";
 
-const show = (text, ok = true) => {
-    notice.innerHTML = `<div class="alert alert-${ok ? "success" : "danger"}">${text}</div>`;
-};
-
-function render(html) {
-    preview.srcdoc = html || "";
-}
+const show = (text, ok = true) => { notice.innerHTML = `<div class="alert alert-${ok ? "success" : "danger"}">${text}</div>`; };
+const values = () => Object.fromEntries(fields.map(field => [field, document.getElementById(field).value]));
+const fill = template => fields.forEach(field => { document.getElementById(field).value = template[field] || ""; });
 
 async function loadTemplates() {
     const data = await adminWorkerRequest("/admin/email-templates", { action: "list" });
@@ -27,31 +22,12 @@ async function loadTemplates() {
 async function load(nextKey) {
     key = nextKey;
     const data = await adminWorkerRequest("/admin/email-templates", { action: "load", templateKey: key });
-    subject.value = data.template.subject || "";
-    message.value = data.template.message || "";
-    render(data.template.html);
+    fill(data.template);
+    preview.srcdoc = data.template.html || "";
 }
 
-document.getElementById("save").onclick = async () => {
-    await adminWorkerRequest("/admin/email-templates", { action: "save", templateKey: key, subject: subject.value, message: message.value });
-    show("Template saved.");
-    await load(key);
-};
+document.getElementById("save").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "save", templateKey: key, ...values() }); show("Template saved."); await load(key); };
+document.getElementById("reset").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "reset", templateKey: key }); show("Built-in template restored."); await load(key); };
+document.getElementById("test").onclick = async () => { const email = prompt("Send test email to:"); if (email) { await adminWorkerRequest("/admin/email-templates", { action: "send-test", templateKey: key, email, ...values() }); show("Test email sent."); } };
 
-document.getElementById("reset").onclick = async () => {
-    await adminWorkerRequest("/admin/email-templates", { action: "reset", templateKey: key });
-    show("Built-in template restored.");
-    await load(key);
-};
-
-document.getElementById("test").onclick = async () => {
-    const email = prompt("Send test email to:");
-    if (!email) return;
-    await adminWorkerRequest("/admin/email-templates", { action: "send-test", templateKey: key, email });
-    show("Test email sent.");
-};
-
-onAuthStateChanged(auth, user => {
-    if (user) loadTemplates().catch(error => show(error.message, false));
-    else show("Admin login is required.", false);
-});
+onAuthStateChanged(auth, user => { if (user) loadTemplates().catch(error => show(error.message, false)); else show("Admin login is required.", false); });

@@ -991,12 +991,12 @@ export default { async fetch(request, env) {
                     loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
                 };
                 const resolved = await resolveEmailTemplate(template.key, previewValues, env);
-                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, message: override?.fields?.message?.stringValue || template.defaultMessage, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, headerTitle: override?.fields?.headerTitle?.stringValue || "", greeting: override?.fields?.greeting?.stringValue || "", body: override?.fields?.body?.stringValue || template.defaultMessage, buttonText: override?.fields?.buttonText?.stringValue || "", closing: override?.fields?.closing?.stringValue || "", footer: override?.fields?.footer?.stringValue || "", html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 
             if (action === "save") {
-                if (!String(body.subject || "").trim() || !String(body.html || "").trim()) return json({ success: false, error: "Subject and HTML are required." }, 400, origin);
-                await patchFirestoreRestDocument(documentPath, { subject: { stringValue: String(body.subject) }, html: { stringValue: String(body.html) }, updatedBy: { stringValue: admin.uid }, updatedAt: firestoreTimestampValue(), version: { integerValue: String(Number(body.version || 0) + 1) } }, env);
+                if (!String(body.subject || "").trim() || !String(body.body || "").trim()) return json({ success: false, error: "Subject and body are required." }, 400, origin);
+                await patchFirestoreRestDocument(documentPath, { subject: { stringValue: String(body.subject) }, headerTitle: { stringValue: String(body.headerTitle || "") }, greeting: { stringValue: String(body.greeting || "") }, body: { stringValue: String(body.body) }, buttonText: { stringValue: String(body.buttonText || "") }, closing: { stringValue: String(body.closing || "") }, footer: { stringValue: String(body.footer || "") }, updatedBy: { stringValue: admin.uid }, updatedAt: firestoreTimestampValue(), version: { integerValue: String(Number(body.version || 0) + 1) } }, env);
                 return json({ success: true, message: "Email template saved successfully." }, 200, origin);
             }
 

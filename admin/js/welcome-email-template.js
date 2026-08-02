@@ -101,12 +101,12 @@ function createWelcomeEmailHtml(options = {}) {
         (token, key) => escapeHtml(data[key] || token)
     );
 
-    const headerTitle = replaceTokens(config.headerTitle);
-    const greeting = replaceTokens(config.greeting);
-    const bodyText = replaceTokens(options.data?.message || config.message || config.bodyText).replace(/\n/g, "<br>");
-    const closingText = replaceTokens(config.closingText).replace(/\n/g, "<br>");
-    const footerText = replaceTokens(config.footerText).replace(/\n/g, "<br>");
-    const loginButtonText = replaceTokens(config.loginButtonText);
+    const headerTitle = replaceTokens(options.data?.headerTitle || config.headerTitle);
+    const greeting = replaceTokens(options.data?.greeting || config.greeting);
+    const bodyText = replaceTokens(options.data?.body || options.data?.message || config.message || config.bodyText).replace(/\n/g, "<br>");
+    const closingText = replaceTokens(options.data?.closing || config.closingText).replace(/\n/g, "<br>");
+    const footerText = replaceTokens(options.data?.footer || config.footerText).replace(/\n/g, "<br>");
+    const loginButtonText = replaceTokens(options.data?.buttonText || config.loginButtonText);
     const companyName = escapeHtml(data.companyName);
     const loginUrl = escapeHtml(data.loginUrl);
     const companyWebsite = escapeHtml(data.companyWebsite);
