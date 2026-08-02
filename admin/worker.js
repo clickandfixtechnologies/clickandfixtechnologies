@@ -212,6 +212,43 @@ async function findCustomerByUsername(username, env) {
     return match ? firestoreRestDocumentToCustomer(match.document) : null;
 }
 
+async function findJobsByCustomerId(customerId, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:runQuery`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                structuredQuery: {
+                    from: [{ collectionId: "jobs" }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: "customerId" },
+                            op: "EQUAL",
+                            value: { stringValue: String(customerId) }
+                        }
+                    }
+                }
+            })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore jobs query failed (${response.status}).`);
+
+    const parsedResponse = JSON.parse(await response.text());
+    const results = Array.isArray(parsedResponse)
+        ? parsedResponse
+        : [parsedResponse];
+
+    return results
+    .filter(result => result.document)
+    .map(result => firestoreRestDocumentToCustomer(result.document).data);
+}
+
 async function commitFirestoreWrites(writes, env) {
     const accessToken = await getFirestoreRestAccessToken(env);
     const writeMetadata = writes.map(({ diagnosticLabel, ...write }) => ({
@@ -735,6 +772,10 @@ async function requireSession(request, env) {
     const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") || "";
     const claims = await verifyJwt(token, env.JWT_SECRET);
     const customerPath = `customers/${claims.sub}`;
+    console.info("Firestore REST document read.", {
+        purpose: "session_validation",
+        path: customerPath
+    });
     const document = await getFirestoreRestDocument(customerPath, env);
     const customerRecord = document
         ? firestoreRestDocumentToCustomer(document)
@@ -1102,8 +1143,9 @@ export default { async fetch(request, env) {
         }
         if (path === "/session") return json({ success: true, customer: safeCustomer(session.customer) }, 200, origin);
         if (path === "/customer-dashboard") {
-            const jobs = await getDb(env).collection("jobs").where("customerId", "==", session.customer.customerId).get();
-            return json({ success: true, customer: safeCustomer(session.customer), jobs: jobs.docs.map(job => job.data()) }, 200, origin);
+            diagnosticStep = "customer_dashboard_jobs_query";
+            const jobs = await findJobsByCustomerId(session.customer.customerId, env);
+            return json({ success: true, customer: safeCustomer(session.customer), jobs }, 200, origin);
         }
         if (path === "/change-password") {
             if (!body.currentPassword || !body.newPassword) return json({ success: false, error: "Current and new passwords are required." }, 400, origin);
