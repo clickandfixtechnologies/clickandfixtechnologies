@@ -991,7 +991,7 @@ export default { async fetch(request, env) {
                     loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
                 };
                 const resolved = await resolveEmailTemplate(template.key, previewValues, env);
-                return json({ success: true, template: { key: template.key, name: template.name, subject: resolved.subject, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, message: override?.fields?.message?.stringValue || template.defaultMessage, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 
             if (action === "save") {

@@ -7,8 +7,8 @@
  */
 
 import { createWelcomeEmailHtml, welcomeEmailDefaults } from "./welcome-email-template.js";
-import { createEmailVerificationHtml } from "./email-verification-template.js";
-import { createPasswordResetEmailHtml } from "./password-reset-email-template.js";
+import { createEmailVerificationHtml, emailVerificationDefaultMessage } from "./email-verification-template.js";
+import { createPasswordResetEmailHtml, passwordResetDefaultMessage } from "./password-reset-email-template.js";
 
 const emailTemplateRegistry = Object.freeze([
     Object.freeze({
@@ -16,6 +16,7 @@ const emailTemplateRegistry = Object.freeze([
         module: "js/welcome-email-template.js",
         name: "Customer Welcome Email",
         defaultSubject: welcomeEmailDefaults.subject,
+        defaultMessage: welcomeEmailDefaults.bodyText,
         render: data => createWelcomeEmailHtml({ data })
     }),
     Object.freeze({
@@ -23,6 +24,7 @@ const emailTemplateRegistry = Object.freeze([
         module: "js/email-verification-template.js",
         name: "Customer Verification Email",
         defaultSubject: "Verify your Click & Fix email address",
+        defaultMessage: emailVerificationDefaultMessage,
         render: data => createEmailVerificationHtml(data)
     }),
     Object.freeze({
@@ -30,6 +32,7 @@ const emailTemplateRegistry = Object.freeze([
         module: "js/password-reset-email-template.js",
         name: "Password Reset Email",
         defaultSubject: "Reset your Click & Fix password",
+        defaultMessage: passwordResetDefaultMessage,
         render: data => createPasswordResetEmailHtml(data)
     })
 ]);
