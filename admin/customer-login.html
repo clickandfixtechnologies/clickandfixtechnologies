@@ -111,6 +111,13 @@
 
                 </div>
 
+                <div class="mb-3">
+                    <div
+                        class="cf-turnstile"
+                        data-sitekey="0x4AAAAAAEDmibLQTWH7G8cM">
+                    </div>
+                </div>
+
                 <!-- Remember -->
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -278,8 +285,7 @@ Our support team will verify your request and send a new login password to your 
 
 <form
 id="forgotPasswordForm"
-action="https://formspree.io/f/meeyjnqg"
-method="POST">
+>
 
 <div class="mb-3">
 
@@ -292,8 +298,7 @@ Username / Mobile Number
 <input
 type="text"
 class="form-control"
-name="Username"
-required>
+name="Username">
 
 </div>
 
@@ -308,8 +313,7 @@ Customer Name
 <input
 type="text"
 class="form-control"
-name="Customer Name"
-required>
+name="Customer Name">
 
 </div>
 
@@ -442,6 +446,8 @@ WhatsApp
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <!-- Bootstrap JS -->
 

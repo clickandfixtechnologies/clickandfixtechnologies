@@ -1,6 +1,11 @@
 import { db, firebaseConfig } from "./firebase.js";
 
 import {
+    adminWorkerRequest
+}
+from "./admin-worker-client.js";
+
+import {
     doc,
     setDoc,
     updateDoc,
@@ -15,28 +20,6 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       Click & Fix CRM
       Customers Module v1
 =========================================*/
-
-/*=========================================
-      CUSTOMER LOGIN CREATION
-=========================================*/
-
-function createCustomerLogin(customer){
-
-    const password =
-        "CF@" +
-        Math.floor(
-            100000 + Math.random() * 900000
-        );
-
-    return{
-
-        username: customer.mobile,
-
-        password: password
-
-    };
-
-}
 
 /*=========================================
       Strong Password Generator
@@ -172,6 +155,7 @@ function getTodayDate() {
     return new Date().toLocaleDateString("en-GB");
 
 }
+
 /*=========================================
       Render Customer Table
 =========================================*/
@@ -369,79 +353,34 @@ document.getElementById("saveCustomer").addEventListener("click", async () => {
 
     }
 
-    const customer = {
+    try {
 
-        customerId: generateCustomerId(),
+        const result = await adminWorkerRequest(
+            "/admin/customers",
+            { name, mobile, email, address }
+        );
 
-        name,
+        await loadCustomers();
 
-        mobile,
-
-        email,
-
-        address,
-
-        jobs: 0,
-
-        joinDate: getTodayDate()
-
-    };
-
-    /*=========================================
-      CREATE CUSTOMER LOGIN
-=========================================*/
-
-const loginData =
-createCustomerLogin(customer);
-
-
-if(loginData){
-
-    customer.username =
-    loginData.username;
-
-    customer.password =
-    loginData.password;
-
-}
-
-    customers.push(customer);
-
-    saveCustomers();
-
-    renderCustomers();
-
-   try {
-
-    await setDoc(
-
-        doc(db, "customers", customer.customerId),
-
-        customer
-
-    );
-
-    
-
-    alert(
-
+        alert(
 `Customer Login Created Successfully
 
 Username :
-${customer.username}
+${result.username}
 
-Password :
-${customer.password}`
+The temporary password has been sent securely by email.`
+        );
 
-    );
+    }
+    catch (error) {
 
-}
+        console.error(error);
 
-catch (error) {
+        alert(error.message || "Customer creation failed.");
 
-    console.error(error);
+        return;
 
-}
+    }
 
 newCustomerModal.hide();
 
@@ -552,24 +491,13 @@ document
 
     if(!customer) return;
 
-    customer.password = newPassword;
-
-    saveCustomers();
-
     try{
 
-        await updateDoc(
-
-            doc(
-                db,
-                "customers",
+        await adminWorkerRequest(
+            `/admin/customers/${encodeURIComponent(
                 customer.customerId
-            ),
-
-            {
-                password:newPassword
-            }
-
+            )}/password`,
+            { newPassword }
         );
 
     }
@@ -579,7 +507,7 @@ document
         console.error(error);
 
         alert(
-            "Firestore update failed."
+            error.message || "Password update failed."
         );
 
         return;
@@ -588,7 +516,7 @@ document
 
     document.getElementById(
         "loginCurrentPassword"
-    ).value = newPassword;
+    ).value = "";
 
     document.getElementById(
         "loginNewPassword"
@@ -1053,7 +981,10 @@ function openCustomerLogin(customerId) {
         customer.username || customer.mobile;
 
     document.getElementById("loginCurrentPassword").value =
-        customer.password || "";
+        "";
+
+    document.getElementById("loginCurrentPassword").placeholder =
+        "Password securely stored";
 
     document.getElementById("loginNewPassword").value = "";
 

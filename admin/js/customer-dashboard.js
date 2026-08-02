@@ -1,12 +1,17 @@
-import { db } from "./firebase.js";
+import {
+    clearCustomerSession,
+    getCustomerSession,
+    saveCustomerSession,
+    startSessionExpiryTimer,
+    validateCustomerSession,
+    workerRequest
+}
+from "./customer-session.js";
 
 import {
-    doc,
-    updateDoc,
-    getDocs,
-    collection
+    generateTemporaryPassword
 }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+from "./password-security.js";
 
 /*=========================================
       GLOBAL JOBS ARRAY
@@ -19,7 +24,7 @@ let jobs = [];
 =========================================*/
 
 const customerSession =
-    localStorage.getItem("customerLogin");
+    getCustomerSession();
 
 if(!customerSession){
 
@@ -54,8 +59,7 @@ Temporary Login
 Later Replace With Firebase Auth
 */
 
-const currentCustomerMobile =
-    (localStorage.getItem("customerLogin") || "").trim();
+const currentCustomerMobile = customerSession;
 /*=========================================
       SESSION PROTECTION
 =========================================*/
@@ -74,8 +78,7 @@ if(currentCustomerMobile === ""){
       CUSTOMER DATA
 =========================================*/
 
-const customer =
-    JSON.parse(localStorage.getItem("customerData"));
+let customer = null;
 
 
 /*=========================================
@@ -88,32 +91,28 @@ const customer =
       LOGIN CHECK
 =========================================*/
 
-if(!customer){
-
-    alert("Login Required");
-
-    window.location.href =
-        "customer-login.html";
-
-}
-
 loadDashboard();
 
 async function loadDashboard() {
+    try{
+        const sessionCustomer = await validateCustomerSession();
 
-    const snapshot = await getDocs(collection(db, "jobs"));
+        if(!sessionCustomer){
+            window.location.replace("customer-login.html");
 
-    jobs = [];
+            return;
 
-    snapshot.forEach(doc => {
-        jobs.push(doc.data());
-    });
+        }
 
-    const myJobs = jobs.filter(job =>
-        job.customerId === customer.customerId
-    );
-
-    loadCustomerDashboard(myJobs);
+        const result = await workerRequest("/customer-dashboard");
+        customer = result.customer;
+        jobs = result.jobs || [];
+        loadCustomerDashboard(jobs);
+    }
+    catch(error){
+        clearCustomerSession();
+        window.location.replace("customer-login.html");
+    }
 
 }
 
@@ -167,7 +166,43 @@ document.getElementById("profile2CustomerStatus").innerHTML = `
 <span class="badge bg-success">
     Active
 </span>
-`;
+`; 
+
+function renderEmailVerification() {
+
+    const verified = customer.emailVerified === true;
+    const content = verified
+        ? `<span class="badge bg-success">Verified</span>`
+        : `<span class="badge bg-warning text-dark me-2">Not Verified</span><button class="btn btn-sm btn-outline-success me-1 verifyEmailAction">Verify Email</button><button class="btn btn-sm btn-outline-primary resendVerificationEmail">Resend Verification Email</button>`;
+
+    document.getElementById("profile2EmailVerification").innerHTML = content;
+    document.getElementById("profileCardEmailVerification").innerHTML = content;
+
+    document.querySelectorAll(
+        ".verifyEmailAction, .resendVerificationEmail"
+    ).forEach(button => {
+        button.addEventListener("click", async () => {
+            button.disabled = true;
+            try {
+                await workerRequest("/resend-verification-email");
+                alert("Verification Email Sent Successfully. Please check your inbox.");
+            }
+            catch(error) {
+                alert(error.message || "Verification Email could not be sent.");
+            }
+            finally {
+                button.disabled = false;
+            }
+        });
+    });
+
+}
+
+startSessionExpiryTimer(() => {
+    window.location.replace("customer-login.html");
+});
+
+renderEmailVerification();
 
    /*=========================
     TOP PROFILE
@@ -910,9 +945,12 @@ if(logoutBtn){
             color: '#ffffff'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem("customerLogin");
-                localStorage.removeItem("customerData");
-                window.location.href = "customer-login.html";
+                workerRequest("/logout")
+                .catch(console.error)
+                .finally(()=>{
+                    clearCustomerSession();
+                    window.location.href = "customer-login.html";
+                });
             }
         });
 
@@ -1050,46 +1088,7 @@ window.addEventListener("scroll", function() {
 =========================================*/
 
 function generateStrongPassword(){
-
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    const lower = "abcdefghijklmnopqrstuvwxyz";
-
-    const number = "0123456789";
-
-    const special = "@#$%&*!?";
-
-    const all =
-        upper +
-        lower +
-        number +
-        special;
-
-    let password = "";
-
-    password +=
-        upper[Math.floor(Math.random()*upper.length)];
-
-    password +=
-        lower[Math.floor(Math.random()*lower.length)];
-
-    password +=
-        number[Math.floor(Math.random()*number.length)];
-
-    password +=
-        special[Math.floor(Math.random()*special.length)];
-
-    for(let i=0;i<8;i++){
-
-        password +=
-            all[Math.floor(Math.random()*all.length)];
-
-    }
-
-    return password
-        .split("")
-        .sort(()=>Math.random()-0.5)
-        .join("");
+    return generateTemporaryPassword();
 
 }
 
@@ -1228,14 +1227,6 @@ document
           Current Password Check
     =========================*/
 
-    if(currentPassword !== customer.password){
-
-        alert("Current Password is incorrect.");
-
-        return;
-
-    }
-
     /*=========================
           Confirm Password Match
     =========================*/
@@ -1251,14 +1242,6 @@ document
     /*=========================
           Same Password Check
     =========================*/
-
-    if(newPassword === currentPassword){
-
-        alert("New password must be different from current password.");
-
-        return;
-
-    }
 
     /*=========================
           Strong Password Check
@@ -1287,51 +1270,18 @@ document
       Update Password
 =========================*/
 
-customer.password = newPassword;
-
-/*=========================
-      Firestore Update
-=========================*/
-
 try{
+    const result = await workerRequest("/change-password", {
+        currentPassword,
+        newPassword
+    });
 
-    await updateDoc(
-
-        doc(
-            db,
-            "customers",
-            customer.customerId
-        ),
-
-        {
-            password: newPassword
-        }
-
-    );
-
+    saveCustomerSession(result.session);
 }
 catch(error){
-
-    console.error(error);
-
-    alert("Failed to update password.");
-
+    alert(error.message || "Failed to update password.");
     return;
-
 }
-
-/*=========================
-      LocalStorage Update
-=========================*/
-
-// Update current customer object
-customer.password = newPassword;
-
-// Save updated customer session
-localStorage.setItem(
-    "customerData",
-    JSON.stringify(customer)
-);
 
     /*=========================
           Clear Fields
