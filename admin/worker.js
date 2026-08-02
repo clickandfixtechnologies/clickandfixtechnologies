@@ -117,6 +117,201 @@ async function usernameReservationExists(username, env) {
     throw new Error(`Firestore username lookup failed (${response.status}).`);
 }
 
+function firestoreDocumentName(documentPath, env) {
+    const encodedPath = String(documentPath)
+    .split("/")
+    .map(segment => encodeURIComponent(segment))
+    .join("/");
+
+    return `projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/${encodedPath}`;
+}
+
+function firestoreTimestampValue(date = new Date()) {
+    return { timestampValue: date.toISOString() };
+}
+
+async function getFirestoreRestDocument(documentPath, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/${firestoreDocumentName(documentPath, env)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Firestore document read failed (${response.status}).`);
+
+    return response.json();
+}
+
+async function commitFirestoreWrites(writes, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:commit`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({ writes })
+        }
+    );
+
+    if (!response.ok) {
+
+        const error = new Error(`Firestore commit failed (${response.status}).`);
+        error.status = response.status;
+        throw error;
+
+    }
+}
+
+async function patchFirestoreRestDocument(documentPath, fields, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const updateMask = Object.keys(fields)
+    .map(field => `updateMask.fieldPaths=${encodeURIComponent(field)}`)
+    .join("&");
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/${firestoreDocumentName(documentPath, env)}?${updateMask}`,
+        {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                name: firestoreDocumentName(documentPath, env),
+                fields
+            })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore document update failed (${response.status}).`);
+}
+
+async function writeFirestoreRestAuditLog(eventType, adminUid, customerId, details, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const fields = {
+        eventType: { stringValue: eventType },
+        actorUid: { stringValue: adminUid },
+        customerId: { stringValue: customerId },
+        createdAt: firestoreTimestampValue()
+    };
+
+    Object.entries(details).forEach(([key, value]) => {
+        fields[key] = typeof value === "boolean"
+            ? { booleanValue: value }
+            : { stringValue: String(value) };
+    });
+
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/auditLogs`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({ fields })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore audit log write failed (${response.status}).`);
+}
+
+async function createCustomerWithFirestoreRest({ name, mobile, email, address, passwordHash, adminUid }, env, setDiagnosticStep) {
+    const year = new Date().getFullYear();
+    const counterPath = `system/customerCounters/years/${year}`;
+    const usernamePath = `system/customerUsernames/entries/${mobile}`;
+    const createdAt = firestoreTimestampValue();
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+        setDiagnosticStep("customer_counter_read");
+        const counter = await getFirestoreRestDocument(counterPath, env);
+        const nextNumber = Number(counter?.fields?.nextNumber?.integerValue || 1);
+        const customerId = `CF${year}-${String(nextNumber).padStart(3, "0")}`;
+        const customerPath = `customers/${customerId}`;
+        const customerData = {
+            customerId,
+            name: name.trim(),
+            mobile,
+            username: mobile,
+            email: String(email).trim(),
+            address: String(address).trim(),
+            jobs: 0,
+            joinDate: new Date().toLocaleDateString("en-GB"),
+            passwordHash,
+            sessionVersion: 0,
+            emailVerified: false,
+            createdAt: new Date(),
+            createdBy: adminUid,
+            passwordUpdatedAt: new Date()
+        };
+        const customerFields = {
+            customerId: { stringValue: customerData.customerId },
+            name: { stringValue: customerData.name },
+            mobile: { stringValue: customerData.mobile },
+            username: { stringValue: customerData.username },
+            email: { stringValue: customerData.email },
+            address: { stringValue: customerData.address },
+            jobs: { integerValue: "0" },
+            joinDate: { stringValue: customerData.joinDate },
+            passwordHash: { stringValue: customerData.passwordHash },
+            sessionVersion: { integerValue: "0" },
+            emailVerified: { booleanValue: false },
+            createdAt,
+            createdBy: { stringValue: customerData.createdBy },
+            passwordUpdatedAt: createdAt
+        };
+        const counterWrite = {
+            update: {
+                name: firestoreDocumentName(counterPath, env),
+                fields: {
+                    nextNumber: { integerValue: String(nextNumber + 1) },
+                    updatedAt: createdAt
+                }
+            },
+            currentDocument: counter
+                ? { updateTime: counter.updateTime }
+                : { exists: false }
+        };
+
+        try {
+            setDiagnosticStep("firestore_transaction_commit");
+            await commitFirestoreWrites([
+                {
+                    update: {
+                        name: firestoreDocumentName(customerPath, env),
+                        fields: customerFields
+                    },
+                    currentDocument: { exists: false }
+                },
+                {
+                    update: {
+                        name: firestoreDocumentName(usernamePath, env),
+                        fields: {
+                            customerId: { stringValue: customerId },
+                            createdAt
+                        }
+                    },
+                    currentDocument: { exists: false }
+                },
+                counterWrite
+            ], env);
+
+            return { customerData, customerPath };
+
+        } catch (error) {
+
+            if (error.status === 409 && attempt < 4) continue;
+            throw error;
+
+        }
+    }
+
+    throw new Error("Customer creation could not be completed due to concurrent updates.");
+}
+
 async function signJwt(payload, secret) {
     const encode = new TextEncoder();
     const header = base64Url(encode.encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
@@ -307,11 +502,25 @@ async function sendVerificationEmail(customerRef, customer, env) {
     if (!customer.email) throw new Error("Customer email address is missing.");
     const token = randomToken();
     const expiresAt = Date.now() + (VERIFICATION_TOKEN_SECONDS * 1000);
-    await customerRef.update({
+    const verificationFields = {
         emailVerified: false,
         emailVerificationTokenHash: await hashToken(token),
         emailVerificationExpiresAt: expiresAt
-    });
+    };
+
+    if (typeof customerRef === "string") {
+
+        await patchFirestoreRestDocument(customerRef, {
+            emailVerified: { booleanValue: false },
+            emailVerificationTokenHash: { stringValue: verificationFields.emailVerificationTokenHash },
+            emailVerificationExpiresAt: { integerValue: String(verificationFields.emailVerificationExpiresAt) }
+        }, env);
+
+    } else {
+
+        await customerRef.update(verificationFields);
+
+    }
     const verificationUrl = `${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").origin}${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").pathname}`;
     const workerUrl = new URL(env.WORKER_PUBLIC_URL || "https://jolly-thunder-4929cf-auth-worker.clicknfixtechnologies.workers.dev");
     const verifyLink = `${workerUrl.origin}/verify-email?customerId=${encodeURIComponent(customer.customerId)}&token=${encodeURIComponent(token)}`;
@@ -580,65 +789,18 @@ export default { async fetch(request, env) {
 
             }
 
-            diagnosticStep = "firestore_initialization";
-            const db = getDb(env);
-
             diagnosticStep = "temporary_password_generation";
             const temporaryPassword = generateTemporaryPassword();
             diagnosticStep = "pbkdf2_hash_generation";
             const passwordHash = await createPasswordHash(temporaryPassword);
-            const year = new Date().getFullYear();
-            const counterRef = db.collection("system")
-            .doc("customerCounters")
-            .collection("years")
-            .doc(String(year));
-            const usernameRef = db.collection("system")
-            .doc("customerUsernames")
-            .collection("entries")
-            .doc(normalizedMobile);
-
-            const customer = await db.runTransaction(async transaction => {
-
-                diagnosticStep = "customer_counter_read";
-                const counter = await transaction.get(counterRef);
-                const nextNumber = Number(counter.data()?.nextNumber || 1);
-                const customerId =
-                `CF${year}-${String(nextNumber).padStart(3, "0")}`;
-                const customerRef = db.collection("customers").doc(customerId);
-
-                const customerData = {
-                    customerId,
-                    name: name.trim(),
-                    mobile: normalizedMobile,
-                    username: normalizedMobile,
-                    email: String(email).trim(),
-                    address: String(address).trim(),
-                    jobs: 0,
-                    joinDate: new Date().toLocaleDateString("en-GB"),
-                    passwordHash,
-                    sessionVersion: 0,
-                    emailVerified: false,
-                    createdAt: FieldValue.serverTimestamp(),
-                    createdBy: admin.uid,
-                    passwordUpdatedAt: FieldValue.serverTimestamp()
-                };
-
-                diagnosticStep = "customer_document_write";
-                transaction.create(customerRef, customerData);
-                diagnosticStep = "username_reservation_write";
-                transaction.create(usernameRef, {
-                    customerId,
-                    createdAt: FieldValue.serverTimestamp()
-                });
-                diagnosticStep = "customer_counter_creation_or_update";
-                transaction.set(counterRef, {
-                    nextNumber: nextNumber + 1,
-                    updatedAt: FieldValue.serverTimestamp()
-                }, { merge: true });
-
-                return { customerRef, customerData };
-
-            });
+            const customer = await createCustomerWithFirestoreRest({
+                name,
+                mobile: normalizedMobile,
+                email,
+                address,
+                passwordHash,
+                adminUid: admin.uid
+            }, env, step => { diagnosticStep = step; });
 
             let welcomeEmailSent = false;
             let verificationEmailSent = false;
@@ -670,7 +832,7 @@ export default { async fetch(request, env) {
 
                 diagnosticStep = "verification_email";
                 await sendVerificationEmail(
-                    customer.customerRef,
+                    customer.customerPath,
                     customer.customerData,
                     env
                 );
@@ -689,34 +851,34 @@ export default { async fetch(request, env) {
             }
 
             diagnosticStep = "audit_log_customer_created";
-            await writeAuditLog(
-                db,
+            await writeFirestoreRestAuditLog(
                 "customer_created",
                 admin.uid,
                 customer.customerData.customerId,
-                { welcomeEmailSent, verificationEmailSent }
+                { welcomeEmailSent, verificationEmailSent },
+                env
             );
 
             diagnosticStep = "audit_log_welcome_email";
-            await writeAuditLog(
-                db,
+            await writeFirestoreRestAuditLog(
                 welcomeEmailSent
                     ? "welcome_email_sent"
                     : "email_delivery_failed",
                 admin.uid,
                 customer.customerData.customerId,
-                { emailType: "welcome" }
+                { emailType: "welcome" },
+                env
             );
 
             diagnosticStep = "audit_log_verification_email";
-            await writeAuditLog(
-                db,
+            await writeFirestoreRestAuditLog(
                 verificationEmailSent
                     ? "verification_email_sent"
                     : "email_delivery_failed",
                 admin.uid,
                 customer.customerData.customerId,
-                { emailType: "verification" }
+                { emailType: "verification" },
+                env
             );
 
             return json({
