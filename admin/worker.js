@@ -1,6 +1,5 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { createWelcomeEmailHtml, getWelcomeEmailConfig } from "./js/welcome-email-template.js";
 import { createEmailVerificationHtml } from "./js/email-verification-template.js";
 import { createPasswordResetEmailHtml } from "./js/password-reset-email-template.js";
@@ -173,7 +172,7 @@ function firestoreRestDocumentToCustomer(document) {
     };
 }
 
-async function findCustomerByUsername(username, env) {
+async function findCustomerByField(fieldName, fieldValue, env) {
     const accessToken = await getFirestoreRestAccessToken(env);
     const response = await fetch(
         `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:runQuery`,
@@ -188,9 +187,9 @@ async function findCustomerByUsername(username, env) {
                     from: [{ collectionId: "customers" }],
                     where: {
                         fieldFilter: {
-                            field: { fieldPath: "username" },
+                            field: { fieldPath: fieldName },
                             op: "EQUAL",
-                            value: { stringValue: String(username).trim() }
+                            value: { stringValue: String(fieldValue).trim() }
                         }
                     },
                     limit: 1
@@ -199,7 +198,7 @@ async function findCustomerByUsername(username, env) {
         }
     );
 
-    if (!response.ok) throw new Error(`Firestore username query failed (${response.status}).`);
+    if (!response.ok) throw new Error(`Firestore customer query failed (${response.status}).`);
 
     const responseText = await response.text();
     console.info("Firestore REST JSON parsing started.", { field: "runQueryResponse" });
@@ -210,6 +209,10 @@ async function findCustomerByUsername(username, env) {
     const match = results.find(result => result.document);
 
     return match ? firestoreRestDocumentToCustomer(match.document) : null;
+}
+
+async function findCustomerByUsername(username, env) {
+    return findCustomerByField("username", username, env);
 }
 
 async function findJobsByCustomerId(customerId, env) {
@@ -301,9 +304,9 @@ async function commitFirestoreWrites(writes, env) {
     }
 }
 
-async function patchFirestoreRestDocument(documentPath, fields, env) {
+async function patchFirestoreRestDocument(documentPath, fields, env, deletedFields = []) {
     const accessToken = await getFirestoreRestAccessToken(env);
-    const updateMask = Object.keys(fields)
+    const updateMask = [...new Set([...Object.keys(fields), ...deletedFields])]
     .map(field => `updateMask.fieldPaths=${encodeURIComponent(field)}`)
     .join("&");
     const response = await fetch(
@@ -322,6 +325,63 @@ async function patchFirestoreRestDocument(documentPath, fields, env) {
     );
 
     if (!response.ok) throw new Error(`Firestore document update failed (${response.status}).`);
+}
+
+async function updateCustomerDocumentWithFirestoreRest(endpoint, documentPath, fields, env, options = {}) {
+    console.info("Firestore REST update started.", { endpoint, path: documentPath });
+
+    try {
+        if (options.incrementSessionVersion) {
+            const writes = [];
+
+            if (Object.keys(fields).length || (options.deletedFields || []).length) {
+
+                writes.push({
+                    diagnosticLabel: `${endpoint}_customer_update`,
+                    update: {
+                        name: firestoreDocumentName(documentPath, env),
+                        fields
+                    },
+                    updateMask: { fieldPaths: [...Object.keys(fields), ...(options.deletedFields || [])] }
+                });
+
+            }
+
+            writes.push({
+                diagnosticLabel: `${endpoint}_session_version_increment`,
+                transform: {
+                    document: firestoreDocumentName(documentPath, env),
+                    fieldTransforms: [{
+                        fieldPath: "sessionVersion",
+                        increment: { integerValue: "1" }
+                    }]
+                }
+            });
+            await commitFirestoreWrites(writes, env);
+
+        } else {
+
+            await patchFirestoreRestDocument(
+                documentPath,
+                fields,
+                env,
+                options.deletedFields || []
+            );
+
+        }
+
+        console.info("Firestore REST update succeeded.", { endpoint, path: documentPath });
+
+    } catch (error) {
+
+        console.error("Firestore REST update failed.", {
+            endpoint,
+            path: documentPath,
+            message: error?.message
+        });
+        throw error;
+
+    }
 }
 
 async function writeFirestoreRestAuditLog(eventType, adminUid, customerId, details, env) {
@@ -637,11 +697,6 @@ async function createPasswordHash(password) {
     return `pbkdf2_sha256$${PBKDF2_ITERATIONS}$${normalBase64(salt)}$${normalBase64(bits)}`;
 }
 
-function getDb(env) {
-    if (!getApps().length) initializeApp({ credential: cert({ projectId: env.FIREBASE_PROJECT_ID, clientEmail: env.FIREBASE_CLIENT_EMAIL, privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n") }) });
-    return getFirestore();
-}
-
 async function verifyTurnstile(token, request, env) {
     if (!token || !env.TURNSTILE_SECRET_KEY) return false;
     const form = new FormData();
@@ -666,7 +721,7 @@ async function hashToken(token) {
     return base64Url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)));
 }
 
-async function sendVerificationEmail(customerRef, customer, env) {
+async function sendVerificationEmail(customerPath, customer, env) {
     if (!customer.email) throw new Error("Customer email address is missing.");
     const token = randomToken();
     const expiresAt = Date.now() + (VERIFICATION_TOKEN_SECONDS * 1000);
@@ -676,19 +731,16 @@ async function sendVerificationEmail(customerRef, customer, env) {
         emailVerificationExpiresAt: expiresAt
     };
 
-    if (typeof customerRef === "string") {
-
-        await patchFirestoreRestDocument(customerRef, {
+    await updateCustomerDocumentWithFirestoreRest(
+        "resend-verification-email",
+        customerPath,
+        {
             emailVerified: { booleanValue: false },
             emailVerificationTokenHash: { stringValue: verificationFields.emailVerificationTokenHash },
             emailVerificationExpiresAt: { integerValue: String(verificationFields.emailVerificationExpiresAt) }
-        }, env);
-
-    } else {
-
-        await customerRef.update(verificationFields);
-
-    }
+        },
+        env
+    );
     const verificationUrl = `${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").origin}${new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html").pathname}`;
     const workerUrl = new URL(env.WORKER_PUBLIC_URL || "https://jolly-thunder-4929cf-auth-worker.clicknfixtechnologies.workers.dev");
     const verifyLink = `${workerUrl.origin}/verify-email?customerId=${encodeURIComponent(customer.customerId)}&token=${encodeURIComponent(token)}`;
@@ -706,18 +758,6 @@ function generateTemporaryPassword() {
     return Array.from(values, value =>
         characters[value % characters.length]
     ).join("");
-
-}
-
-async function writeAuditLog(db, eventType, adminUid, customerId, details = {}) {
-
-    await db.collection("auditLogs").add({
-        eventType,
-        actorUid: adminUid,
-        customerId,
-        createdAt: FieldValue.serverTimestamp(),
-        ...details
-    });
 
 }
 
@@ -853,11 +893,11 @@ export default { async fetch(request, env) {
         const token = new URL(request.url).searchParams.get("token");
         const loginUrl = env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html";
         if (!customerId || !token) return Response.redirect(`${loginUrl}?verified=invalid`, 302);
-        const query = await getDb(env).collection("customers").where("customerId", "==", customerId).limit(1).get();
-        if (query.empty) return Response.redirect(`${loginUrl}?verified=invalid`, 302);
-        const ref = query.docs[0].ref, customer = query.docs[0].data();
+        const customerRecord = await findCustomerByField("customerId", customerId, env);
+        if (!customerRecord) return Response.redirect(`${loginUrl}?verified=invalid`, 302);
+        const customer = customerRecord.data;
         if (customer.emailVerified || !customer.emailVerificationExpiresAt || customer.emailVerificationExpiresAt < Date.now() || customer.emailVerificationTokenHash !== await hashToken(token)) return Response.redirect(`${loginUrl}?verified=invalid`, 302);
-        await ref.update({ emailVerified: true, emailVerificationTokenHash: FieldValue.delete(), emailVerificationExpiresAt: FieldValue.delete() });
+        await updateCustomerDocumentWithFirestoreRest("verify-email", `customers/${customerRecord.id}`, { emailVerified: { booleanValue: true } }, env, { deletedFields: ["emailVerificationTokenHash", "emailVerificationExpiresAt"] });
         return Response.redirect(`${loginUrl}?verified=success`, 302);
     }
     if (request.method === "OPTIONS") {
@@ -909,11 +949,9 @@ export default { async fetch(request, env) {
 
             }
 
-            const db = getDb(env);
-            const customerRef = db.collection("customers").doc(customerId);
-            const customer = await customerRef.get();
+            const customerDocument = await getFirestoreRestDocument(`customers/${customerId}`, env);
 
-            if (!customer.exists) {
+            if (!customerDocument) {
 
                 return json({
                     success: false,
@@ -922,17 +960,14 @@ export default { async fetch(request, env) {
 
             }
 
-            await customerRef.update({
-                passwordHash: await createPasswordHash(newPassword),
-                passwordUpdatedAt: FieldValue.serverTimestamp(),
-                sessionVersion: FieldValue.increment(1)
-            });
+            await updateCustomerDocumentWithFirestoreRest("admin-customer-password", `customers/${customerId}`, { passwordHash: { stringValue: await createPasswordHash(newPassword) }, passwordUpdatedAt: firestoreTimestampValue() }, env, { incrementSessionVersion: true });
 
-            await writeAuditLog(
-                db,
+            await writeFirestoreRestAuditLog(
                 "customer_password_reset",
                 admin.uid,
-                customerId
+                customerId,
+                {},
+                env
             );
 
             return json({
@@ -1077,10 +1112,10 @@ export default { async fetch(request, env) {
 
         if (path === "/forgot-password") {
             if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) return json({ success: true, message: "If an account exists, a reset link has been sent." }, 200, origin);
-            const query = await getDb(env).collection("customers").where("email", "==", String(body.email).trim()).limit(1).get();
-            if (!query.empty && env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL && env.BREVO_SENDER_NAME) {
-                const ref = query.docs[0].ref, customer = query.docs[0].data(), token = randomToken();
-                await ref.update({ passwordResetTokenHash: await hashToken(token), passwordResetExpiresAt: Date.now() + (RESET_TOKEN_SECONDS * 1000) });
+            const customerRecord = await findCustomerByField("email", String(body.email).trim(), env);
+            if (customerRecord && env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL && env.BREVO_SENDER_NAME) {
+                const customer = customerRecord.data, token = randomToken();
+                await updateCustomerDocumentWithFirestoreRest("forgot-password", `customers/${customerRecord.id}`, { passwordResetTokenHash: { stringValue: await hashToken(token) }, passwordResetExpiresAt: { integerValue: String(Date.now() + (RESET_TOKEN_SECONDS * 1000)) } }, env);
                 const base = new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html");
                 const resetUrl = `${base.origin}/admin/reset-password.html?customerId=${encodeURIComponent(customer.customerId)}&token=${encodeURIComponent(token)}`;
                 await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL }, to: [{ name: customer.name, email: customer.email }], subject: "Reset your Click & Fix password", htmlContent: createPasswordResetEmailHtml({ companyName: env.APP_NAME, customerName: customer.name, resetUrl }) }) });
@@ -1089,11 +1124,11 @@ export default { async fetch(request, env) {
         }
         if (path === "/reset-password") {
             if (!body.customerId || !body.token || !body.newPassword || !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%&*!?]).{8,}$/.test(body.newPassword)) return json({ success: false, error: "Invalid reset request or password." }, 400, origin);
-            const query = await getDb(env).collection("customers").where("customerId", "==", String(body.customerId)).limit(1).get();
-            if (query.empty) return json({ success: false, error: "This reset link is invalid or expired." }, 400, origin);
-            const ref = query.docs[0].ref, customer = query.docs[0].data();
+            const customerRecord = await findCustomerByField("customerId", String(body.customerId), env);
+            if (!customerRecord) return json({ success: false, error: "This reset link is invalid or expired." }, 400, origin);
+            const customer = customerRecord.data;
             if (!customer.passwordResetExpiresAt || customer.passwordResetExpiresAt < Date.now() || customer.passwordResetTokenHash !== await hashToken(body.token)) return json({ success: false, error: "This reset link is invalid or expired." }, 400, origin);
-            await ref.update({ passwordHash: await createPasswordHash(body.newPassword), passwordResetTokenHash: FieldValue.delete(), passwordResetExpiresAt: FieldValue.delete(), sessionVersion: FieldValue.increment(1) });
+            await updateCustomerDocumentWithFirestoreRest("reset-password", `customers/${customerRecord.id}`, { passwordHash: { stringValue: await createPasswordHash(body.newPassword) } }, env, { deletedFields: ["passwordResetTokenHash", "passwordResetExpiresAt"], incrementSessionVersion: true });
             return json({ success: true, message: "Password reset successfully." }, 200, origin);
         }
         if (path === "/login") {
@@ -1138,7 +1173,7 @@ export default { async fetch(request, env) {
         const session = await requireSession(request, env);
         if (path === "/resend-verification-email") {
             if (session.customer.emailVerified) return json({ success: true, message: "Email is already verified." }, 200, origin);
-            await sendVerificationEmail(session.ref, session.customer, env);
+            await sendVerificationEmail(session.customerPath, session.customer, env);
             return json({ success: true, message: "Verification email sent successfully." }, 200, origin);
         }
         if (path === "/session") return json({ success: true, customer: safeCustomer(session.customer) }, 200, origin);
@@ -1152,11 +1187,11 @@ export default { async fetch(request, env) {
             if (!await passwordMatches(body.currentPassword, session.customer.passwordHash)) return json({ success: false, error: "Current password is incorrect." }, 401, origin);
             if (body.currentPassword === body.newPassword || !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%&*!?]).{8,}$/.test(body.newPassword)) return json({ success: false, error: "New password does not meet the security requirements." }, 400, origin);
             const nextSessionVersion = Number(session.customer.sessionVersion || 0) + 1;
-            await session.ref.update({ passwordHash: await createPasswordHash(body.newPassword), sessionVersion: nextSessionVersion });
-            const nextSession = await signJwt({ sub: session.ref.id, sv: nextSessionVersion, exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS }, env.JWT_SECRET);
+            await updateCustomerDocumentWithFirestoreRest("change-password", session.customerPath, { passwordHash: { stringValue: await createPasswordHash(body.newPassword) } }, env, { incrementSessionVersion: true });
+            const nextSession = await signJwt({ sub: session.claims.sub, sv: nextSessionVersion, exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS }, env.JWT_SECRET);
             return json({ success: true, message: "Password updated successfully.", session: nextSession }, 200, origin);
         }
-        if (path === "/logout") { await session.ref.update({ sessionVersion: FieldValue.increment(1) }); return json({ success: true }, 200, origin); }
+        if (path === "/logout") { await updateCustomerDocumentWithFirestoreRest("logout", session.customerPath, {}, env, { incrementSessionVersion: true }); return json({ success: true }, 200, origin); }
         return json({ success: false, error: "Endpoint not found." }, 404, origin);
     } catch (error) {
         console.error("Worker request failed.", {
