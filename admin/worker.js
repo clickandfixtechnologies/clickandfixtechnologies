@@ -257,9 +257,29 @@ async function createCustomerWithFirestoreRest({ name, mobile, email, address, p
     for (let attempt = 0; attempt < 5; attempt += 1) {
         setDiagnosticStep("customer_counter_read");
         const counter = await getFirestoreRestDocument(counterPath, env);
-        const nextNumber = Number(counter?.fields?.nextNumber?.integerValue || 1);
-        const customerId = `CF${year}-${String(nextNumber).padStart(3, "0")}`;
-        const customerPath = `customers/${customerId}`;
+        let nextNumber = Number(counter?.fields?.nextNumber?.integerValue || 1);
+        let customerId = "";
+        let customerPath = "";
+
+        while (!customerId) {
+            const candidateId = `CF${year}-${String(nextNumber).padStart(3, "0")}`;
+            const candidatePath = `customers/${candidateId}`;
+
+            setDiagnosticStep("customer_id_availability_check");
+            const existingCustomer = await getFirestoreRestDocument(candidatePath, env);
+
+            if (!existingCustomer) {
+
+                customerId = candidateId;
+                customerPath = candidatePath;
+
+            } else {
+
+                nextNumber += 1;
+
+            }
+        }
+
         const customerData = {
             customerId,
             name: name.trim(),
