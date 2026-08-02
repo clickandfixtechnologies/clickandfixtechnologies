@@ -8,6 +8,7 @@ function escapeHtml(value) {
 
 const emailVerificationDefaultMessage = "Please verify your email address to complete your Click & Fix Customer Portal setup.";
 const emailVerificationStructuredDefaults = { headerTitle: "Verify your email address", greeting: "Hello {{customerName}},", body: emailVerificationDefaultMessage, buttonText: "Verify Email Address", closing: "This secure link expires in 24 hours. If you did not request this, you can ignore this email.", footer: "© {{currentYear}} {{companyName}}. All rights reserved." };
+emailVerificationStructuredDefaults.body = emailVerificationDefaultMessage;
 
 function createEmailVerificationHtml(data = {}) {
     const headerTitle = escapeHtml(data.headerTitle || "Verify your email address");

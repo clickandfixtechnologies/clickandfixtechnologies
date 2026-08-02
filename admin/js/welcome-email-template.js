@@ -29,6 +29,8 @@ const welcomeEmailStructuredDefaults = {
     footer: welcomeEmailDefaults.footerText
 };
 
+welcomeEmailStructuredDefaults.body = welcomeEmailDefaults.bodyText;
+
 const welcomeEmailPlaceholders = [
     "{{companyName}}",
     "{{customerName}}",

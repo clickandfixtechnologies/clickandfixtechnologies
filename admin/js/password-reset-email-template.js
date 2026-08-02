@@ -4,6 +4,7 @@ function escapeHtml(value) {
 
 const passwordResetDefaultMessage = "We received a request to reset your Customer Portal password.";
 const passwordResetStructuredDefaults = { headerTitle: "Reset your password", greeting: "Hello {{customerName}},", body: passwordResetDefaultMessage, buttonText: "Reset Password", closing: "This secure link expires in 30 minutes. If you did not request this, ignore this email.", footer: "" };
+passwordResetStructuredDefaults.body = passwordResetDefaultMessage;
 
 function createPasswordResetEmailHtml(data = {}) {
     const headerTitle = escapeHtml(data.headerTitle || "Reset your password");
