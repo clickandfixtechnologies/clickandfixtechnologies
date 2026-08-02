@@ -970,6 +970,7 @@ export default { async fetch(request, env) {
 
             if (action === "load") {
                 const override = await getFirestoreRestDocument(documentPath, env);
+                const readField = (field, fallback) => override?.fields?.[field]?.stringValue ?? fallback;
                 const previewValues = {
                     customer_name: "Test Customer",
                     customer_id: "TEST-001",
@@ -991,7 +992,7 @@ export default { async fetch(request, env) {
                     loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
                 };
                 const resolved = await resolveEmailTemplate(template.key, previewValues, env);
-                return json({ success: true, template: { key: template.key, name: template.name, subject: override?.fields?.subject?.stringValue || template.defaultSubject, headerTitle: override?.fields?.headerTitle?.stringValue || template.defaults.headerTitle, greeting: override?.fields?.greeting?.stringValue || template.defaults.greeting, body: override?.fields?.body?.stringValue || template.defaults.body, buttonText: override?.fields?.buttonText?.stringValue || template.defaults.buttonText, closing: override?.fields?.closing?.stringValue || template.defaults.closing, footer: override?.fields?.footer?.stringValue || template.defaults.footer, html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
+                return json({ success: true, template: { key: template.key, name: template.name, subject: readField("subject", template.defaultSubject), headerTitle: readField("headerTitle", template.defaults.headerTitle), greeting: readField("greeting", template.defaults.greeting), body: readField("body", template.defaults.body), buttonText: readField("buttonText", template.defaults.buttonText), closing: readField("closing", template.defaults.closing), footer: readField("footer", template.defaults.footer), html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 
             if (action === "save") {

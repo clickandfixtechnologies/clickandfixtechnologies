@@ -26,7 +26,12 @@ async function load(nextKey) {
     preview.srcdoc = data.template.html || "";
 }
 
-document.getElementById("save").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "save", templateKey: key, ...values() }); show("Template saved."); await load(key); };
+document.getElementById("save").onclick = async () => {
+    const payload = { action: "save", templateKey: key, ...values() };
+    await adminWorkerRequest("/admin/email-templates", payload);
+    show("Template saved.");
+    await load(key);
+};
 document.getElementById("reset").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "reset", templateKey: key }); show("Built-in template restored."); await load(key); };
 document.getElementById("test").onclick = async () => { const email = prompt("Send test email to:"); if (email) { await adminWorkerRequest("/admin/email-templates", { action: "send-test", templateKey: key, email, ...values() }); show("Test email sent."); } };
 
