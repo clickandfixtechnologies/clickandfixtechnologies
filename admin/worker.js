@@ -10,6 +10,9 @@ const SESSION_SECONDS = 60 * 60 * 12;
 const VERIFICATION_TOKEN_SECONDS = 60 * 60 * 24;
 const RESET_TOKEN_SECONDS = 60 * 30;
 
+let firestoreAccessToken = "";
+let firestoreAccessTokenExpiresAt = 0;
+
 function cors() {
     return {
         "Access-Control-Allow-Origin": ORIGIN,
@@ -36,6 +39,80 @@ function base64Url(bytes) {
 function decodeBase64(value) {
     const binary = atob(value.replace(/-/g, "+").replace(/_/g, "/"));
     return Uint8Array.from(binary, char => char.charCodeAt(0));
+}
+
+function pemToBytes(pem) {
+    const base64 = String(pem || "")
+    .replace(/\\n/g, "\n")
+    .replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
+
+    return Uint8Array.from(atob(base64), character => character.charCodeAt(0));
+}
+
+async function getFirestoreRestAccessToken(env) {
+    if (firestoreAccessToken && firestoreAccessTokenExpiresAt > Date.now() + 60000) {
+
+        return firestoreAccessToken;
+
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const header = base64Url(new TextEncoder().encode(JSON.stringify({ alg: "RS256", typ: "JWT" })));
+    const payload = base64Url(new TextEncoder().encode(JSON.stringify({
+        iss: env.FIREBASE_CLIENT_EMAIL,
+        scope: "https://www.googleapis.com/auth/datastore",
+        aud: "https://oauth2.googleapis.com/token",
+        iat: now,
+        exp: now + 3600
+    })));
+    const signingInput = `${header}.${payload}`;
+    const privateKey = await crypto.subtle.importKey(
+        "pkcs8",
+        pemToBytes(env.FIREBASE_PRIVATE_KEY),
+        { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+        false,
+        ["sign"]
+    );
+    const signature = await crypto.subtle.sign(
+        "RSASSA-PKCS1-v1_5",
+        privateKey,
+        new TextEncoder().encode(signingInput)
+    );
+    const assertion = `${signingInput}.${base64Url(signature)}`;
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            assertion
+        })
+    });
+
+    if (!response.ok) {
+
+        throw new Error(`Firestore REST authentication failed (${response.status}).`);
+
+    }
+
+    const token = await response.json();
+    firestoreAccessToken = token.access_token;
+    firestoreAccessTokenExpiresAt = Date.now() + (Number(token.expires_in || 3600) * 1000);
+
+    return firestoreAccessToken;
+}
+
+async function usernameReservationExists(username, env) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const documentPath = encodeURIComponent(String(username));
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/system/customerUsernames/entries/${documentPath}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    if (response.status === 404) return false;
+    if (response.ok) return true;
+
+    throw new Error(`Firestore username lookup failed (${response.status}).`);
 }
 
 async function signJwt(payload, secret) {
@@ -232,8 +309,14 @@ async function requireAdmin(request, env) {
             })
         });
 
+    console.info("Admin authentication step: Firebase Admin token verification started.");
+
     const decodedToken = await getAuth(adminApp)
     .verifyIdToken(token, true);
+
+    console.info("Admin authentication step: Firebase Admin token verification succeeded.");
+
+    console.info("Admin authentication step: custom claim check started.");
 
     if (decodedToken.admin !== true) {
 
@@ -244,6 +327,8 @@ async function requireAdmin(request, env) {
         throw error;
 
     }
+
+    console.info("Admin authentication step: custom claim check succeeded.");
 
     return decodedToken;
 
@@ -273,6 +358,8 @@ export default { async fetch(request, env) {
     if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405, origin);
     if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) return json({ success: false, error: "Content-Type must be application/json." }, 415, origin);
     let body; try { body = await request.json(); } catch { return json({ success: false, error: "Invalid JSON request body." }, 400, origin); }
+    let diagnosticStep = "request_routing";
+
     try {
         if (path === "/admin/session") {
 
@@ -346,6 +433,7 @@ export default { async fetch(request, env) {
 
         if (path === "/admin/customers") {
 
+            diagnosticStep = "firebase_admin_token_verification_or_custom_claim_check";
             const admin = await requireAdmin(request, env);
             const { name, mobile, email, address = "", emailConfig } = body;
 
@@ -362,14 +450,11 @@ export default { async fetch(request, env) {
 
             }
 
-            const db = getDb(env);
             const normalizedMobile = String(mobile).trim();
-            const duplicate = await db.collection("customers")
-            .where("username", "==", normalizedMobile)
-            .limit(1)
-            .get();
+            diagnosticStep = "duplicate_username_lookup";
+            const duplicateExists = await usernameReservationExists(normalizedMobile, env);
 
-            if (!duplicate.empty) {
+            if (duplicateExists) {
 
                 return json({
                     success: false,
@@ -378,7 +463,12 @@ export default { async fetch(request, env) {
 
             }
 
+            diagnosticStep = "firestore_initialization";
+            const db = getDb(env);
+
+            diagnosticStep = "temporary_password_generation";
             const temporaryPassword = generateTemporaryPassword();
+            diagnosticStep = "pbkdf2_hash_generation";
             const passwordHash = await createPasswordHash(temporaryPassword);
             const year = new Date().getFullYear();
             const counterRef = db.collection("system")
@@ -392,6 +482,7 @@ export default { async fetch(request, env) {
 
             const customer = await db.runTransaction(async transaction => {
 
+                diagnosticStep = "customer_counter_read";
                 const counter = await transaction.get(counterRef);
                 const nextNumber = Number(counter.data()?.nextNumber || 1);
                 const customerId =
@@ -415,11 +506,14 @@ export default { async fetch(request, env) {
                     passwordUpdatedAt: FieldValue.serverTimestamp()
                 };
 
+                diagnosticStep = "customer_document_write";
                 transaction.create(customerRef, customerData);
+                diagnosticStep = "username_reservation_write";
                 transaction.create(usernameRef, {
                     customerId,
                     createdAt: FieldValue.serverTimestamp()
                 });
+                diagnosticStep = "customer_counter_creation_or_update";
                 transaction.set(counterRef, {
                     nextNumber: nextNumber + 1,
                     updatedAt: FieldValue.serverTimestamp()
@@ -434,6 +528,7 @@ export default { async fetch(request, env) {
 
             try {
 
+                diagnosticStep = "welcome_email";
                 await sendWelcomeEmail(
                     customer.customerData,
                     temporaryPassword,
@@ -446,12 +541,17 @@ export default { async fetch(request, env) {
             }
             catch (error) {
 
-                console.error("Welcome email delivery failed.", error);
+                console.error("Welcome email delivery failed.", {
+                    name: error?.name,
+                    message: error?.message,
+                    stack: error?.stack
+                });
 
             }
 
             try {
 
+                diagnosticStep = "verification_email";
                 await sendVerificationEmail(
                     customer.customerRef,
                     customer.customerData,
@@ -463,10 +563,15 @@ export default { async fetch(request, env) {
             }
             catch (error) {
 
-                console.error("Verification email delivery failed.", error);
+                console.error("Verification email delivery failed.", {
+                    name: error?.name,
+                    message: error?.message,
+                    stack: error?.stack
+                });
 
             }
 
+            diagnosticStep = "audit_log_customer_created";
             await writeAuditLog(
                 db,
                 "customer_created",
@@ -475,6 +580,7 @@ export default { async fetch(request, env) {
                 { welcomeEmailSent, verificationEmailSent }
             );
 
+            diagnosticStep = "audit_log_welcome_email";
             await writeAuditLog(
                 db,
                 welcomeEmailSent
@@ -485,6 +591,7 @@ export default { async fetch(request, env) {
                 { emailType: "welcome" }
             );
 
+            diagnosticStep = "audit_log_verification_email";
             await writeAuditLog(
                 db,
                 verificationEmailSent
@@ -558,7 +665,14 @@ export default { async fetch(request, env) {
         if (path === "/logout") { await session.ref.update({ sessionVersion: FieldValue.increment(1) }); return json({ success: true }, 200, origin); }
         return json({ success: false, error: "Endpoint not found." }, 404, origin);
     } catch (error) {
-        console.error("Worker request failed.", error);
+        console.error("Worker request failed.", {
+            path,
+            method: request.method,
+            diagnosticStep,
+            name: error?.name,
+            message: error?.message,
+            stack: error?.stack
+        });
 
         return json({
             success: false,
