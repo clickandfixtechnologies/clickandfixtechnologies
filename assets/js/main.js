@@ -352,8 +352,27 @@ if (getLocationBtn) {
 
 }
 
+    /*=========================================
+      VALIDATE LOCATION BEFORE SUBMIT
+=========================================*/
+const inspectionForm = document.querySelector('#inspectionModal form');
+
+if (inspectionForm) {
+    inspectionForm.addEventListener("submit", function(e) {
+        const lat = document.getElementById("latitude").value;
+        const lng = document.getElementById("longitude").value;
+
+        // যদি ল্যাটিটিউড বা লঙ্গিটিউড খালি থাকে
+        if (!lat || !lng) {
+            e.preventDefault(); // ফর্ম সাবমিট আটকে দেবে
+            alert("⚠️ Please click the 'Use Current Location' button to confirm your location before submitting the form.");
+        }
+    });
+}
+
+
     /*=========================
-          Close Outside Click
+         Close Outside Click
     =========================*/
 
     document.addEventListener("click",(e)=>{
