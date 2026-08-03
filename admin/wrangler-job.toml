@@ -1,0 +1,8 @@
+name = "solitary-bush-2656job-email-worker"
+main = "job-email-worker.js"
+compatibility_date = "2026-08-03"
+compatibility_flags = ["nodejs_compat"]
+
+# Preserve non-secret variables configured in the Cloudflare Dashboard on deploy.
+# Secrets remain managed in the Dashboard and must never be committed here.
+keep_vars = true
