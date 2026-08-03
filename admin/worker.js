@@ -154,22 +154,6 @@ async function usernameReservationExists(username, env) {
         { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
-    console.info("Username reservation lookup diagnostics.", {
-        username,
-        documentPath,
-        requestUrl,
-        status: response.status,
-        ok: response.ok
-    });
-
-    if (response.ok) {
-        console.info("Username reservation lookup response body.", {
-            body: await response.clone().text()
-        });
-    }
-
-    if (response.status === 404) console.info("Reservation not found");
-
     if (response.status === 404) return false;
     if (response.ok) return true;
 
@@ -1072,21 +1056,7 @@ export default { async fetch(request, env) {
                     )
                 });
             }
-            console.info("Customer deletion reservation diagnostics before commit.", {
-                customerMobile: customer.mobile,
-                normalizedMobile,
-                reservationPath,
-                writes
-            });
-            const deleteResponse = await commitFirestoreWrites(writes, env);
-            console.info("Customer deletion Firestore commit response.", { deleteResponse });
-            const remainingReservation = normalizedMobile
-                ? await getFirestoreRestDocument(reservationPath, env)
-                : null;
-            console.info("Customer deletion reservation diagnostics after commit.", {
-                reservationPath,
-                reservationExists: Boolean(remainingReservation)
-            });
+            await commitFirestoreWrites(writes, env);
             await writeFirestoreRestAuditLog("customer_deleted", admin.uid, customerId, {}, env);
             return json({ success: true, message: "Customer deleted successfully." }, 200, origin);
         }
@@ -1160,11 +1130,6 @@ export default { async fetch(request, env) {
             const normalizedMobile = String(mobile).trim();
             diagnosticStep = "duplicate_username_lookup";
             let duplicateExists = await usernameReservationExists(normalizedMobile, env);
-            console.info("Duplicate mobile check result", {
-                normalizedMobile,
-                duplicateExists
-            });
-
             if (duplicateExists) {
                 const reservationPath = `system/customerUsernames/entries/${normalizedMobile}`;
                 const reservationDocument = await getFirestoreRestDocument(reservationPath, env);
