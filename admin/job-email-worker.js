@@ -166,11 +166,35 @@ function replace(text, values) {
     return String(text || "").replace(/{{\s*([a-z_]+)\s*}}/gi, (match, key) => values[key.toLowerCase()] ?? match);
 }
 
+function decodeField(field) {
+    if (field.stringValue !== undefined) return field.stringValue;
+    if (field.integerValue !== undefined) return Number(field.integerValue);
+    if (field.booleanValue !== undefined) return field.booleanValue;
+    if (field.timestampValue !== undefined) return field.timestampValue;
+
+    if (field.mapValue) {
+        return Object.fromEntries(
+            Object.entries(field.mapValue.fields || {}).map(([k, v]) => [
+                k,
+                decodeField(v)
+            ])
+        );
+    }
+
+    if (field.arrayValue) {
+        return (field.arrayValue.values || []).map(decodeField);
+    }
+
+    return null;
+}
+
 function fields(source) {
-    return Object.fromEntries(Object.entries(source).map(([key, value]) => [
-        key,
-        value.stringValue ?? value.integerValue ?? value.timestampValue ?? ""
-    ]));
+    return Object.fromEntries(
+        Object.entries(source).map(([k, v]) => [
+            k,
+            decodeField(v)
+        ])
+    );
 }
 
 async function getToken(env) {
