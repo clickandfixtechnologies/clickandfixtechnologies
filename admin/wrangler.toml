@@ -1,6 +1,6 @@
-name = "jolly-thunder-4929cf-auth-worker"
-main = "worker.js"
-compatibility_date = "2026-08-01"
+name = "solitary-bush-2656job-email-worker"
+main = "job-email-worker.js"
+compatibility_date = "2026-08-03"
 compatibility_flags = ["nodejs_compat"]
 
 # Preserve non-secret variables configured in the Cloudflare Dashboard on deploy.

@@ -288,7 +288,19 @@ const filteredJobs = jobs.filter(job => {
 
             <td>
 
-    ${getStatusBadge(job.status)}
+    <div class="d-inline-flex align-items-center gap-1">
+        ${getStatusBadge(job.status)}
+        <button
+        type="button"
+        class="btn btn-sm btn-outline-primary"
+        onclick="openJobStatusEmailModal('${job.jobId}')"
+        title="Send status email"
+        aria-label="Send status email">
+
+        <i class="bi bi-envelope-fill"></i>
+
+        </button>
+    </div>
 
 </td>
 
@@ -384,6 +396,130 @@ function getStatusBadge(status){
     }
 
 }
+
+/*=========================================
+        JOB STATUS EMAIL
+=========================================*/
+
+const JOB_EMAIL_WORKER_URL =
+    "https://solitary-bush-2656job-email-worker.clicknfixtechnologies.workers.dev";
+
+let selectedJobStatusEmail = null;
+
+function openJobStatusEmailModal(jobId) {
+
+    selectedJobStatusEmail = jobs.find(job => job.jobId === jobId);
+
+    if (!selectedJobStatusEmail) return;
+
+    const errorAlert = document.getElementById("jobEmailError");
+    errorAlert.textContent = "";
+    errorAlert.classList.add("d-none");
+
+    const customers = JSON.parse(localStorage.getItem(CUSTOMER_KEY)) || [];
+
+    const customer = customers.find(item =>
+        item.customerId === selectedJobStatusEmail.customerId
+    );
+
+    document.getElementById("jobEmailCustomerName").textContent =
+        selectedJobStatusEmail.customer || "Not available";
+
+    document.getElementById("jobEmailCustomerEmail").textContent =
+        customer?.email || "Not available";
+
+    document.getElementById("jobEmailJobId").textContent =
+        selectedJobStatusEmail.jobId;
+
+    document.getElementById("jobEmailDevice").textContent =
+        `${selectedJobStatusEmail.device || ""} ${selectedJobStatusEmail.brand || ""} ${selectedJobStatusEmail.model || ""}`.trim() || "Not available";
+
+    document.getElementById("jobEmailStatus").textContent =
+        selectedJobStatusEmail.status || "Not available";
+
+    new bootstrap.Modal(
+        document.getElementById("jobStatusEmailModal")
+    ).show();
+
+}
+
+function showJobEmailToast(message, type) {
+
+    const toastElement = document.getElementById("jobEmailToast");
+
+    toastElement.classList.remove("bg-success", "bg-danger");
+    toastElement.classList.add(type === "success" ? "bg-success" : "bg-danger");
+
+    document.getElementById("jobEmailToastMessage").textContent = message;
+
+    bootstrap.Toast.getOrCreateInstance(toastElement).show();
+
+}
+
+document.getElementById("sendJobStatusEmail").addEventListener("click", async () => {
+
+    if (!selectedJobStatusEmail) return;
+
+    const sendButton = document.getElementById("sendJobStatusEmail");
+    const cancelButton = document.getElementById("cancelJobStatusEmail");
+    const closeButton = document.getElementById("closeJobStatusEmail");
+
+    sendButton.disabled = true;
+    cancelButton.disabled = true;
+    closeButton.disabled = true;
+    sendButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        Sending...
+    `;
+
+    try {
+
+        const response = await fetch(
+            `${JOB_EMAIL_WORKER_URL}/send-job-status-email`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    jobId: selectedJobStatusEmail.jobId,
+                    status: selectedJobStatusEmail.status
+                })
+            }
+        );
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || result.success === false) {
+            throw new Error(result.error || "Unable to send status email.");
+        }
+
+        bootstrap.Modal.getInstance(
+            document.getElementById("jobStatusEmailModal")
+        ).hide();
+
+        showJobEmailToast("Status email sent successfully.", "success");
+
+    } catch (error) {
+
+        console.error("Job status email failed", error);
+        const errorAlert = document.getElementById("jobEmailError");
+        errorAlert.textContent = error.message || "Failed to send status email.";
+        errorAlert.classList.remove("d-none");
+
+    } finally {
+
+        sendButton.disabled = false;
+        cancelButton.disabled = false;
+        closeButton.disabled = false;
+        sendButton.innerHTML = `
+            <i class="bi bi-envelope-fill me-1"></i>
+            Send Email
+        `;
+
+    }
+
+});
 /*=========================
     Start
 =========================*/
@@ -1273,6 +1409,8 @@ window.viewJob = viewJob;
 window.editJob = editJob;
 
 window.deleteJob = deleteJob;
+
+window.openJobStatusEmailModal = openJobStatusEmailModal;
 
 window.printJobReport = printJobReport;
 

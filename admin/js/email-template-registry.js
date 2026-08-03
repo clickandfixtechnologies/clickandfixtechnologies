@@ -9,6 +9,7 @@
 import { createWelcomeEmailHtml, welcomeEmailDefaults, welcomeEmailStructuredDefaults } from "./welcome-email-template.js";
 import { createEmailVerificationHtml, emailVerificationDefaultMessage, emailVerificationStructuredDefaults } from "./email-verification-template.js";
 import { createPasswordResetEmailHtml, passwordResetDefaultMessage, passwordResetStructuredDefaults } from "./password-reset-email-template.js";
+import { createJobStatusEmailHtml, jobStatusEmailTemplates } from "./job-status-email-templates.js";
 
 const emailTemplateRegistry = Object.freeze([
     Object.freeze({
@@ -37,7 +38,11 @@ const emailTemplateRegistry = Object.freeze([
         defaultMessage: passwordResetDefaultMessage,
         defaults: passwordResetStructuredDefaults,
         render: data => createPasswordResetEmailHtml(data)
-    })
+    }),
+    ...jobStatusEmailTemplates.map(template => Object.freeze({
+        ...template,
+        render: data => createJobStatusEmailHtml(template, data)
+    }))
 ]);
 
 export { emailTemplateRegistry };
