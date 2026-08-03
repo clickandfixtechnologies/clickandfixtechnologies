@@ -345,6 +345,8 @@ async function commitFirestoreWrites(writes, env) {
         throw error;
 
     }
+
+    return response.json().catch(() => ({}));
 }
 
 async function patchFirestoreRestDocument(documentPath, fields, env, deletedFields = []) {
@@ -1043,15 +1045,31 @@ export default { async fetch(request, env) {
 
             const customer = firestoreRestDocumentToCustomer(customerDocument).data;
             const writes = [{ delete: firestoreDocumentName(customerPath, env) }];
+            const normalizedMobile = String(customer.mobile || "").trim();
+            const reservationPath = `system/customerUsernames/entries/${normalizedMobile}`;
             if (customer.mobile) {
                 writes.push({
                     delete: firestoreDocumentName(
-                        `system/customerUsernames/entries/${customer.mobile}`,
+                        reservationPath,
                         env
                     )
                 });
             }
-            await commitFirestoreWrites(writes, env);
+            console.info("Customer deletion reservation diagnostics before commit.", {
+                customerMobile: customer.mobile,
+                normalizedMobile,
+                reservationPath,
+                writes
+            });
+            const deleteResponse = await commitFirestoreWrites(writes, env);
+            console.info("Customer deletion Firestore commit response.", { deleteResponse });
+            const remainingReservation = normalizedMobile
+                ? await getFirestoreRestDocument(reservationPath, env)
+                : null;
+            console.info("Customer deletion reservation diagnostics after commit.", {
+                reservationPath,
+                reservationExists: Boolean(remainingReservation)
+            });
             await writeFirestoreRestAuditLog("customer_deleted", admin.uid, customerId, {}, env);
             return json({ success: true, message: "Customer deleted successfully." }, 200, origin);
         }
