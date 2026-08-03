@@ -67,6 +67,19 @@ export default {
             const customer = customerDocument?.fields ? fields(customerDocument.fields) : null;
             if (!customer?.email) return json({ success: false, error: "Customer email not found." }, 404);
 
+const deliveredTimeline = (job.timeline || []).find(
+    item => item.status === "Delivered"
+);
+
+let deliveryTime = "";
+
+if (deliveredTimeline?.date) {
+    const parts = deliveredTimeline.date.split(",");
+    if (parts.length > 1) {
+        deliveryTime = parts[1].trim();
+    }
+}
+
             const values = {
                 customer_name: customer.name || "Customer",
                 job_id: job.jobId,
@@ -76,7 +89,7 @@ export default {
                 current_status: body.status,
                 estimated_time: job.estimatedTime || "",
                 delivery_date: job.deliveredDate || "",
-                delivery_time: job.deliveredTime || "",
+                delivery_time: deliveryTime,
                 portal_url: env.CUSTOMER_PORTAL_URL || "https://clickandfix.site/admin/customer-login.html",
                 company_name: env.APP_NAME || "Click & Fix Technologies",
                 current_year: new Date().getFullYear()
