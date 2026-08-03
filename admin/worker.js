@@ -1159,11 +1159,34 @@ export default { async fetch(request, env) {
 
             const normalizedMobile = String(mobile).trim();
             diagnosticStep = "duplicate_username_lookup";
-            const duplicateExists = await usernameReservationExists(normalizedMobile, env);
+            let duplicateExists = await usernameReservationExists(normalizedMobile, env);
             console.info("Duplicate mobile check result", {
                 normalizedMobile,
                 duplicateExists
             });
+
+            if (duplicateExists) {
+                const reservationPath = `system/customerUsernames/entries/${normalizedMobile}`;
+                const reservationDocument = await getFirestoreRestDocument(reservationPath, env);
+                const reservation = reservationDocument
+                    ? firestoreRestDocumentToCustomer(reservationDocument).data
+                    : null;
+                const reservedCustomerId = String(reservation?.customerId || "");
+                const reservedCustomer = reservedCustomerId
+                    ? await getFirestoreRestDocument(`customers/${reservedCustomerId}`, env)
+                    : null;
+
+                if (!reservedCustomer) {
+                    await commitFirestoreWrites([{
+                        delete: firestoreDocumentName(reservationPath, env)
+                    }], env);
+                    console.info("Removed orphan username reservation", {
+                        reservationPath,
+                        customerId: reservedCustomerId || null
+                    });
+                    duplicateExists = false;
+                }
+            }
 
             if (duplicateExists) {
 
