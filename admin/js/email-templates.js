@@ -16,6 +16,10 @@ const fill = template => fields.forEach(field => { document.getElementById(field
 
 async function loadTemplates() {
     const data = await adminWorkerRequest("/admin/email-templates", { action: "list" });
+
+    console.log(data);
+console.log(data.templates);
+
     list.innerHTML = data.templates.map(template => `<button class="list-group-item list-group-item-action" data-key="${template.key}" data-delivery-worker="${template.deliveryWorker || "auth"}">${template.name}${template.hasOverride ? " *" : ""}</button>`).join("");
     list.querySelectorAll("button").forEach(button => { button.onclick = () => load(button.dataset.key); });
     if (data.templates[0]) await load(data.templates[0].key);
