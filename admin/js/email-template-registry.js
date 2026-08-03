@@ -46,3 +46,6 @@ const emailTemplateRegistry = Object.freeze([
 ]);
 
 export { emailTemplateRegistry };
+
+console.log(jobStatusEmailTemplates);
+console.log(emailTemplateRegistry);
