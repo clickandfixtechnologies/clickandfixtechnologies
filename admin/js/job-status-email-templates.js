@@ -2,7 +2,7 @@ const jobEmailFooter = "© {{current_year}} {{company_name}}. All rights reserve
 
 const jobStatusEmailTemplates = Object.freeze([
     Object.freeze({
-        key: "jobReceived",
+        key: "job_received",
         module: "js/job-status-email-templates.js",
         name: "Job Received",
         deliveryWorker: "job",
@@ -32,7 +32,7 @@ const jobStatusEmailTemplates = Object.freeze([
         })
     }),
     Object.freeze({
-        key: "waitingForParts",
+        key: "waiting_for_parts",
         module: "js/job-status-email-templates.js",
         name: "Waiting for Parts",
         deliveryWorker: "job",
@@ -47,7 +47,7 @@ const jobStatusEmailTemplates = Object.freeze([
         })
     }),
     Object.freeze({
-        key: "repairInProgress",
+        key: "repair_in_progress",
         module: "js/job-status-email-templates.js",
         name: "Repair in Progress",
         deliveryWorker: "job",
