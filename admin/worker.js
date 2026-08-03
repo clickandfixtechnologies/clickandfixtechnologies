@@ -4,6 +4,7 @@ import { createWelcomeEmailHtml, getWelcomeEmailConfig } from "./js/welcome-emai
 import { createEmailVerificationHtml } from "./js/email-verification-template.js";
 import { createPasswordResetEmailHtml } from "./js/password-reset-email-template.js";
 import { emailTemplateRegistry } from "./js/email-template-registry.js";
+import { jobStatusTemplateRegistry } from "./js/job-status-template-registry.js";
 
 const ORIGIN = "https://clickandfix.site";
 const SESSION_SECONDS = 60 * 60 * 12;
@@ -25,6 +26,11 @@ function replaceEmailPlaceholders(template, values = {}) {
 async function resolveEmailTemplate(templateKey, values, env) {
     const definition = emailTemplateRegistry.find(template => template.key === templateKey);
     if (!definition) throw new Error("Email template is not registered.");
+
+    return resolveTemplateDefinition(definition, values, env);
+}
+
+async function resolveTemplateDefinition(definition, values, env) {
 
     const override = await getFirestoreRestDocument(
         `system/emailTemplates/templates/${definition.key}`,
@@ -963,13 +969,19 @@ export default { async fetch(request, env) {
 
         }
 
-        if (path === "/admin/email-templates") {
+        const templateRegistry = path === "/admin/email-templates"
+            ? emailTemplateRegistry
+            : path === "/admin/job-status-templates"
+                ? jobStatusTemplateRegistry
+                : null;
+
+        if (templateRegistry) {
             const admin = await requireAdmin(request, env);
             const action = String(body.action || "list");
-            const template = emailTemplateRegistry.find(item => item.key === body.templateKey);
+            const template = templateRegistry.find(item => item.key === body.templateKey);
 
             if (action === "list") {
-                const templates = await Promise.all(emailTemplateRegistry.map(async item => {
+                const templates = await Promise.all(templateRegistry.map(async item => {
                     const override = await getFirestoreRestDocument(`system/emailTemplates/templates/${item.key}`, env);
                     return { key: item.key, name: item.name, subject: override?.fields?.subject?.stringValue || item.defaultSubject, hasOverride: Boolean(override), deliveryWorker: item.deliveryWorker || "auth" };
                 }));
@@ -1011,7 +1023,7 @@ export default { async fetch(request, env) {
                     companyWebsite: env.COMPANY_WEBSITE || "https://clickandfix.site",
                     loginUrl: env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html"
                 };
-                const resolved = await resolveEmailTemplate(template.key, previewValues, env);
+                const resolved = await resolveTemplateDefinition(template, previewValues, env);
                 return json({ success: true, template: { key: template.key, name: template.name, deliveryWorker: template.deliveryWorker || "auth", subject: readField("subject", template.defaultSubject), headerTitle: readField("headerTitle", template.defaults.headerTitle), greeting: readField("greeting", template.defaults.greeting), body: readField("body", template.defaults.body), buttonText: readField("buttonText", template.defaults.buttonText), closing: readField("closing", template.defaults.closing), footer: readField("footer", template.defaults.footer), html: resolved.html, hasOverride: Boolean(override) } }, 200, origin);
             }
 

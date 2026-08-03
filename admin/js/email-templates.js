@@ -6,6 +6,8 @@ const fields = ["subject", "headerTitle", "greeting", "body", "buttonText", "clo
 const list = document.getElementById("templateList");
 const preview = document.getElementById("preview");
 const notice = document.getElementById("notice");
+const templateEndpoint = document.body.dataset.templateEndpoint || "/admin/email-templates";
+const templateScope = document.body.dataset.templateScope || "customer";
 let key = "";
 let deliveryWorker = "auth";
 const JOB_EMAIL_WORKER_URL = "https://solitary-bush-2656job-email-worker.clicknfixtechnologies.workers.dev";
@@ -15,10 +17,7 @@ const values = () => Object.fromEntries(fields.map(field => [field, document.get
 const fill = template => fields.forEach(field => { document.getElementById(field).value = template[field] || ""; });
 
 async function loadTemplates() {
-    const data = await adminWorkerRequest("/admin/email-templates", { action: "list" });
-
-    console.log(data);
-console.log(data.templates);
+    const data = await adminWorkerRequest(templateEndpoint, { action: "list" });
 
     list.innerHTML = data.templates.map(template => `<button class="list-group-item list-group-item-action" data-key="${template.key}" data-delivery-worker="${template.deliveryWorker || "auth"}">${template.name}${template.hasOverride ? " *" : ""}</button>`).join("");
     list.querySelectorAll("button").forEach(button => { button.onclick = () => load(button.dataset.key); });
@@ -27,7 +26,7 @@ console.log(data.templates);
 
 async function load(nextKey) {
     key = nextKey;
-    const data = await adminWorkerRequest("/admin/email-templates", { action: "load", templateKey: key });
+    const data = await adminWorkerRequest(templateEndpoint, { action: "load", templateKey: key });
     deliveryWorker = data.template.deliveryWorker || "auth";
     fill(data.template);
     preview.srcdoc = data.template.html || "";
@@ -35,17 +34,17 @@ async function load(nextKey) {
 
 document.getElementById("save").onclick = async () => {
     const payload = { action: "save", templateKey: key, ...values() };
-    await adminWorkerRequest("/admin/email-templates", payload);
+    await adminWorkerRequest(templateEndpoint, payload);
     show("Template saved.");
     await load(key);
     preview.srcdoc = preview.srcdoc;
 };
-document.getElementById("reset").onclick = async () => { await adminWorkerRequest("/admin/email-templates", { action: "reset", templateKey: key }); show("Built-in template restored."); await load(key); };
+document.getElementById("reset").onclick = async () => { await adminWorkerRequest(templateEndpoint, { action: "reset", templateKey: key }); show("Built-in template restored."); await load(key); };
 document.getElementById("test").onclick = async () => {
     const email = prompt("Send test email to:");
     if (!email) return;
 
-    if (deliveryWorker === "job") {
+    if (templateScope === "job") {
         const response = await fetch(`${JOB_EMAIL_WORKER_URL}/send-test-job-email`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -54,7 +53,7 @@ document.getElementById("test").onclick = async () => {
         const result = await response.json().catch(() => ({}));
         if (!response.ok || result.success === false) throw new Error(result.error || "Test email could not be sent.");
     } else {
-        await adminWorkerRequest("/admin/email-templates", { action: "send-test", templateKey: key, email, ...values() });
+        await adminWorkerRequest(templateEndpoint, { action: "send-test", templateKey: key, email, ...values() });
     }
 
     show("Test email sent.");
