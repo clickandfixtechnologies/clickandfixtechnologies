@@ -1285,10 +1285,33 @@ export default { async fetch(request, env) {
 
         }
 
-        if (path === "/forgot-password") {
-            if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) return json({ success: true, message: "If an account exists, a reset link has been sent." }, 200, origin);
+        if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email))
+    return json(
+        {
+            success: false,
+            error: "Please enter a valid email address."
+        },
+        400,
+        origin
+    );
             const customerRecord = await findCustomerByField("email", String(body.email).trim(), env);
-            if (customerRecord && env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL && env.BREVO_SENDER_NAME) {
+
+            if (!customerRecord) {
+    return json(
+        {
+            success: false,
+            error: "No customer found with this email address."
+        },
+        404,
+        origin
+    );
+}
+
+            if (
+    env.BREVO_API_KEY &&
+    env.BREVO_SENDER_EMAIL &&
+    env.BREVO_SENDER_NAME
+) {
                 const customer = customerRecord.data, token = randomToken();
                 await updateCustomerDocumentWithFirestoreRest("forgot-password", `customers/${customerRecord.id}`, { passwordResetTokenHash: { stringValue: await hashToken(token) }, passwordResetExpiresAt: { integerValue: String(Date.now() + (RESET_TOKEN_SECONDS * 1000)) } }, env);
                 const base = new URL(env.LOGIN_URL || "https://clickandfix.site/admin/customer-login.html");
