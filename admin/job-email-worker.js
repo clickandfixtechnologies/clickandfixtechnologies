@@ -67,19 +67,12 @@ export default {
             const customer = customerDocument?.fields ? fields(customerDocument.fields) : null;
             if (!customer?.email) return json({ success: false, error: "Customer email not found." }, 404);
 
-const deliveredTimeline = (job.timeline || []).find(
-    item => item.status === "Delivered"
-);
+const deliveredEntry =
+    (job.timeline || []).find(item => item.status === "Delivered");
 
-let deliveryTime = "";
-
-if (deliveredTimeline?.date) {
-    const parts = deliveredTimeline.date.split(",");
-    if (parts.length > 1) {
-        deliveryTime = parts[1].trim();
-    }
-}
-
+const deliveryTime =
+    deliveredEntry?.date?.split(", ")[1] || "";
+            
             const values = {
                 customer_name: customer.name || "Customer",
                 job_id: job.jobId,
