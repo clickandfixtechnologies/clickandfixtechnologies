@@ -77,7 +77,7 @@ export default {
                 estimated_time: job.estimatedTime || "",
                 delivery_date: job.deliveredDate || "",
                 delivery_time: job.deliveredTime || "",
-                portal_url: env.CUSTOMER_PORTAL_URL || "https://clickandfix.site/customer",
+                portal_url: env.CUSTOMER_PORTAL_URL || "https://clickandfix.site/admin/customer-login.html",
                 company_name: env.APP_NAME || "Click & Fix Technologies",
                 current_year: new Date().getFullYear()
             };
@@ -108,7 +108,7 @@ function sampleJobValues(env) {
         estimated_time: "2–3 Hours",
         delivery_date: "12 August 2026",
         delivery_time: "5:30 PM",
-        portal_url: "https://clickandfix.site/customer",
+        portal_url: "https://clickandfix.site/admin/customer-login.html",
         company_name: env.APP_NAME || "Click & Fix Technologies",
         current_year: new Date().getFullYear()
     };
