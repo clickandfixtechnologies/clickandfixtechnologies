@@ -70,7 +70,28 @@ forgotForm?.addEventListener("submit", async event => {
     const email = forgotForm.querySelector('input[name="Email"]').value.trim();
     const button = document.getElementById("forgotSubmitBtn");
     button.disabled = true;
-    try { await workerRequest("/forgot-password", { email }); alert("Password reset email sent successfully.\nPlease check your inbox (and spam folder)."); forgotForm.reset(); bootstrap.Modal.getInstance(document.getElementById("forgotPasswordModal")).hide(); }
-    catch (error) { alert("Unable to process the request. Please try again."); }
-    finally { button.disabled = false; }
+    try { 
+        await workerRequest("/forgot-password", { email }); 
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Email Sent!',
+            text: 'Password reset email sent successfully.\nPlease check your inbox (and spam folder).',
+            confirmButtonColor: '#0d6efd'
+        });
+
+        forgotForm.reset(); 
+        bootstrap.Modal.getInstance(document.getElementById("forgotPasswordModal")).hide(); 
+    }
+    catch (error) { 
+        Swal.fire({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'Unable to process the request. Please try again.',
+            confirmButtonColor: '#0d6efd'
+        });
+    }
+    finally { 
+        button.disabled = false; 
+    }
 });
