@@ -148,10 +148,27 @@ async function getFirestoreRestAccessToken(env) {
 async function usernameReservationExists(username, env) {
     const accessToken = await getFirestoreRestAccessToken(env);
     const documentPath = encodeURIComponent(String(username));
+    const requestUrl = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/system/customerUsernames/entries/${documentPath}`;
     const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/system/customerUsernames/entries/${documentPath}`,
+        requestUrl,
         { headers: { Authorization: `Bearer ${accessToken}` } }
     );
+
+    console.info("Username reservation lookup diagnostics.", {
+        username,
+        documentPath,
+        requestUrl,
+        status: response.status,
+        ok: response.ok
+    });
+
+    if (response.ok) {
+        console.info("Username reservation lookup response body.", {
+            body: await response.clone().text()
+        });
+    }
+
+    if (response.status === 404) console.info("Reservation not found");
 
     if (response.status === 404) return false;
     if (response.ok) return true;
@@ -1143,6 +1160,10 @@ export default { async fetch(request, env) {
             const normalizedMobile = String(mobile).trim();
             diagnosticStep = "duplicate_username_lookup";
             const duplicateExists = await usernameReservationExists(normalizedMobile, env);
+            console.info("Duplicate mobile check result", {
+                normalizedMobile,
+                duplicateExists
+            });
 
             if (duplicateExists) {
 
