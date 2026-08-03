@@ -14,10 +14,10 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 });
 
 const statusTemplateKeys = Object.freeze({
-    "Item Received": "jobReceived",
+    "Item Received": "job_received",
     "Diagnosis": "diagnosis",
-    "Waiting Parts": "waitingForParts",
-    "Repair In Progress": "repairInProgress",
+    "Waiting Parts": "waiting_for_parts",
+    "Repair In Progress": "repair_in_progress",
     "Ready": "ready",
     "Delivered": "delivered"
 });
