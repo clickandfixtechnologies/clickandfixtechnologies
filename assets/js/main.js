@@ -407,3 +407,13 @@ if (inspectionForm) {
 
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.hash === "#book-now") {
+        const modalElement = document.getElementById("inspectionModal");
+
+        if (modalElement) {
+            const inspectionModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            inspectionModal.show();
+        }
+    }
+});
