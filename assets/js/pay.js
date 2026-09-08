@@ -5,7 +5,7 @@
         Payment Portal
 =========================================*/
 
-const UPI_ID = "clicknfix@axl";
+const UPI_ID = "Q73318287@ybl";
 
 const BUSINESS_NAME =
     "Click & Fix Technologies";
@@ -96,19 +96,21 @@ document
 
 function createUpiLink(){
 
-    const url =
-        new URL("upi://pay");
+    const url = new URL("upi://pay");
 
+    // Merchant UPI ID
     url.searchParams.set(
         "pa",
         UPI_ID
     );
 
+    // Business Name
     url.searchParams.set(
         "pn",
         BUSINESS_NAME
     );
 
+    // Amount
     if(amount){
 
         url.searchParams.set(
@@ -118,6 +120,16 @@ function createUpiLink(){
 
     }
 
+    // Unique Transaction Reference
+    const transactionRef =
+        `CF-${invoice !== "--" ? invoice : Date.now()}`;
+
+    url.searchParams.set(
+        "tr",
+        transactionRef
+    );
+
+    // Invoice / Transaction Note
     if(invoice !== "--"){
 
         url.searchParams.set(
@@ -127,13 +139,13 @@ function createUpiLink(){
 
     }
 
+    // Currency
     url.searchParams.set(
         "cu",
         "INR"
     );
 
     return url.toString();
-
 }
 
 
@@ -179,9 +191,9 @@ document
 
         setTimeout(() => {
 
-            window.location.href = RAZORPAY_LINK;
+    window.location.href = RAZORPAY_LINK;
 
-        }, 2500);
+    }, 120000);
 
     } else {
 
