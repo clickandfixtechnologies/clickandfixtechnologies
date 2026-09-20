@@ -5,6 +5,8 @@
 
 import { auth, db } from "./firebase.js";
 
+import { adminWorkerRequest } from "./admin-worker-client.js";
+
 import {
     doc,
     updateDoc,
@@ -608,7 +610,12 @@ document.getElementById("sendJobStatusEmail").addEventListener("click", async ()
             document.getElementById("jobStatusEmailModal")
         ).hide();
 
-        showJobEmailToast("Status email sent successfully.", "success");
+        showJobEmailToast(
+            selectedJobStatusEmail.status === CANCELLED_STATUS
+                ? "Cancellation email sent successfully."
+                : "Status email sent successfully.",
+            "success"
+        );
 
     } catch (error) {
 
@@ -857,61 +864,14 @@ document
 
     try {
 
-        const cancelledAt = new Date().toISOString();
-        const timelineDate = new Date().toLocaleString("en-GB");
-        let cancelledJob;
-
-        await runTransaction(db, async transaction => {
-
-            const jobReference = doc(db, "jobs", jobId);
-            const snapshot = await transaction.get(jobReference);
-
-            if (!snapshot.exists()) {
-
-                throw new Error("Job not found.");
-
-            }
-
-            const storedJob = snapshot.data();
-
-            if (storedJob.status === CANCELLED_STATUS) {
-
-                throw new Error("This job is already cancelled.");
-
-            }
-
-            const timeline = Array.isArray(storedJob.timeline)
-                ? [...storedJob.timeline]
-                : [];
-
-            const lastTimelineItem = timeline.at(-1);
-
-            if (!lastTimelineItem || lastTimelineItem.status !== CANCELLED_STATUS) {
-
-                timeline.push({
-                    status: CANCELLED_STATUS,
-                    date: timelineDate
-                });
-
-            }
-
-            cancelledJob = {
-                ...storedJob,
-                status: CANCELLED_STATUS,
-                cancelledAt,
-                timeline
-            };
-
-            transaction.update(jobReference, {
-                status: CANCELLED_STATUS,
-                cancelledAt,
-                timeline
-            });
-
-        });
+        const result = await adminWorkerRequest(
+            `/admin/jobs/${encodeURIComponent(jobId)}/cancel`
+        );
 
         jobs = jobs.map(job =>
-            job.jobId === jobId ? cancelledJob : job
+            job.jobId === jobId
+                ? { ...job, ...result.job }
+                : job
         );
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));

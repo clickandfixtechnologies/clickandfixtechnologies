@@ -1054,7 +1054,92 @@ export default { async fetch(request, env) {
             /^\/admin\/customers\/([^/]+)\/password$/
         );
 
+        const adminJobCancelMatch = path.match(
+            /^\/admin\/jobs\/([^/]+)\/cancel$/
+        );
+
         const adminCustomerDeleteMatch = path.match(/^\/admin\/customers\/([^/]+)$/);
+
+        if (adminJobCancelMatch) {
+            const admin = await requireAdmin(request, env);
+            const jobId = decodeURIComponent(adminJobCancelMatch[1]);
+            const jobPath = `jobs/${jobId}`;
+            const jobDocument = await getFirestoreRestDocument(jobPath, env);
+
+            if (!jobDocument) {
+                return json({ success: false, error: "Job not found." }, 404, origin);
+            }
+
+            const job = firestoreRestDocumentToCustomer(jobDocument).data;
+
+            if (job.status === "Cancelled") {
+                return json({ success: false, error: "This job is already cancelled." }, 409, origin);
+            }
+
+            const cancelledAt = new Date().toISOString();
+            const timeline = Array.isArray(job.timeline) ? [...job.timeline] : [];
+            const lastTimelineItem = timeline.at(-1);
+
+            if (!lastTimelineItem || lastTimelineItem.status !== "Cancelled") {
+                timeline.push({
+                    status: "Cancelled",
+                    date: new Date().toLocaleString("en-GB")
+                });
+            }
+
+            const timelineValue = {
+                arrayValue: {
+                    values: timeline.map(item => ({
+                        mapValue: {
+                            fields: {
+                                status: { stringValue: String(item.status || "") },
+                                date: { stringValue: String(item.date || "") }
+                            }
+                        }
+                    }))
+                }
+            };
+
+            await commitFirestoreWrites([{
+                update: {
+                    name: firestoreDocumentName(jobPath, env),
+                    fields: {
+                        status: { stringValue: "Cancelled" },
+                        cancelledAt: { timestampValue: cancelledAt },
+                        timeline: timelineValue
+                    }
+                },
+                updateMask: {
+                    fieldPaths: ["status", "cancelledAt", "timeline"]
+                },
+                currentDocument: {
+                    updateTime: jobDocument.updateTime
+                }
+            }], env);
+
+            try {
+                await writeFirestoreRestAuditLog(
+                    "job_cancelled",
+                    admin.uid,
+                    String(job.customerId || ""),
+                    { jobId },
+                    env
+                );
+            } catch (auditError) {
+                console.error("Job cancellation audit log failed.", auditError);
+            }
+
+            return json({
+                success: true,
+                message: "Job cancelled successfully.",
+                job: {
+                    jobId,
+                    status: "Cancelled",
+                    cancelledAt,
+                    timeline
+                }
+            }, 200, origin);
+        }
 
         if (adminCustomerDeleteMatch) {
             const admin = await requireAdmin(request, env);
