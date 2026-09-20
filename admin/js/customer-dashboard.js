@@ -527,6 +527,10 @@ function getStatusBadge(status){
 
             return `<span class="badge bg-success">${status}</span>`;
 
+        case "Cancelled":
+
+            return `<span class="badge bg-danger">${status}</span>`;
+
         default:
 
             return `<span class="badge bg-light text-dark">${status}</span>`;
@@ -705,7 +709,9 @@ function loadRepairTimeline(job){
 
         "Ready",
 
-        "Delivered"
+        "Delivered",
+
+        "Cancelled"
 
     ];
 

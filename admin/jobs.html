@@ -150,6 +150,7 @@
         <option>Repair In Progress</option>
         <option>Ready</option>
         <option>Delivered</option>
+        <option>Cancelled</option>
 
     </select>
 
@@ -611,6 +612,7 @@ No Parts Added
 
 <button
 class="btn btn-secondary"
+id="keepJob"
 data-bs-dismiss="modal">
 
 Cancel
@@ -880,6 +882,17 @@ Timeline Not Available
 <div class="modal-footer">
 
 <button
+type="button"
+class="btn btn-outline-danger"
+onclick="openCancelJobModal()">
+
+<i class="bi bi-x-circle"></i>
+
+Cancel Job
+
+</button>
+
+<button
 class="btn btn-secondary"
 data-bs-dismiss="modal">
 
@@ -897,11 +910,11 @@ Close
 
 
 <!-- =====================================
-        DELETE JOB MODAL
+        CANCEL JOB CONFIRMATION
 ===================================== -->
 
 <div class="modal fade"
-id="deleteJobModal"
+id="cancelJobModal"
 tabindex="-1">
 
 <div class="modal-dialog modal-dialog-centered">
@@ -913,9 +926,9 @@ tabindex="-1">
 
 <h5 class="modal-title">
 
-<i class="bi bi-trash"></i>
+<i class="bi bi-x-circle me-2"></i>
 
-Delete Repair Job
+Cancel Job
 
 </h5>
 
@@ -940,13 +953,13 @@ style="font-size:50px;"></i>
 
 
 <h5>
-Are you sure?
+Are you sure you want to cancel this job?
 </h5>
 
 
 <p class="text-muted">
 
-You are about to delete this repair job permanently.
+The job will not be deleted. Its Job ID, customer relationship, and full service history will remain available as a cancelled record.
 
 </p>
 
@@ -958,7 +971,7 @@ You are about to delete this repair job permanently.
 
 <strong>Job ID:</strong>
 
-<span id="deleteJobId"></span>
+<span id="cancelJobId"></span>
 
 </p>
 
@@ -967,7 +980,7 @@ You are about to delete this repair job permanently.
 
 <strong>Customer:</strong>
 
-<span id="deleteCustomer"></span>
+<span id="cancelJobCustomer"></span>
 
 </p>
 
@@ -985,18 +998,18 @@ You are about to delete this repair job permanently.
 class="btn btn-secondary"
 data-bs-dismiss="modal">
 
-Cancel
+Keep Job
 
 </button>
 
 
 <button
 class="btn btn-danger"
-id="confirmDeleteBtn">
+id="confirmCancelJob">
 
-<i class="bi bi-trash"></i>
+<i class="bi bi-x-circle"></i>
 
-Delete Permanently
+Cancel Job
 
 </button>
 

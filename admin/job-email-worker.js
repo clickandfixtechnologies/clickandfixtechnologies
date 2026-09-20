@@ -1,11 +1,12 @@
 import { createJobStatusEmailHtml, jobStatusEmailTemplates } from "./js/job-status-email-templates.js";
 
 const ORIGIN = "https://clickandfix.site";
+const AUTH_WORKER_URL = "https://jolly-thunder-4929cf-auth-worker.clicknfixtechnologies.workers.dev";
 const JOB_TEMPLATE_PATH = "system/emailTemplates/templates";
 const cors = {
     "Access-Control-Allow-Origin": ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Authorization, Content-Type"
 };
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -19,7 +20,8 @@ const statusTemplateKeys = Object.freeze({
     "Waiting Parts": "waiting_for_parts",
     "Repair In Progress": "repair_in_progress",
     "Ready": "ready",
-    "Delivered": "delivered"
+    "Delivered": "delivered",
+    "Cancelled": "cancelled"
 });
 
 const editableFields = ["subject", "headerTitle", "greeting", "body", "buttonText", "closing", "footer"];
@@ -41,6 +43,10 @@ export default {
         }
 
         try {
+            if (path === "/send-job-status-email") {
+                await requireAdmin(request);
+            }
+
             if (path === "/send-test-job-email") {
                 if (!body.email || !body.templateKey) return json({ success: false, error: "Test email address and template are required." }, 400);
 
@@ -62,6 +68,18 @@ export default {
             const jobDocument = await firestoreQuery("jobs", "jobId", body.jobId, token, env);
             const job = jobDocument?.fields ? fields(jobDocument.fields) : null;
             if (!job) return json({ success: false, error: "Job not found." }, 404);
+
+            if (body.status === "Cancelled" && job.status !== "Cancelled") {
+                return json({ success: false, error: "Only a cancelled job can send a cancellation email." }, 409);
+            }
+
+            if (body.status === "Cancelled" && (
+                job.cancellationEmailSentAt ||
+                job.cancellationEmailState === "sending" ||
+                job.cancellationEmailState === "sent"
+            )) {
+                return json({ success: false, error: "The cancellation email has already been sent or is being sent." }, 409);
+            }
 
             const customerDocument = await firestoreQuery("customers", "customerId", job.customerId, token, env);
             const customer = customerDocument?.fields ? fields(customerDocument.fields) : null;
@@ -89,7 +107,42 @@ const deliveryTime =
             };
 
             const resolved = await resolveJobTemplate(template, values, env);
-            await sendBrevoEmail(customer.email, customer.name || "Customer", resolved, env);
+            let cancellationEmailUpdateTime = null;
+
+            if (body.status === "Cancelled") {
+                cancellationEmailUpdateTime = await updateCancellationEmailState(
+                    jobDocument,
+                    "sending",
+                    token,
+                    env
+                );
+            }
+
+            try {
+                await sendBrevoEmail(customer.email, customer.name || "Customer", resolved, env);
+            } catch (error) {
+                if (body.status === "Cancelled") {
+                    await updateCancellationEmailState(
+                        jobDocument,
+                        "failed",
+                        token,
+                        env,
+                        cancellationEmailUpdateTime
+                    ).catch(() => {});
+                }
+                throw error;
+            }
+
+            if (body.status === "Cancelled") {
+                await updateCancellationEmailState(
+                    jobDocument,
+                    "sent",
+                    token,
+                    env,
+                    cancellationEmailUpdateTime,
+                    true
+                );
+            }
 
             return json({ success: true, message: "Job status email sent successfully." });
         } catch (error) {
@@ -101,6 +154,28 @@ const deliveryTime =
 
 function getJobTemplate(templateKey) {
     return jobStatusEmailTemplates.find(template => template.key === templateKey);
+}
+
+async function requireAdmin(request) {
+    const authorization = request.headers.get("Authorization") || "";
+
+    if (!authorization) throw new Error("Admin authentication is required.");
+
+    const response = await fetch(`${AUTH_WORKER_URL}/admin/session`, {
+        method: "POST",
+        headers: {
+            "Authorization": authorization,
+            "Content-Type": "application/json",
+            "Origin": ORIGIN
+        },
+        body: "{}"
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.success) {
+        throw new Error(result.error || "Admin access is required.");
+    }
 }
 
 function sampleJobValues(env) {
@@ -160,6 +235,49 @@ async function sendBrevoEmail(email, name, resolved, env) {
     });
 
     if (!response.ok) throw new Error("Email delivery failed.");
+}
+
+async function updateCancellationEmailState(jobDocument, state, token, env, updateTime = null, markSent = false) {
+    const fieldPaths = ["cancellationEmailState", "cancellationEmailStateUpdatedAt"];
+    const documentFields = {
+        cancellationEmailState: { stringValue: state },
+        cancellationEmailStateUpdatedAt: { timestampValue: new Date().toISOString() }
+    };
+
+    if (markSent) {
+        fieldPaths.push("cancellationEmailSentAt");
+        documentFields.cancellationEmailSentAt = { timestampValue: new Date().toISOString() };
+    }
+
+    const write = {
+        update: {
+            name: jobDocument.name,
+            fields: documentFields
+        },
+        updateMask: { fieldPaths }
+    };
+
+    const preconditionUpdateTime = updateTime || jobDocument.updateTime;
+    if (preconditionUpdateTime) {
+        write.currentDocument = { updateTime: preconditionUpdateTime };
+    }
+
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:commit`,
+        {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
+            body: JSON.stringify({ writes: [write] })
+        }
+    );
+
+    if (!response.ok) {
+        if (response.status === 409) throw new Error("The cancellation email is already being processed.");
+        throw new Error("Cancellation email state could not be updated.");
+    }
+
+    const result = await response.json();
+    return result.writeResults?.[0]?.updateTime || null;
 }
 
 function replace(text, values) {

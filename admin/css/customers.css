@@ -890,3 +890,46 @@ height:46px;
 
 }
 
+/*=========================
+    Customer Configuration
+=========================*/
+
+.customer-configuration-input{
+
+    min-height:280px;
+    resize:vertical;
+    line-height:1.65;
+
+}
+
+.customer-configuration-display{
+
+    min-height:220px;
+    padding:20px;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    background:#f8fafc;
+    color:#1f2937;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    line-height:1.7;
+
+}
+
+@media(max-width:768px){
+
+    .customer-configuration-input{
+
+        min-height:240px;
+
+    }
+
+    .customer-configuration-display{
+
+        min-height:180px;
+        padding:16px;
+
+    }
+
+}
+

@@ -73,6 +73,8 @@ let customers = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let editCustomerId = null;
 let deleteCustomerId = null;
 let loginCustomerId = null;
+let configurationCustomerId = null;
+let configurationReturnToCustomerView = false;
 
 /*=========================================
       Bootstrap Modals
@@ -96,6 +98,14 @@ const customerLoginModal = new bootstrap.Modal(
 
 const deleteCustomerModal = new bootstrap.Modal(
     document.getElementById("deleteCustomerModal")
+);
+
+const customerConfigurationModal = new bootstrap.Modal(
+    document.getElementById("customerConfigurationModal")
+);
+
+const viewCustomerConfigurationModal = new bootstrap.Modal(
+    document.getElementById("viewCustomerConfigurationModal")
 );
 
 /*=========================================
@@ -563,6 +573,8 @@ function viewCustomer(customerId) {
 
     if (!customer) return;
 
+    configurationCustomerId = customer.customerId;
+
     document.getElementById("vCustomerId").textContent =
         customer.customerId;
 
@@ -578,8 +590,10 @@ function viewCustomer(customerId) {
     document.getElementById("vCustomerAddress").textContent =
         customer.address || "-";
 
-    document.getElementById("vCustomerJobs").textContent =
-        customer.jobs || 0;
+    document.getElementById("vCustomerConfigurationStatus").textContent =
+        customer.configuration && customer.configuration.trim() !== ""
+            ? "Saved"
+            : "Not added";
 
     /*=========================================
             Repair History
@@ -878,6 +892,187 @@ viewCustomerModal.show();
 }
 
 /*=========================================
+      CUSTOMER CONFIGURATION
+=========================================*/
+
+function getConfigurationCustomer() {
+
+    return customers.find(customer =>
+        customer.customerId === configurationCustomerId
+    );
+
+}
+
+function openConfigurationModalFromCustomerView(modal) {
+
+    const customerViewElement =
+        document.getElementById("viewCustomerModal");
+
+    configurationReturnToCustomerView =
+        customerViewElement.classList.contains("show");
+
+    if (!configurationReturnToCustomerView) {
+
+        modal.show();
+
+        return;
+
+    }
+
+    customerViewElement.addEventListener("hidden.bs.modal", () => {
+
+        modal.show();
+
+    }, { once: true });
+
+    viewCustomerModal.hide();
+
+}
+
+function restoreCustomerViewAfterConfiguration() {
+
+    if (!configurationReturnToCustomerView || !configurationCustomerId) {
+
+        return;
+
+    }
+
+    configurationReturnToCustomerView = false;
+
+    viewCustomer(configurationCustomerId);
+
+}
+
+function addCustomerConfiguration() {
+
+    const customer = customers.find(item =>
+        item.customerId === configurationCustomerId
+    );
+
+    if (!customer) return;
+
+    document.getElementById("customerConfigurationModalTitle").textContent =
+        customer.configuration && customer.configuration.trim() !== ""
+            ? "Update Customer Configuration"
+            : "Add Customer Configuration";
+
+    document.getElementById("customerConfigurationInput").value =
+        customer.configuration || "";
+
+    openConfigurationModalFromCustomerView(
+        customerConfigurationModal
+    );
+
+}
+
+function viewCustomerConfiguration() {
+
+    const customer = customers.find(item =>
+        item.customerId === configurationCustomerId
+    );
+
+    if (!customer) return;
+
+    const configuration =
+        customer.configuration && customer.configuration.trim() !== ""
+            ? customer.configuration
+            : "No customer configuration has been added yet.";
+
+    document.getElementById("customerConfigurationDisplay").textContent =
+        configuration;
+
+    openConfigurationModalFromCustomerView(
+        viewCustomerConfigurationModal
+    );
+
+}
+
+document
+.getElementById("saveCustomerConfiguration")
+.addEventListener("click", async () => {
+
+    const customer = getConfigurationCustomer();
+
+    if (!customer) return;
+
+    const configuration =
+        document.getElementById("customerConfigurationInput").value.trim();
+
+    const saveButton =
+        document.getElementById("saveCustomerConfiguration");
+
+    saveButton.disabled = true;
+
+    try {
+
+        await updateDoc(
+            doc(db, "customers", customer.customerId),
+            { configuration }
+        );
+
+        customer.configuration = configuration;
+
+        saveCustomers();
+
+        customerConfigurationModal.hide();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert("Customer configuration could not be saved.");
+
+    }
+
+    finally {
+
+        saveButton.disabled = false;
+
+    }
+
+});
+
+document
+.getElementById("updateCustomerConfiguration")
+.addEventListener("click", () => {
+
+    const customer = getConfigurationCustomer();
+
+    if (!customer) return;
+
+    configurationReturnToCustomerView = false;
+
+    document
+    .getElementById("viewCustomerConfigurationModal")
+    .addEventListener("hidden.bs.modal", () => {
+
+        configurationReturnToCustomerView = true;
+
+        document.getElementById("customerConfigurationModalTitle").textContent =
+            "Update Customer Configuration";
+
+        document.getElementById("customerConfigurationInput").value =
+            customer.configuration || "";
+
+        customerConfigurationModal.show();
+
+    }, { once: true });
+
+    viewCustomerConfigurationModal.hide();
+
+});
+
+document
+.getElementById("customerConfigurationModal")
+.addEventListener("hidden.bs.modal", restoreCustomerViewAfterConfiguration);
+
+document
+.getElementById("viewCustomerConfigurationModal")
+.addEventListener("hidden.bs.modal", restoreCustomerViewAfterConfiguration);
+
+/*=========================================
       Edit Customer
 =========================================*/
 
@@ -1082,6 +1277,9 @@ function getStatusBadge(status){
         case "Delivered":
             return `<span class="badge bg-dark">${status}</span>`;
 
+        case "Cancelled":
+            return `<span class="badge bg-danger">${status}</span>`;
+
         default:
             return `<span class="badge bg-light text-dark">${status}</span>`;
     }
@@ -1155,6 +1353,10 @@ window.openCustomerLogin = openCustomerLogin;
 window.deleteCustomer = deleteCustomer;
 
 window.openCustomerJob = openCustomerJob;
+
+window.addCustomerConfiguration = addCustomerConfiguration;
+
+window.viewCustomerConfiguration = viewCustomerConfiguration;
 
 
 

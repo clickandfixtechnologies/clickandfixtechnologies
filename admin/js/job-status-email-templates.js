@@ -90,6 +90,21 @@ const jobStatusEmailTemplates = Object.freeze([
             closing: "For complete repair history and service report,\n\nplease log in to your Customer Portal.",
             footer: jobEmailFooter
         })
+    }),
+    Object.freeze({
+        key: "cancelled",
+        module: "js/job-status-email-templates.js",
+        name: "Cancelled",
+        deliveryWorker: "job",
+        defaultSubject: "Your Repair Job Has Been Cancelled",
+        defaults: Object.freeze({
+            headerTitle: "Your repair job has been cancelled",
+            greeting: "Hello {{customer_name}},",
+            body: "Your repair job has been cancelled as requested.\n\nJob ID: {{job_id}}\nDevice: {{device_brand}} {{device_model}}\nCurrent status: {{current_status}}\n\nYour job record remains available in our service history.",
+            buttonText: "Open Customer Portal",
+            closing: "Please contact us if you need any further assistance.",
+            footer: jobEmailFooter
+        })
     })
 ]);
 

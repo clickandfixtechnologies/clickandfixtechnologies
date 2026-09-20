@@ -3,23 +3,23 @@
       Jobs Module v1
 =========================================*/
 
-import { db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
     doc,
-    setDoc,
     updateDoc,
-    deleteDoc,
-    getDocs,
     collection,
-    onSnapshot
+    onSnapshot,
+    runTransaction
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const STORAGE_KEY = "cf_jobs";
 const CUSTOMER_KEY = "cf_customers";
+const CANCELLED_STATUS = "Cancelled";
 
 let jobs = [];
+let selectedCancelJobId = null;
 
 const jobForm = document.getElementById("jobForm");
 const saveJobBtn = document.getElementById("saveJob");
@@ -33,8 +33,6 @@ const newJobModal = document.getElementById("newJobModal");
 
 function generateJobId() {
 
-    const jobs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
     const today = new Date();
 
     const y = today.getFullYear();
@@ -43,13 +41,77 @@ function generateJobId() {
 
     const dateCode = `${y}${m}${d}`;
 
-    const todayJobs = jobs.filter(job =>
-        job.jobId.startsWith(`CF-${dateCode}`)
+    const randomValues = new Uint32Array(1);
+
+    if (window.crypto && window.crypto.getRandomValues) {
+
+        window.crypto.getRandomValues(randomValues);
+
+    }
+
+    else {
+
+        randomValues[0] = Math.floor(Math.random() * 0x100000000);
+
+    }
+
+    const randomCode = String(
+        1000 + (randomValues[0] % 9000)
     );
 
-    const serial = String(todayJobs.length + 1).padStart(4, "0");
+    return `CF-${dateCode}-${randomCode}`;
+}
 
-    return `CF-${dateCode}-${serial}`;
+async function createJobWithUniqueId(job, initialJobId) {
+
+    let jobId = initialJobId || generateJobId();
+
+    for (let attempt = 0; attempt < 25; attempt++) {
+
+        const jobReference = doc(db, "jobs", jobId);
+
+        try {
+
+            await runTransaction(db, async transaction => {
+
+                const existingJob = await transaction.get(jobReference);
+
+                if (existingJob.exists()) {
+
+                    throw new Error("JOB_ID_COLLISION");
+
+                }
+
+                transaction.set(jobReference, {
+                    ...job,
+                    jobId
+                });
+
+            });
+
+            return {
+                ...job,
+                jobId
+            };
+
+        }
+
+        catch (error) {
+
+            if (error.message !== "JOB_ID_COLLISION") {
+
+                throw error;
+
+            }
+
+            jobId = generateJobId();
+
+        }
+
+    }
+
+    throw new Error("A unique Job ID could not be generated. Please try again.");
+
 }
 function loadCustomerDropdown(){
 
@@ -140,8 +202,6 @@ saveJobBtn.addEventListener("click", async () => {
 
     const newJob = {
 
-        jobId: jobIdInput.value,
-
         customerId: selectedCustomer.customerId,
 
         customer: selectedCustomer.name,
@@ -178,7 +238,14 @@ saveJobBtn.addEventListener("click", async () => {
 
 };
 
-    jobs.push(newJob);
+try {
+
+    const createdJob = await createJobWithUniqueId(
+        newJob,
+        jobIdInput.value
+    );
+
+    jobs.push(createdJob);
 
     /*=========================================
         Update Customer Job Count
@@ -196,16 +263,6 @@ saveJobBtn.addEventListener("click", async () => {
         JSON.stringify(jobs)
     );
 
-try {
-
-    await setDoc(
-
-        doc(db, "jobs", newJob.jobId),
-
-        newJob
-
-    );
-
     console.log("Job Synced to Firestore");
 
 }
@@ -214,7 +271,12 @@ catch (error) {
 
     console.error(error);
 
+    alert(error.message || "Job could not be created.");
+
+    return;
+
 }
+
     bootstrap.Modal.getInstance(newJobModal).hide();
 
     loadJobs();
@@ -276,6 +338,32 @@ const filteredJobs = jobs.filter(job => {
 
     filteredJobs.slice().reverse().forEach(job => {
 
+        const cancellationEmailAlreadySent =
+            job.status === CANCELLED_STATUS && job.cancellationEmailSentAt;
+
+        const statusEmailControl = cancellationEmailAlreadySent
+            ? `<span class="badge bg-success" title="Cancellation email sent"><i class="bi bi-check2"></i> Email sent</span>`
+            : `<button
+        type="button"
+        class="btn btn-sm btn-outline-primary"
+        onclick="openJobStatusEmailModal('${job.jobId}')"
+        title="${job.status === CANCELLED_STATUS ? "Send cancellation email" : "Send status email"}"
+        aria-label="${job.status === CANCELLED_STATUS ? "Send cancellation email" : "Send status email"}">
+
+        <i class="bi bi-envelope-fill"></i>
+
+        </button>`;
+
+        const editControl = job.status === CANCELLED_STATUS
+            ? ""
+            : `<button
+class="btn btn-sm btn-warning me-1"
+onclick="editJob('${job.jobId}')">
+
+<i class="bi bi-pencil-square"></i>
+
+</button>`;
+
         tbody.innerHTML += `
 
         <tr>
@@ -290,16 +378,7 @@ const filteredJobs = jobs.filter(job => {
 
     <div class="d-inline-flex align-items-center gap-1">
         ${getStatusBadge(job.status)}
-        <button
-        type="button"
-        class="btn btn-sm btn-outline-primary"
-        onclick="openJobStatusEmailModal('${job.jobId}')"
-        title="Send status email"
-        aria-label="Send status email">
-
-        <i class="bi bi-envelope-fill"></i>
-
-        </button>
+        ${statusEmailControl}
     </div>
 
 </td>
@@ -317,22 +396,7 @@ onclick="viewJob('${job.jobId}')">
 </button>
 
 
-<button
-class="btn btn-sm btn-warning me-1"
-onclick="editJob('${job.jobId}')">
-
-<i class="bi bi-pencil-square"></i>
-
-</button>
-
-
-<button
-class="btn btn-sm btn-danger"
-onclick="deleteJob('${job.jobId}')">
-
-<i class="bi bi-trash"></i>
-
-</button>
+${editControl}
 
 </td>
 
@@ -391,6 +455,9 @@ function getStatusBadge(status){
         case "Delivered":
             return `<span class="badge bg-dark">${status}</span>`;
 
+        case CANCELLED_STATUS:
+            return `<span class="badge bg-danger">${status}</span>`;
+
         default:
             return `<span class="badge bg-light text-dark">${status}</span>`;
     }
@@ -411,6 +478,17 @@ function openJobStatusEmailModal(jobId) {
     selectedJobStatusEmail = jobs.find(job => job.jobId === jobId);
 
     if (!selectedJobStatusEmail) return;
+
+    if (
+        selectedJobStatusEmail.status === CANCELLED_STATUS &&
+        selectedJobStatusEmail.cancellationEmailSentAt
+    ) {
+
+        showJobEmailToast("The cancellation email has already been sent.", "success");
+
+        return;
+
+    }
 
     const errorAlert = document.getElementById("jobEmailError");
     errorAlert.textContent = "";
@@ -436,6 +514,11 @@ function openJobStatusEmailModal(jobId) {
 
     document.getElementById("jobEmailStatus").textContent =
         selectedJobStatusEmail.status || "Not available";
+
+    document.getElementById("jobStatusEmailModalLabel").innerHTML =
+        selectedJobStatusEmail.status === CANCELLED_STATUS
+            ? '<i class="bi bi-envelope-fill me-2"></i>Send Cancellation Email'
+            : '<i class="bi bi-envelope-fill me-2"></i>Send Status Update';
 
     new bootstrap.Modal(
         document.getElementById("jobStatusEmailModal")
@@ -474,12 +557,23 @@ document.getElementById("sendJobStatusEmail").addEventListener("click", async ()
 
     try {
 
+        const adminUser = auth.currentUser;
+
+        if (!adminUser) {
+
+            throw new Error("Admin login is required.");
+
+        }
+
+        const idToken = await adminUser.getIdToken();
+
         const response = await fetch(
             `${JOB_EMAIL_WORKER_URL}/send-job-status-email`,
             {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${idToken}`
                 },
                 body: JSON.stringify({
                     jobId: selectedJobStatusEmail.jobId,
@@ -492,6 +586,22 @@ document.getElementById("sendJobStatusEmail").addEventListener("click", async ()
 
         if (!response.ok || result.success === false) {
             throw new Error(result.error || "Unable to send status email.");
+        }
+
+        if (selectedJobStatusEmail.status === CANCELLED_STATUS) {
+
+            selectedJobStatusEmail.cancellationEmailSentAt = new Date().toISOString();
+
+            jobs = jobs.map(job =>
+                job.jobId === selectedJobStatusEmail.jobId
+                    ? selectedJobStatusEmail
+                    : job
+            );
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+
+            loadJobs();
+
         }
 
         bootstrap.Modal.getInstance(
@@ -543,6 +653,14 @@ function viewJob(jobId){
     document.getElementById("vMobile").textContent = job.mobile;
 
     document.getElementById("vStatus").innerHTML = getStatusBadge(job.status);
+
+    document.getElementById("openCancelJob").disabled =
+        job.status === CANCELLED_STATUS;
+
+    document.getElementById("openCancelJob").title =
+        job.status === CANCELLED_STATUS
+            ? "This job is already cancelled."
+            : "Cancel this job while preserving its history.";
 
     if(job.invoice){
 
@@ -635,6 +753,10 @@ if (job.timeline && job.timeline.length > 0) {
                 icon = "✅";
                 break;
 
+            case CANCELLED_STATUS:
+                icon = "⛔";
+                break;
+
         }
 
         timelineHTML += `
@@ -672,6 +794,168 @@ document.getElementById("timelineBox").innerHTML = timelineHTML;
     ).show();
 
 }
+
+function openCancelJobModal() {
+
+    const job = jobs.find(item => item.jobId === document.getElementById("vJobId").textContent);
+
+    if (!job || job.status === CANCELLED_STATUS) return;
+
+    selectedCancelJobId = job.jobId;
+
+    document.getElementById("cancelJobId").textContent = job.jobId;
+    document.getElementById("cancelJobCustomer").textContent = job.customer || "-";
+
+    document
+    .getElementById("viewJobModal")
+    .addEventListener("hidden.bs.modal", () => {
+
+        new bootstrap.Modal(
+            document.getElementById("cancelJobModal")
+        ).show();
+
+    }, { once: true });
+
+    bootstrap.Modal.getInstance(
+        document.getElementById("viewJobModal")
+    ).hide();
+
+}
+
+document
+.getElementById("keepJob")
+.addEventListener("click", () => {
+
+    const jobId = selectedCancelJobId;
+
+    selectedCancelJobId = null;
+
+    if (!jobId) return;
+
+    document
+    .getElementById("cancelJobModal")
+    .addEventListener("hidden.bs.modal", () => viewJob(jobId), { once: true });
+
+});
+
+document
+.getElementById("confirmCancelJob")
+.addEventListener("click", async () => {
+
+    if (!selectedCancelJobId) return;
+
+    const confirmButton = document.getElementById("confirmCancelJob");
+    const keepButton = document.getElementById("keepJob");
+    const jobId = selectedCancelJobId;
+
+    confirmButton.disabled = true;
+    keepButton.disabled = true;
+    confirmButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        Cancelling...
+    `;
+
+    try {
+
+        const cancelledAt = new Date().toISOString();
+        const timelineDate = new Date().toLocaleString("en-GB");
+        let cancelledJob;
+
+        await runTransaction(db, async transaction => {
+
+            const jobReference = doc(db, "jobs", jobId);
+            const snapshot = await transaction.get(jobReference);
+
+            if (!snapshot.exists()) {
+
+                throw new Error("Job not found.");
+
+            }
+
+            const storedJob = snapshot.data();
+
+            if (storedJob.status === CANCELLED_STATUS) {
+
+                throw new Error("This job is already cancelled.");
+
+            }
+
+            const timeline = Array.isArray(storedJob.timeline)
+                ? [...storedJob.timeline]
+                : [];
+
+            const lastTimelineItem = timeline.at(-1);
+
+            if (!lastTimelineItem || lastTimelineItem.status !== CANCELLED_STATUS) {
+
+                timeline.push({
+                    status: CANCELLED_STATUS,
+                    date: timelineDate
+                });
+
+            }
+
+            cancelledJob = {
+                ...storedJob,
+                status: CANCELLED_STATUS,
+                cancelledAt,
+                timeline
+            };
+
+            transaction.update(jobReference, {
+                status: CANCELLED_STATUS,
+                cancelledAt,
+                timeline
+            });
+
+        });
+
+        jobs = jobs.map(job =>
+            job.jobId === jobId ? cancelledJob : job
+        );
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+
+        selectedCancelJobId = null;
+
+        loadJobs();
+
+        document
+        .getElementById("cancelJobModal")
+        .addEventListener("hidden.bs.modal", () => viewJob(jobId), { once: true });
+
+        bootstrap.Modal.getInstance(
+            document.getElementById("cancelJobModal")
+        ).hide();
+
+        showJobEmailToast(
+            "Job cancelled. Send the cancellation email from the envelope button.",
+            "success"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(error.message || "Job could not be cancelled.");
+
+    }
+
+    finally {
+
+        confirmButton.disabled = false;
+        keepButton.disabled = false;
+        confirmButton.innerHTML = `
+            <i class="bi bi-x-circle me-1"></i>
+            Cancel Job
+        `;
+
+    }
+
+});
+
 function editJob(jobId){
 
     const jobs = JSON.parse(localStorage.getItem("cf_jobs")) || [];
@@ -679,6 +963,14 @@ function editJob(jobId){
     const job = jobs.find(j => j.jobId === jobId);
 
     if(!job) return;
+
+    if (job.status === CANCELLED_STATUS) {
+
+        alert("Cancelled jobs are kept as historical records and cannot be edited.");
+
+        return;
+
+    }
 
     document.getElementById("editJobId").value = job.jobId;
 
@@ -749,6 +1041,14 @@ updateJobBtn.addEventListener("click", async () => {
     );
 
     if (index === -1) return;
+
+    if (jobs[index].status === CANCELLED_STATUS) {
+
+        alert("Cancelled jobs are kept as historical records and cannot be updated.");
+
+        return;
+
+    }
 
     jobs[index].customer = document.getElementById("editCustomer").value;
     jobs[index].mobile = document.getElementById("editMobile").value;
@@ -1214,102 +1514,6 @@ function getWarrantyText(expiryDate){
 
 }
 
-/*=========================
-    DELETE JOB MODAL
-=========================*/
-
-let selectedDeleteJob = null;
-
-
-function deleteJob(jobId) {
-
-
-    const jobs = JSON.parse(
-        localStorage.getItem(STORAGE_KEY)
-    ) || [];
-
-
-    const job = jobs.find(
-        j => j.jobId === jobId
-    );
-
-
-    if(!job) return;
-
-
-    selectedDeleteJob = jobId;
-
-
-    document.getElementById("deleteJobId").textContent =
-    job.jobId;
-
-
-    document.getElementById("deleteCustomer").textContent =
-    job.customer;
-
-
-    new bootstrap.Modal(
-        document.getElementById("deleteJobModal")
-    ).show();
-
-
-}
-/*=========================
-    CONFIRM DELETE
-=========================*/
-
-document
-.getElementById("confirmDeleteBtn")
-.addEventListener("click", async () => {
-
-
-    if(!selectedDeleteJob) return;
-
-
-    let jobs = JSON.parse(
-        localStorage.getItem(STORAGE_KEY)
-    ) || [];
-
-
-    jobs = jobs.filter(job =>
-        job.jobId !== selectedDeleteJob
-    );
-
-
-    localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(jobs)
-);
-
-try {
-
-    await deleteDoc(
-
-        doc(db, "jobs", selectedDeleteJob)
-
-    );
-
-    console.log("Job Deleted");
-
-}
-
-catch (error) {
-
-    console.error(error);
-
-}
-
-selectedDeleteJob = null;
-
-bootstrap.Modal.getInstance(
-    document.getElementById("deleteJobModal")
-).hide();
-
-loadJobs();
-
-
-});
-
 /*=========================================
     Open Job From Customer Page
 =========================================*/
@@ -1408,9 +1612,9 @@ window.viewJob = viewJob;
 
 window.editJob = editJob;
 
-window.deleteJob = deleteJob;
-
 window.openJobStatusEmailModal = openJobStatusEmailModal;
+
+window.openCancelJobModal = openCancelJobModal;
 
 window.printJobReport = printJobReport;
 

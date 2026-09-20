@@ -587,9 +587,41 @@ data-bs-dismiss="modal">
 
 <tr>
 
-<th>Total Jobs</th>
+<th>Configuration</th>
 
-<td id="vCustomerJobs"></td>
+<td>
+
+<div class="d-flex flex-wrap align-items-center gap-2">
+
+<span id="vCustomerConfigurationStatus" class="badge bg-light text-dark border">
+Not added
+</span>
+
+<button
+type="button"
+class="btn btn-sm btn-primary"
+onclick="addCustomerConfiguration()">
+
+<i class="bi bi-plus-lg"></i>
+
+Add
+
+</button>
+
+<button
+type="button"
+class="btn btn-sm btn-outline-primary"
+onclick="viewCustomerConfiguration()">
+
+<i class="bi bi-eye"></i>
+
+View
+
+</button>
+
+</div>
+
+</td>
 
 </tr>
 
@@ -728,6 +760,148 @@ class="btn btn-secondary"
 data-bs-dismiss="modal">
 
 Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        CUSTOMER CONFIGURATION MODALS
+===================================== -->
+
+<div class="modal fade"
+id="customerConfigurationModal"
+tabindex="-1"
+aria-labelledby="customerConfigurationModalTitle"
+aria-hidden="true">
+
+<div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title" id="customerConfigurationModalTitle">
+
+<i class="bi bi-pc-display-horizontal"></i>
+
+Customer Configuration
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal"
+aria-label="Close"></button>
+
+</div>
+
+<div class="modal-body">
+
+<p class="text-muted mb-3">
+Add the customer's equipment or system details. Enter one item per line for a clear service record.
+</p>
+
+<label for="customerConfigurationInput" class="form-label fw-semibold">
+Configuration
+</label>
+
+<textarea
+id="customerConfigurationInput"
+class="form-control customer-configuration-input"
+rows="12"
+placeholder="PC Configuration:\n1. Intel Core i3 Processor\n2. 8GB DDR3 RAM\n3. 240GB SSD"></textarea>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+type="button"
+class="btn btn-light"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+type="button"
+class="btn btn-primary"
+id="saveCustomerConfiguration">
+
+<i class="bi bi-check-circle"></i>
+
+Save Configuration
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal fade"
+id="viewCustomerConfigurationModal"
+tabindex="-1"
+aria-labelledby="viewCustomerConfigurationModalTitle"
+aria-hidden="true">
+
+<div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h4 class="modal-title" id="viewCustomerConfigurationModalTitle">
+
+<i class="bi bi-pc-display-horizontal"></i>
+
+Customer Configuration
+
+</h4>
+
+<button
+class="btn-close"
+data-bs-dismiss="modal"
+aria-label="Close"></button>
+
+</div>
+
+<div class="modal-body">
+
+<div id="customerConfigurationDisplay" class="customer-configuration-display"></div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+type="button"
+class="btn btn-light"
+data-bs-dismiss="modal">
+
+Close
+
+</button>
+
+<button
+type="button"
+class="btn btn-primary"
+id="updateCustomerConfiguration">
+
+<i class="bi bi-pencil-square"></i>
+
+Update
 
 </button>
 

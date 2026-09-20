@@ -441,6 +441,12 @@ body {
     color: #f8fafc !important;
 }
 
+/* Cancelled */
+.badge.bg-danger {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+}
+
 /*=================================
         PRINT SERVICE REPORT
 =================================*/
