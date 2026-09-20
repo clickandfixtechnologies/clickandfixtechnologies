@@ -10,6 +10,7 @@ import { adminWorkerRequest } from "./admin-worker-client.js";
 import {
     doc,
     updateDoc,
+    deleteDoc,
     collection,
     onSnapshot,
     runTransaction
@@ -22,6 +23,7 @@ const CANCELLED_STATUS = "Cancelled";
 
 let jobs = [];
 let selectedCancelJobId = null;
+let selectedDeleteJob = null;
 
 const jobForm = document.getElementById("jobForm");
 const saveJobBtn = document.getElementById("saveJob");
@@ -400,6 +402,14 @@ onclick="viewJob('${job.jobId}')">
 
 ${editControl}
 
+<button
+class="btn btn-sm btn-danger"
+onclick="deleteJob('${job.jobId}')">
+
+<i class="bi bi-trash"></i>
+
+</button>
+
 </td>
 
         </tr>
@@ -411,6 +421,63 @@ ${editControl}
     updateStats(filteredJobs);
 
 }
+
+/*=========================
+    DELETE JOB
+=========================*/
+
+function deleteJob(jobId) {
+
+    const job = jobs.find(item => item.jobId === jobId);
+
+    if (!job) return;
+
+    selectedDeleteJob = jobId;
+
+    document.getElementById("deleteJobId").textContent = job.jobId;
+    document.getElementById("deleteCustomer").textContent = job.customer || "-";
+
+    new bootstrap.Modal(
+        document.getElementById("deleteJobModal")
+    ).show();
+
+}
+
+document
+.getElementById("confirmDeleteBtn")
+.addEventListener("click", async () => {
+
+    if (!selectedDeleteJob) return;
+
+    const confirmButton = document.getElementById("confirmDeleteBtn");
+    const jobId = selectedDeleteJob;
+
+    confirmButton.disabled = true;
+
+    try {
+
+        await deleteDoc(doc(db, "jobs", jobId));
+
+        selectedDeleteJob = null;
+
+        bootstrap.Modal.getInstance(
+            document.getElementById("deleteJobModal")
+        ).hide();
+
+        loadJobs();
+
+    } catch (error) {
+
+        console.error("Job deletion failed", error);
+        alert("Job could not be deleted.");
+
+    } finally {
+
+        confirmButton.disabled = false;
+
+    }
+
+});
 
 /*=========================
     Dashboard Cards
@@ -567,7 +634,7 @@ document.getElementById("sendJobStatusEmail").addEventListener("click", async ()
 
         }
 
-        const idToken = await adminUser.getIdToken();
+        const idToken = await adminUser.getIdToken(true);
 
         const response = await fetch(
             `${JOB_EMAIL_WORKER_URL}/send-job-status-email`,
@@ -1571,6 +1638,8 @@ document
 window.viewJob = viewJob;
 
 window.editJob = editJob;
+
+window.deleteJob = deleteJob;
 
 window.openJobStatusEmailModal = openJobStatusEmailModal;
 
