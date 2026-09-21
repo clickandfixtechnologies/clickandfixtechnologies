@@ -728,12 +728,19 @@ function viewJob(jobId){
 
     document.getElementById("vStatus").innerHTML = getStatusBadge(job.status);
 
-    document.getElementById("openCancelJob").disabled =
-        job.status === CANCELLED_STATUS;
+    const cancelJobButton = document.getElementById("openCancelJob");
 
-    document.getElementById("openCancelJob").title =
-        job.status === CANCELLED_STATUS
-            ? "This job is already cancelled."
+const cancelDisabled =
+    job.status === CANCELLED_STATUS ||
+    job.status === "Delivered";
+
+cancelJobButton.disabled = cancelDisabled;
+
+cancelJobButton.title =
+    job.status === CANCELLED_STATUS
+        ? "This job is already cancelled."
+        : job.status === "Delivered"
+            ? "Delivered jobs cannot be cancelled."
             : "Cancel this job while preserving its history.";
 
     if(job.invoice){
@@ -871,9 +878,17 @@ document.getElementById("timelineBox").innerHTML = timelineHTML;
 
 function openCancelJobModal() {
 
-    const job = jobs.find(item => item.jobId === document.getElementById("vJobId").textContent);
+    const job = jobs.find(
+        item => item.jobId === document.getElementById("vJobId").textContent
+    );
 
-    if (!job || job.status === CANCELLED_STATUS) return;
+    if (
+        !job ||
+        job.status === CANCELLED_STATUS ||
+        job.status === "Delivered"
+    ) {
+        return;
+    }
 
     selectedCancelJobId = job.jobId;
 
