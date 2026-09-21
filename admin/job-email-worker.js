@@ -171,11 +171,34 @@ async function requireAdmin(request) {
         body: "{}"
     });
 
-    const result = await response.json().catch(() => ({}));
+    const responseText = await response.text();
 
-    if (!response.ok || !result.success) {
-        throw new Error(result.error || "Admin access is required.");
-    }
+let result = {};
+
+try {
+    result = responseText ? JSON.parse(responseText) : {};
+} catch {
+    result = {};
+}
+
+console.error("Auth Worker upstream response", {
+    status: response.status,
+    statusText: response.statusText,
+    success: result?.success ?? null,
+    error: result?.error ?? null,
+    tokenPresent: Boolean(authorization),
+    tokenLength: authorization.length
+});
+
+if (!response.ok || !result.success) {
+    const error = new Error(
+        result.error || `Admin access is required. Upstream status: ${response.status}`
+    );
+
+    error.status = response.status;
+    throw error;
+}
+
 }
 
 function sampleJobValues(env) {
