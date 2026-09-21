@@ -43,9 +43,9 @@ export default {
         }
 
         try {
-            if (path === "/send-job-status-email") {
-                await requireAdmin(request);
-            }
+            if (path === "/send-job-status-email" && body.status === "Cancelled") {
+    await requireAdmin(request);
+}
 
             if (path === "/send-test-job-email") {
                 if (!body.email || !body.templateKey) return json({ success: false, error: "Test email address and template are required." }, 400);
