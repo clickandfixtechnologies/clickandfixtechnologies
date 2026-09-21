@@ -1076,6 +1076,10 @@ export default { async fetch(request, env) {
                 return json({ success: false, error: "This job is already cancelled." }, 409, origin);
             }
 
+if (job.status === "Delivered") {
+    return json({ success: false, error: "Delivered jobs cannot be cancelled." }, 409, origin);
+}
+
             const cancelledAt = new Date().toISOString();
             const timeline = Array.isArray(job.timeline) ? [...job.timeline] : [];
             const lastTimelineItem = timeline.at(-1);
