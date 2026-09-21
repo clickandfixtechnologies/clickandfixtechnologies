@@ -44,7 +44,7 @@ export default {
 
         try {
             if (path === "/send-job-status-email" && body.status === "Cancelled") {
-    await requireAdmin(request);
+    await requireAdmin(request, env);
 }
 
             if (path === "/send-test-job-email") {
@@ -156,54 +156,57 @@ function getJobTemplate(templateKey) {
     return jobStatusEmailTemplates.find(template => template.key === templateKey);
 }
 
-async function requireAdmin(request) {
+async function requireAdmin(request, env) {
     const authorization = request.headers.get("Authorization") || "";
 
-    if (!authorization) throw new Error("Admin authentication is required.");
+    if (!authorization) {
+        throw new Error("Admin authentication is required.");
+    }
 
-    const authSessionUrl = new URL("/admin/session", AUTH_WORKER_URL).toString();
+    const authSessionUrl = "https://auth.internal/admin/session";
 
-const response = await fetch(authSessionUrl, {
-    method: "POST",
-    headers: {
-        "Authorization": authorization,
-        "Content-Type": "application/json",
-        "Origin": ORIGIN
-    },
-    body: "{}"
-});
+    const response = await env.AUTH_WORKER.fetch(
+        new Request(authSessionUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": authorization,
+                "Content-Type": "application/json",
+                "Origin": ORIGIN
+            },
+            body: "{}"
+        })
+    );
 
     const responseText = await response.text();
 
-let result = {};
+    let result = {};
 
-try {
-    result = responseText ? JSON.parse(responseText) : {};
-} catch {
-    result = {};
-}
+    try {
+        result = responseText ? JSON.parse(responseText) : {};
+    } catch {
+        result = {};
+    }
 
-console.error("Auth Worker upstream response", {
-    requestedUrl: authSessionUrl,
-    responseUrl: response.url,
-    status: response.status,
-    statusText: response.statusText,
-    success: result?.success ?? null,
-    error: result?.error ?? null,
-    tokenPresent: Boolean(authorization),
-    tokenLength: authorization.length,
-    contentType: response.headers.get("content-type")
-});
+    console.error("Auth Worker upstream response", {
+        requestedUrl: authSessionUrl,
+        responseUrl: response.url,
+        status: response.status,
+        statusText: response.statusText,
+        success: result?.success ?? null,
+        error: result?.error ?? null,
+        tokenPresent: Boolean(authorization),
+        tokenLength: authorization.length,
+        contentType: response.headers.get("content-type")
+    });
 
-if (!response.ok || !result.success) {
-    const error = new Error(
-        result.error || `Admin access is required. Upstream status: ${response.status}`
-    );
+    if (!response.ok || !result.success) {
+        const error = new Error(
+            result.error || `Admin access is required. Upstream status: ${response.status}`
+        );
 
-    error.status = response.status;
-    throw error;
-}
-
+        error.status = response.status;
+        throw error;
+    }
 }
 
 function sampleJobValues(env) {

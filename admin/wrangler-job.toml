@@ -6,3 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 # Preserve non-secret variables configured in the Cloudflare Dashboard on deploy.
 # Secrets remain managed in the Dashboard and must never be committed here.
 keep_vars = true
+
+[[services]]
+binding = "AUTH_WORKER"
+service = "jolly-thunder-4929cf-auth-worker"
