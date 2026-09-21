@@ -161,15 +161,17 @@ async function requireAdmin(request) {
 
     if (!authorization) throw new Error("Admin authentication is required.");
 
-    const response = await fetch(`${AUTH_WORKER_URL}/admin/session`, {
-        method: "POST",
-        headers: {
-            "Authorization": authorization,
-            "Content-Type": "application/json",
-            "Origin": ORIGIN
-        },
-        body: "{}"
-    });
+    const authSessionUrl = new URL("/admin/session", AUTH_WORKER_URL).toString();
+
+const response = await fetch(authSessionUrl, {
+    method: "POST",
+    headers: {
+        "Authorization": authorization,
+        "Content-Type": "application/json",
+        "Origin": ORIGIN
+    },
+    body: "{}"
+});
 
     const responseText = await response.text();
 
@@ -182,12 +184,15 @@ try {
 }
 
 console.error("Auth Worker upstream response", {
+    requestedUrl: authSessionUrl,
+    responseUrl: response.url,
     status: response.status,
     statusText: response.statusText,
     success: result?.success ?? null,
     error: result?.error ?? null,
     tokenPresent: Boolean(authorization),
-    tokenLength: authorization.length
+    tokenLength: authorization.length,
+    contentType: response.headers.get("content-type")
 });
 
 if (!response.ok || !result.success) {
