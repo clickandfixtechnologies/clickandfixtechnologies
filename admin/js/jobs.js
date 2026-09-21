@@ -977,13 +977,16 @@ document
 
     }
 
-    catch (error) {
+catch (error) {
 
-        console.error(error);
+    console.error(error);
 
-        alert(error.message || "Job could not be cancelled.");
+    showJobEmailToast(
+        error.message || "Job could not be cancelled.",
+        "danger"
+    );
 
-    }
+}
 
     finally {
 
