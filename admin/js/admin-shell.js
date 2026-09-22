@@ -3,6 +3,7 @@ const navigationItems = [
     { href: "customers.html", icon: "bi-people-fill", label: "Customers" },
     { href: "jobs.html", icon: "bi-tools", label: "Jobs" },
     { href: "settings.html", icon: "bi-gear-fill", label: "Settings" },
+    { href: "offers.html", icon: "bi-tags-fill", label: "Offers" },
     { href: "email-templates.html", icon: "bi-envelope-fill", label: "Email Templates" },
     { href: "job-status-templates.html", icon: "bi-clipboard2-check-fill", label: "Job Status Templates" }
 ];

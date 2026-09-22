@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offers | Click &amp; Fix CRM</title>
+<meta name="theme-color" content="#0d6efd">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/admin-shell.css">
+<link rel="stylesheet" href="css/offers.css">
+</head>
+<body>
+<div class="offers-page">
+    <div id="sidebar"></div>
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h2>Offers</h2>
+                <small>Create customer-specific offers and track their lifecycle</small>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="btn-group" role="group" aria-label="Offers navigation">
+                    <button class="btn btn-outline-primary active" data-offer-panel="manage">Manage Offers</button>
+                    <button class="btn btn-outline-primary" data-offer-panel="claims">Claims <span id="claimCountBadge" class="badge bg-danger ms-1 d-none">0</span></button>
+                    <button class="btn btn-outline-primary" data-offer-panel="redeem">Redeem Offer</button>
+                </div>
+                <div class="dropdown">
+                    <button id="offerNotificationButton" class="btn btn-outline-secondary position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Offer notifications"><i class="bi bi-bell-fill"></i><span id="offerNotificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span></button>
+                    <ul id="offerNotificationsList" class="dropdown-menu dropdown-menu-end offer-notifications-list"><li><span class="dropdown-item-text text-muted">No new notifications.</span></li></ul>
+                </div>
+                <button id="createOfferButton" class="btn btn-primary"><i class="bi bi-plus-circle-fill me-1"></i>Create Offer</button>
+            </div>
+        </div>
+
+        <section id="manageOffersPanel" class="offer-panel">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6"><div class="offer-stat-card"><i class="bi bi-tags-fill text-primary"></i><div><strong id="offerCount">0</strong><span>Total Offers</span></div></div></div>
+            <div class="col-md-3 col-6"><div class="offer-stat-card"><i class="bi bi-lightning-charge-fill text-success"></i><div><strong id="activeOfferCount">0</strong><span>Active</span></div></div></div>
+            <div class="col-md-3 col-6"><div class="offer-stat-card"><i class="bi bi-hand-index-thumb-fill text-warning"></i><div><strong id="claimedOfferCount">0</strong><span>Claims</span></div></div></div>
+            <div class="col-md-3 col-6"><div class="offer-stat-card"><i class="bi bi-check2-circle text-info"></i><div><strong id="redeemedOfferCount">0</strong><span>Redeemed</span></div></div></div>
+        </div>
+
+        <div class="offer-analytics mb-4" aria-label="Offer lifecycle analytics"><span>Total Assigned <strong id="analyticsAssigned">0</strong></span><span>Viewed <strong id="analyticsViewed">0</strong></span><span>Claimed <strong id="analyticsClaimed">0</strong></span><span>Approved <strong id="analyticsApproved">0</strong></span><span>Redeemed <strong id="analyticsRedeemed">0</strong></span><span>Expired <strong id="analyticsExpired">0</strong></span></div>
+
+        <div class="table-card">
+            <div class="offer-toolbar">
+                <div class="search-box"><i class="bi bi-search"></i><input id="offerSearch" type="search" placeholder="Search offers or products"></div>
+                <select id="offerStatusFilter" class="form-select"><option value="">All statuses</option><option value="DRAFT">Draft</option><option value="ACTIVE">Active</option><option value="DISABLED">Disabled</option><option value="EXPIRED">Expired</option><option value="ARCHIVED">Archived</option></select>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle offer-table mb-0">
+                    <thead><tr><th>Offer</th><th>Product / Service</th><th>Type</th><th>Customers</th><th>Claims</th><th>Validity</th><th>Status</th><th>Featured</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="offersTableBody"><tr><td colspan="9" class="text-center py-5 text-muted">Loading offers...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+        </section>
+
+        <section id="claimsPanel" class="offer-panel d-none">
+            <div class="table-card">
+                <div class="offer-toolbar"><div><h5 class="mb-1">Offer Claims</h5><small class="text-muted">Review, approve, or cancel customer claims.</small></div><select id="claimStatusFilter" class="form-select ms-auto"><option value="">All statuses</option><option value="CLAIMED">Claimed</option><option value="APPROVED">Approved</option><option value="REDEEMED">Redeemed</option><option value="EXPIRED">Expired</option><option value="CANCELLED">Cancelled</option></select></div>
+                <div class="table-responsive"><table class="table align-middle offer-table mb-0"><thead><tr><th>Customer</th><th>Offer</th><th>Claim Date</th><th>Status</th><th>Offer Code</th><th>Expiry</th><th class="text-center">Actions</th></tr></thead><tbody id="claimsTableBody"><tr><td colspan="7" class="text-center py-5 text-muted">Open Claims to load offer claims.</td></tr></tbody></table></div>
+            </div>
+        </section>
+
+        <section id="redeemPanel" class="offer-panel d-none">
+            <div class="row justify-content-center"><div class="col-lg-8"><div class="table-card p-4"><h5><i class="bi bi-ticket-perforated-fill me-2"></i>Redeem Offer</h5><p class="text-muted">Verify an approved customer offer code before one-time redemption.</p><form id="verifyOfferCodeForm" class="d-flex gap-2 flex-wrap"><input id="redeemOfferCodeInput" class="form-control flex-grow-1" required autocomplete="off" placeholder="CF-OFR-7K29X"><button id="verifyOfferCodeButton" class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Verify Code</button></form><div id="redeemResult" class="mt-4"></div></div></div></div>
+        </section>
+    </main>
+</div>
+
+<div class="modal fade" id="offerEditorModal" tabindex="-1" aria-labelledby="offerEditorTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <form class="modal-content" id="offerForm">
+            <div class="modal-header"><h5 class="modal-title" id="offerEditorTitle"><i class="bi bi-tag-fill me-2"></i>Create Offer</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">
+                <input id="offerId" type="hidden">
+                <div class="row g-3">
+                    <div class="col-md-8"><label class="form-label" for="offerTitle">Offer Title *</label><input id="offerTitle" class="form-control" required maxlength="150"></div>
+                    <div class="col-md-4"><label class="form-label" for="offerShortTitle">Short Title</label><input id="offerShortTitle" class="form-control" maxlength="80"></div>
+                    <div class="col-12"><label class="form-label" for="offerDescription">Description</label><textarea id="offerDescription" class="form-control" rows="3"></textarea></div>
+                    <div class="col-md-6"><label class="form-label" for="offerProduct">Product / Service</label><input id="offerProduct" class="form-control"></div>
+                    <div class="col-md-3"><label class="form-label" for="offerType">Offer Type *</label><select id="offerType" class="form-select" required><option value="SPECIAL_DISCOUNT">Special Discount</option><option value="AMC">AMC</option><option value="WARRANTY_EXTENSION">Warranty Extension</option><option value="SERVICE_DISCOUNT">Service Discount</option><option value="PRODUCT_OFFER">Product Offer</option><option value="CUSTOM">Custom Offer</option></select></div>
+                    <div class="col-md-3"><label class="form-label" for="discountType">Discount Type *</label><select id="discountType" class="form-select" required><option value="NONE">None</option><option value="PERCENTAGE">Percentage</option><option value="FIXED_AMOUNT">Fixed Amount</option><option value="SPECIAL_PRICE">Special Price</option></select></div>
+                    <div class="col-md-4"><label class="form-label" for="originalPrice">Original Price</label><input id="originalPrice" type="number" min="0" step="0.01" class="form-control"></div>
+                    <div class="col-md-4"><label class="form-label" for="offerPrice">Offer Price</label><input id="offerPrice" type="number" min="0" step="0.01" class="form-control"></div>
+                    <div class="col-md-4"><label class="form-label" for="discountValue">Discount Value</label><input id="discountValue" type="number" min="0" step="0.01" class="form-control"></div>
+                    <div class="col-md-4"><label class="form-label" for="offerStartDate">Start Date *</label><input id="offerStartDate" type="datetime-local" class="form-control" required></div>
+                    <div class="col-md-4"><label class="form-label" for="offerExpiryDate">Expiry Date *</label><input id="offerExpiryDate" type="datetime-local" class="form-control" required></div>
+                    <div class="col-md-2"><label class="form-label" for="offerStatus">Status *</label><select id="offerStatus" class="form-select"><option value="DRAFT">Draft</option><option value="ACTIVE">Active</option><option value="DISABLED">Disabled</option><option value="ARCHIVED">Archived</option></select></div>
+                    <div class="col-md-2 d-flex align-items-end"><div class="form-check form-switch mb-2"><input id="offerFeatured" class="form-check-input" type="checkbox"><label class="form-check-label" for="offerFeatured">Featured</label></div></div>
+                    <div class="col-12"><label class="form-label" for="offerTerms">Terms &amp; Conditions</label><textarea id="offerTerms" class="form-control" rows="3"></textarea></div>
+                    <div class="col-12"><div class="offer-assignment-panel"><div><strong>Selected Customers</strong><p class="mb-0 text-muted small"><span id="selectedCustomerCount">0</span> customer(s) will receive this offer.</p></div><button type="button" id="selectCustomersButton" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>Select Customers</button></div><div id="selectedCustomers" class="selected-customers mt-2"></div></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button id="saveOfferButton" type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Offer</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="customerPickerModal" tabindex="-1" aria-labelledby="customerPickerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="customerPickerTitle"><i class="bi bi-people-fill me-2"></i>Select Customers</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="d-flex gap-2 flex-wrap mb-3"><input id="customerPickerSearch" type="search" class="form-control flex-grow-1" placeholder="Search customer name, ID, mobile or email"><button id="selectAllFilteredButton" type="button" class="btn btn-outline-primary">Select All Filtered</button></div><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th><input id="selectVisibleCustomers" class="form-check-input" type="checkbox" aria-label="Select visible customers"></th><th>Customer</th><th>Customer ID</th><th>Mobile</th><th>Email</th></tr></thead><tbody id="customerPickerBody"></tbody></table></div></div><div class="modal-footer"><span class="me-auto text-muted small"><span id="pickerSelectedCount">0</span> selected</span><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button></div></div></div>
+</div>
+
+<div class="modal fade" id="offerDetailsModal" tabindex="-1" aria-labelledby="offerDetailsTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="offerDetailsTitle"><i class="bi bi-tag-fill me-2"></i>Offer Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div id="offerDetailsBody" class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button></div></div></div></div>
+
+<div class="modal fade" id="claimDetailsModal" tabindex="-1" aria-labelledby="claimDetailsTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="claimDetailsTitle"><i class="bi bi-hand-index-thumb-fill me-2"></i>Offer Claim Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div id="claimDetailsBody" class="modal-body"></div><div id="claimDetailsActions" class="modal-footer"></div></div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="offerToast" class="toast border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div id="offerToastMessage" class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div></div></div>
+
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="js/admin-shell.js"></script>
+<script type="module" src="js/auth.js"></script>
+<script type="module" src="js/offers.js"></script>
+<script type="module" src="js/pwa.js"></script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+.offers-page {
+    min-height: 100vh;
+}
+
+.offers-page .main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 38px;
+}
+
+.offer-stat-card {
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px;
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(15,23,42,.06);
+    border-radius: var(--crm-radius);
+    box-shadow: var(--crm-shadow);
+}
+
+.offer-stat-card > i {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(13,110,253,.09);
+    font-size: 23px;
+}
+
+.offer-stat-card strong,
+.offer-stat-card span {
+    display: block;
+}
+
+.offer-analytics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.offer-analytics span {
+    padding: 9px 12px;
+    border: 1px solid #e4eaf3;
+    border-radius: 10px;
+    background: rgba(255,255,255,.78);
+    color: var(--crm-muted);
+    font-size: 13px;
+}
+
+.offer-analytics strong {
+    margin-left: 5px;
+    color: var(--crm-text);
+}
+
+.offer-stat-card strong {
+    font-size: 25px;
+    line-height: 1.1;
+}
+
+.offer-stat-card span {
+    margin-top: 5px;
+    color: var(--crm-muted);
+    font-size: 13px;
+}
+
+.offer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+}
+
+.offer-toolbar .search-box {
+    flex: 1;
+    min-width: 240px;
+}
+
+.offer-toolbar .form-select {
+    width: 180px;
+}
+
+.offer-table th {
+    white-space: nowrap;
+}
+
+.offer-table td {
+    font-size: 14px;
+}
+
+.offer-title-cell strong,
+.offer-title-cell span {
+    display: block;
+}
+
+.offer-title-cell span {
+    margin-top: 3px;
+    color: var(--crm-muted);
+    font-size: 12px;
+}
+
+.offer-count {
+    display: inline-flex;
+    min-width: 30px;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #0d6efd;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.offer-assignment-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #e5eaf2;
+    border-radius: 13px;
+    background: #f8faff;
+}
+
+.selected-customers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 130px;
+    overflow-y: auto;
+}
+
+.selected-customer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #174ea6;
+    font-size: 12px;
+}
+
+.selected-customer-chip button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    line-height: 1;
+}
+
+.offer-details-grid dt {
+    color: var(--crm-muted);
+    font-size: 13px;
+}
+
+.offer-details-grid dd {
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+}
+
+.offer-status-actions .dropdown-menu {
+    min-width: 155px;
+}
+
+.offer-notifications-list {
+    width: min(370px, calc(100vw - 30px));
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.offer-notification-item {
+    display: block;
+    white-space: normal;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.offer-notification-item.unread {
+    background: #f0f6ff;
+}
+
+.offer-notification-item strong,
+.offer-notification-item small {
+    display: block;
+}
+
+.offer-notification-item small {
+    color: var(--crm-muted);
+}
+
+.claim-lifecycle {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.claim-lifecycle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--crm-muted);
+    font-size: 13px;
+}
+
+.claim-lifecycle-item.done {
+    color: #198754;
+}
+
+.claim-lifecycle-item i {
+    width: 22px;
+    text-align: center;
+}
+
+.redeem-result-card {
+    padding: 22px;
+    border: 1px solid #e5eaf2;
+    border-radius: 16px;
+    background: #f8faff;
+}
+
+.redeem-result-card dl {
+    margin-bottom: 0;
+}
+
+.redeem-result-card dt {
+    color: var(--crm-muted);
+    font-size: 13px;
+}
+
+.redeem-result-card dd {
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .offers-page .main-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 15px !important;
+        overflow-x: hidden;
+    }
+
+    .offer-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .offer-toolbar .form-select {
+        width: 100%;
+    }
+
+    .offer-assignment-panel {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .page-header > div:last-child {
+        width: 100%;
+    }
+
+    .page-header .btn-group {
+        display: flex;
+        width: 100%;
+    }
+
+    .page-header .btn-group .btn {
+        flex: 1;
+        font-size: 12px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}

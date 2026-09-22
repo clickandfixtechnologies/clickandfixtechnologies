@@ -18,6 +18,8 @@ from "./password-security.js";
 =========================================*/
 
 let jobs = [];
+let customerOffers = [];
+let activeOfferIndex = 0;
 
 /*=========================================
       LOGIN GUARD
@@ -108,6 +110,7 @@ async function loadDashboard() {
         customer = result.customer;
         jobs = result.jobs || [];
         loadCustomerDashboard(jobs);
+        await loadCustomerOffers();
     }
     catch(error){
         clearCustomerSession();
@@ -197,6 +200,232 @@ function renderEmailVerification() {
     });
 
 }
+
+/*=========================================
+        CUSTOMER OFFERS
+=========================================*/
+
+function offerEscape(value = "") {
+    return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function offerMoney(value) {
+    return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
+}
+
+function offerDate(value) {
+    if (!value || Number.isNaN(Date.parse(value))) return "-";
+    return new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    }).format(new Date(value));
+}
+
+function offerAssignmentState(assignment) {
+    const labels = {
+        ASSIGNED: '<span class="badge bg-primary">Available</span>',
+        VIEWED: '<span class="badge bg-primary">Available</span>',
+        CLAIMED: '<span class="badge bg-warning text-dark">Claim Submitted</span>',
+        APPROVED: '<span class="badge bg-success">Approved</span>',
+        REDEEMED: '<span class="badge bg-primary">Redeemed</span>'
+    };
+    return labels[assignment.status] || '<span class="badge bg-secondary">Unavailable</span>';
+}
+
+function offerCodeDetails(assignment) {
+    if (assignment.status === "REDEEMED") {
+        return `<small class="text-muted d-block">Offer Code: <code>${offerEscape(assignment.offerCode || "-")}</code></small><small class="text-muted">Redeemed on ${offerDate(assignment.redeemedAt)}</small>`;
+    }
+
+    if (assignment.status === "APPROVED" && assignment.offerCode) {
+        return `<small class="text-success d-block mb-2">🎉 Offer Approved</small><div class="d-flex align-items-center gap-2 flex-wrap"><code>${offerEscape(assignment.offerCode)}</code><button type="button" class="btn btn-outline-primary btn-sm" data-copy-offer-code="${offerEscape(assignment.offerCode)}"><i class="bi bi-copy me-1"></i>Copy Code</button></div>`;
+    }
+
+    return '<small class="text-muted">Your claim is being processed.</small>';
+}
+
+async function loadCustomerOffers() {
+    const result = await workerRequest("/offers", { action: "list" });
+    customerOffers = result.offers || [];
+    renderCustomerOffers();
+
+    const availableOffers = customerOffers.filter(assignment =>
+        ["ASSIGNED", "VIEWED"].includes(assignment.status)
+    );
+    const popupKey = `customerOffersPopupShown:${getCustomerSession()}`;
+
+    if (availableOffers.length && !sessionStorage.getItem(popupKey)) {
+        sessionStorage.setItem(popupKey, "true");
+        const firstIndex = customerOffers.findIndex(assignment => assignment.assignmentId === availableOffers[0].assignmentId);
+        window.setTimeout(() => openOfferCenter(Math.max(0, firstIndex)), 350);
+    }
+}
+
+function renderCustomerOffers() {
+    const list = document.getElementById("customerOffersList");
+    const badge = document.getElementById("offerBadgeCount");
+
+    badge.textContent = customerOffers.length;
+
+    if (!customerOffers.length) {
+        list.innerHTML = '<div class="col-12 text-center py-4 text-muted">No active offers are available right now.</div>';
+        return;
+    }
+
+    list.innerHTML = customerOffers.map(assignment => {
+        const offer = assignment.offer || {};
+        const available = ["ASSIGNED", "VIEWED"].includes(assignment.status);
+        return `
+            <div class="col-md-6 col-xl-4">
+                <article class="customer-offer-card">
+                    <div class="d-flex justify-content-between align-items-start gap-2"><h6 class="mb-2">${offerEscape(offer.title)}</h6>${offerAssignmentState(assignment)}</div>
+                    <p class="offer-description mb-3">${offerEscape(offer.description || offer.productOrService || "Exclusive customer offer")}</p>
+                    <div class="mb-1"><span class="offer-original-price">${Number(offer.originalPrice || 0) > 0 ? offerMoney(offer.originalPrice) : ""}</span></div>
+                    <div class="offer-price mb-3">${Number(offer.offerPrice || 0) > 0 ? offerMoney(offer.offerPrice) : "Special price available"}</div>
+                    <small class="d-block text-muted mb-3"><i class="bi bi-clock me-1"></i>Valid until ${offerDate(offer.expiryDate)}</small>
+                    ${available ? `<button class="btn btn-warning btn-sm me-2" data-offer-action="open" data-assignment-id="${offerEscape(assignment.assignmentId)}"><i class="bi bi-gift me-1"></i>View Offer</button><button class="btn btn-outline-light btn-sm" data-offer-action="claim" data-assignment-id="${offerEscape(assignment.assignmentId)}">Grab This Offer</button>` : offerCodeDetails(assignment)}
+                </article>
+            </div>`;
+    }).join("");
+}
+
+async function trackOfferView(assignment) {
+    if (!assignment || assignment.viewedAt || !["ASSIGNED", "VIEWED"].includes(assignment.status)) return;
+
+    try {
+        const result = await workerRequest("/offers", {
+            action: "view",
+            assignmentId: assignment.assignmentId
+        });
+        const index = customerOffers.findIndex(item => item.assignmentId === assignment.assignmentId);
+        if (index >= 0) customerOffers[index] = { ...customerOffers[index], ...result.assignment };
+    } catch (error) {
+        console.error("Offer view tracking failed", error);
+    }
+}
+
+function offerCenterHtml(assignment) {
+    const offer = assignment.offer || {};
+    const available = ["ASSIGNED", "VIEWED"].includes(assignment.status);
+    const discount = Number(offer.originalPrice || 0) - Number(offer.offerPrice || 0);
+
+    return `
+        <div class="offer-center-content">
+            <div class="text-center mb-4"><div class="display-5 mb-2">🎁</div><h3>${offerEscape(offer.title)}</h3><p class="text-muted mb-0">${offerEscape(offer.productOrService || "Exclusive offer for you")}</p></div>
+            <div class="row g-3 mb-3">
+                <div class="col-sm-4"><div class="offer-highlight"><small>Regular Price</small><strong class="text-decoration-line-through">${Number(offer.originalPrice || 0) > 0 ? offerMoney(offer.originalPrice) : "-"}</strong></div></div>
+                <div class="col-sm-4"><div class="offer-highlight"><small>Special Price</small><strong class="text-warning">${Number(offer.offerPrice || 0) > 0 ? offerMoney(offer.offerPrice) : "Available"}</strong></div></div>
+                <div class="col-sm-4"><div class="offer-highlight"><small>You Save</small><strong>${discount > 0 ? offerMoney(discount) : offerEscape(offer.discountValue || "-")}</strong></div></div>
+            </div>
+            <p class="mb-3" style="white-space:pre-wrap">${offerEscape(offer.description || "")}</p>
+            <div class="offer-highlight mb-3"><small>Valid Until</small><strong>${offerDate(offer.expiryDate)}</strong></div>
+            ${offer.termsAndConditions ? `<details class="mb-3"><summary>Terms &amp; Conditions</summary><p class="text-muted mt-2 mb-0" style="white-space:pre-wrap">${offerEscape(offer.termsAndConditions)}</p></details>` : ""}
+            <div class="text-center">${available ? `<button class="btn btn-warning px-4" data-center-claim="${offerEscape(assignment.assignmentId)}"><i class="bi bi-hand-index-thumb-fill me-1"></i>Grab This Offer</button>` : assignment.status === "CLAIMED" ? '<span class="badge bg-warning text-dark px-3 py-2">🟡 Claim Submitted</span>' : assignment.status === "REDEEMED" ? `<span class="badge bg-primary px-3 py-2">🔵 Redeemed${assignment.offerCode ? ` · ${offerEscape(assignment.offerCode)}` : ""}</span><small class="d-block text-muted mt-2">Redeemed on ${offerDate(assignment.redeemedAt)}</small>` : `<span class="badge bg-success px-3 py-2">🟢 Approved${assignment.offerCode ? ` · ${offerEscape(assignment.offerCode)}` : ""}</span>${assignment.offerCode ? `<button type="button" class="btn btn-outline-primary btn-sm ms-2" data-copy-offer-code="${offerEscape(assignment.offerCode)}"><i class="bi bi-copy me-1"></i>Copy Code</button>` : ""}`}</div>
+        </div>`;
+}
+
+async function openOfferCenter(index) {
+    if (!customerOffers.length) return;
+    activeOfferIndex = (index + customerOffers.length) % customerOffers.length;
+    const assignment = customerOffers[activeOfferIndex];
+    document.getElementById("offerCenterPosition").textContent = `Offer ${activeOfferIndex + 1} of ${customerOffers.length}`;
+    document.getElementById("offerCenterContent").innerHTML = offerCenterHtml(assignment);
+    document.getElementById("previousOfferButton").disabled = customerOffers.length < 2;
+    document.getElementById("nextOfferButton").disabled = customerOffers.length < 2;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("offerCenterModal")).show();
+    await trackOfferView(assignment);
+    renderCustomerOffers();
+}
+
+function openOfferClaim(assignmentId) {
+    const assignment = customerOffers.find(item => item.assignmentId === assignmentId);
+    if (!assignment || !["ASSIGNED", "VIEWED"].includes(assignment.status)) return;
+    document.getElementById("claimAssignmentId").value = assignmentId;
+    document.getElementById("claimCustomerName").textContent = customer.name || "-";
+    document.getElementById("claimCustomerId").textContent = customer.customerId || "-";
+    document.getElementById("claimOfferName").textContent = assignment.offer?.title || "-";
+    document.getElementById("claimPreferredContact").value = "";
+    document.getElementById("claimAdditionalNote").value = "";
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("offerCenterModal")).hide();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("offerClaimModal")).show();
+}
+
+document.getElementById("customerOffersList").addEventListener("click", event => {
+    const copyButton = event.target.closest("[data-copy-offer-code]");
+    if (copyButton) {
+        copyOfferCode(copyButton.dataset.copyOfferCode, copyButton);
+        return;
+    }
+    const button = event.target.closest("[data-offer-action]");
+    if (!button) return;
+    const assignmentId = button.dataset.assignmentId;
+    if (button.dataset.offerAction === "open") openOfferCenter(customerOffers.findIndex(item => item.assignmentId === assignmentId));
+    if (button.dataset.offerAction === "claim") openOfferClaim(assignmentId);
+});
+
+document.getElementById("offerCenterContent").addEventListener("click", event => {
+    const copyButton = event.target.closest("[data-copy-offer-code]");
+    if (copyButton) {
+        copyOfferCode(copyButton.dataset.copyOfferCode, copyButton);
+        return;
+    }
+    const button = event.target.closest("[data-center-claim]");
+    if (button) openOfferClaim(button.dataset.centerClaim);
+});
+
+async function copyOfferCode(code, button) {
+    if (!code) return;
+
+    try {
+        await navigator.clipboard.writeText(code);
+        const original = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-check2 me-1"></i>Copied';
+        window.setTimeout(() => { button.innerHTML = original; }, 1600);
+    } catch (error) {
+        console.error("Offer code copy failed", error);
+        Swal.fire({ icon: "error", title: "Could not copy code", text: "Please copy the offer code manually.", background: "#0f172a", color: "#ffffff", confirmButtonColor: "#7c3aed" });
+    }
+}
+
+document.getElementById("previousOfferButton").addEventListener("click", () => openOfferCenter(activeOfferIndex - 1));
+document.getElementById("nextOfferButton").addEventListener("click", () => openOfferCenter(activeOfferIndex + 1));
+
+document.getElementById("offerClaimForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = document.getElementById("confirmOfferClaim");
+    const assignmentId = document.getElementById("claimAssignmentId").value;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
+
+    try {
+        const result = await workerRequest("/offers", {
+            action: "claim",
+            assignmentId,
+            preferredContact: document.getElementById("claimPreferredContact").value,
+            additionalNote: document.getElementById("claimAdditionalNote").value.trim()
+        });
+        const index = customerOffers.findIndex(item => item.assignmentId === assignmentId);
+        if (index >= 0) customerOffers[index] = { ...customerOffers[index], ...result.assignment };
+        renderCustomerOffers();
+        bootstrap.Modal.getInstance(document.getElementById("offerClaimModal")).hide();
+        Swal.fire({ icon: "success", title: "Offer Claimed Successfully", text: "Your claim has been submitted. We will process your offer shortly.", background: "#0f172a", color: "#ffffff", confirmButtonColor: "#7c3aed" });
+    } catch (error) {
+        Swal.fire({ icon: "error", title: "Claim could not be submitted", text: error.message || "Please try again.", background: "#0f172a", color: "#ffffff", confirmButtonColor: "#7c3aed" });
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-check2-circle me-1"></i>Confirm Claim';
+    }
+});
 
 startSessionExpiryTimer(() => {
     window.location.replace("customer-login.html");

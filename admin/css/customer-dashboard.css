@@ -902,3 +902,109 @@ footer p{
 .text-muted{
     color:#94a3b8!important;
 }
+
+/*=========================================
+        CUSTOMER OFFERS
+=========================================*/
+
+.customer-offer-card {
+    height: 100%;
+    padding: 20px;
+    border: 1px solid rgba(192,132,252,.32);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(124,58,237,.18), rgba(15,23,42,.55));
+    box-shadow: 0 12px 30px rgba(0,0,0,.18);
+}
+
+.customer-offer-card h6 {
+    color: #fff;
+    font-weight: 700;
+}
+
+.customer-offer-card .offer-price {
+    color: #fbbf24;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.customer-offer-card .offer-original-price {
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+.customer-offer-card .offer-description {
+    min-height: 44px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.offer-center-modal .modal-body {
+    min-height: 300px;
+}
+
+.offer-center-content h3 {
+    color: #f8fafc;
+    font-weight: 800;
+}
+
+.offer-center-content .offer-highlight {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+}
+
+.offer-center-content .offer-highlight small,
+.offer-claim-summary small {
+    display: block;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.offer-center-content .offer-highlight strong,
+.offer-claim-summary strong {
+    display: block;
+    color: #fff;
+    margin-top: 3px;
+}
+
+.offer-claim-summary {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    background: rgba(255,255,255,.05);
+}
+
+#offerClaimModal .form-select,
+#offerClaimModal .form-control {
+    color: #fff;
+    border-color: rgba(255,255,255,.16);
+    background: rgba(255,255,255,.07);
+}
+
+#offerClaimModal .form-select option {
+    color: #111827;
+}
+
+@media(max-width:576px) {
+    .offer-center-modal .modal-body {
+        min-height: 0;
+    }
+
+    .offer-center-modal .modal-footer {
+        gap: 12px;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .offer-center-modal .modal-footer > div {
+        display: flex;
+        gap: 8px;
+    }
+
+    .offer-center-modal .modal-footer button {
+        flex: 1;
+    }
+}

@@ -137,6 +137,21 @@ class="whatsapp-float">
         <li class="nav-item">
 
             <a
+            href="#offers"
+            class="nav-link">
+
+                <i class="bi bi-gift-fill"></i>
+
+                My Offers
+
+            </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+            <a
             href="#profile"
             class="nav-link">
 
@@ -607,6 +622,44 @@ No Repair Jobs Found
 </tbody>
 
 </table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        MY OFFERS
+===================================== -->
+
+<div
+class="card shadow-sm border-0 mt-4"
+id="offers">
+
+<div class="card-header bg-white d-flex align-items-center justify-content-between">
+
+<h5 class="mb-0">
+
+<i class="bi bi-gift-fill me-2"></i>
+
+My Offers
+
+</h5>
+
+<span id="offerBadgeCount" class="badge bg-primary">0</span>
+
+</div>
+
+<div class="card-body">
+
+<div id="customerOffersList" class="row g-3">
+
+<div class="col-12 text-center py-4 text-muted">
+
+No active offers are available right now.
+
+</div>
 
 </div>
 
@@ -1210,6 +1263,130 @@ Close
 </div>
 
 </div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        OFFER CENTER MODAL
+===================================== -->
+
+<div
+class="modal fade"
+id="offerCenterModal"
+tabindex="-1"
+aria-labelledby="offerCenterTitle"
+aria-hidden="true">
+
+<div class="modal-dialog modal-dialog-centered modal-lg">
+
+<div class="modal-content offer-center-modal">
+
+<div class="modal-header">
+
+<h5 class="modal-title" id="offerCenterTitle">
+
+<i class="bi bi-gift-fill me-2 text-warning"></i>
+
+Exclusive Offers For You
+
+</h5>
+
+<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+</div>
+
+<div class="modal-body">
+
+<div id="offerCenterPosition" class="small text-muted mb-3"></div>
+
+<div id="offerCenterContent"></div>
+
+</div>
+
+<div class="modal-footer d-flex justify-content-between">
+
+<div>
+
+<button id="previousOfferButton" type="button" class="btn btn-outline-light btn-sm"><i class="bi bi-chevron-left"></i> Previous</button>
+
+<button id="nextOfferButton" type="button" class="btn btn-outline-light btn-sm">Next <i class="bi bi-chevron-right"></i></button>
+
+</div>
+
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">Maybe Later</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================
+        OFFER CLAIM MODAL
+===================================== -->
+
+<div
+class="modal fade"
+id="offerClaimModal"
+tabindex="-1"
+aria-labelledby="offerClaimTitle"
+aria-hidden="true">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<form class="modal-content" id="offerClaimForm">
+
+<div class="modal-header">
+
+<h5 class="modal-title" id="offerClaimTitle">
+
+<i class="bi bi-hand-index-thumb-fill me-2 text-warning"></i>
+
+Claim This Offer
+
+</h5>
+
+<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+</div>
+
+<div class="modal-body">
+
+<input type="hidden" id="claimAssignmentId">
+
+<div class="offer-claim-summary mb-3">
+
+<div><small>Customer Name</small><strong id="claimCustomerName">-</strong></div>
+
+<div><small>Customer ID</small><strong id="claimCustomerId">-</strong></div>
+
+<div><small>Offer Name</small><strong id="claimOfferName">-</strong></div>
+
+</div>
+
+<label class="form-label" for="claimPreferredContact">Preferred Contact</label>
+
+<select id="claimPreferredContact" class="form-select mb-3"><option value="">No preference</option><option value="CALL">Call</option><option value="WHATSAPP">WhatsApp</option></select>
+
+<label class="form-label" for="claimAdditionalNote">Additional Note <span class="text-muted">(optional)</span></label>
+
+<textarea id="claimAdditionalNote" class="form-control" rows="3" maxlength="1000" placeholder="Add any useful information for our team"></textarea>
+
+</div>
+
+<div class="modal-footer">
+
+<button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+
+<button id="confirmOfferClaim" type="submit" class="btn btn-warning"><i class="bi bi-check2-circle me-1"></i>Confirm Claim</button>
+
+</div>
+
+</form>
 
 </div>
 

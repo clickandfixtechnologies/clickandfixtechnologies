@@ -12,6 +12,11 @@ const VERIFICATION_TOKEN_SECONDS = 60 * 60 * 24;
 const RESET_TOKEN_SECONDS = 60 * 30;
 const PBKDF2_ITERATIONS = 100000;
 const WEB_CRYPTO_PBKDF2_MAX_ITERATIONS = 100000;
+const OFFER_TYPES = new Set(["SPECIAL_DISCOUNT", "AMC", "WARRANTY_EXTENSION", "SERVICE_DISCOUNT", "PRODUCT_OFFER", "CUSTOM"]);
+const OFFER_DISCOUNT_TYPES = new Set(["PERCENTAGE", "FIXED_AMOUNT", "SPECIAL_PRICE", "NONE"]);
+const OFFER_STATUSES = new Set(["DRAFT", "ACTIVE", "DISABLED", "EXPIRED", "ARCHIVED"]);
+const OFFER_ASSIGNMENT_STATUSES = new Set(["ASSIGNED", "VIEWED", "CLAIMED", "APPROVED", "REDEEMED", "CANCELLED", "EXPIRED"]);
+const OFFER_CODE_STATUSES = new Set(["UNUSED", "REDEEMED", "EXPIRED", "CANCELLED"]);
 
 let firestoreAccessToken = "";
 let firestoreAccessTokenExpiresAt = 0;
@@ -464,6 +469,911 @@ async function writeFirestoreRestAuditLog(eventType, adminUid, customerId, detai
     );
 
     if (!response.ok) throw new Error(`Firestore audit log write failed (${response.status}).`);
+}
+
+function offerError(message, status = 400) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+}
+
+function offerIdentifier(value, name) {
+    const identifier = String(value || "").trim();
+
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(identifier)) {
+        throw offerError(`A valid ${name} is required.`);
+    }
+
+    return identifier;
+}
+
+function offerDate(value, name, required = false) {
+    if (value === undefined || value === null || value === "") {
+        if (required) throw offerError(`${name} is required.`);
+        return "";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) throw offerError(`${name} is invalid.`);
+
+    return date.toISOString();
+}
+
+function offerRandomId(prefix) {
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    return `${prefix}-${Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("").toUpperCase()}`;
+}
+
+function offerCodeValue() {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    return `CF-OFR-${Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("")}`;
+}
+
+function offerRedemptionReferenceValue() {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(7));
+    return `RED-${new Date().getFullYear()}-${Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("")}`;
+}
+
+function firestoreRestValue(value) {
+    if (typeof value === "string") return { stringValue: value };
+    if (typeof value === "boolean") return { booleanValue: value };
+    if (typeof value === "number" && Number.isFinite(value)) return { doubleValue: value };
+    if (Array.isArray(value)) return { arrayValue: { values: value.map(firestoreRestValue) } };
+    if (value && typeof value === "object") {
+        return {
+            mapValue: {
+                fields: Object.fromEntries(
+                    Object.entries(value)
+                    .filter(([, nestedValue]) => nestedValue !== undefined)
+                    .map(([key, nestedValue]) => [key, firestoreRestValue(nestedValue)])
+                )
+            }
+        };
+    }
+
+    return { nullValue: null };
+}
+
+function offerFields(values) {
+    return Object.fromEntries(
+        Object.entries(values)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [key, firestoreRestValue(value)])
+    );
+}
+
+function offerRecord(document) {
+    return document
+        ? { ...firestoreRestDocumentToCustomer(document), document }
+        : null;
+}
+
+function offerIsActive(offer, now = Date.now()) {
+    if (!offer || offer.status !== "ACTIVE") return false;
+
+    const start = Date.parse(offer.startDate || "");
+    const expiry = Date.parse(offer.expiryDate || "");
+
+    return !Number.isNaN(start) && !Number.isNaN(expiry) && now >= start && now <= expiry;
+}
+
+function offerAssignmentIsVisible(assignment) {
+    return assignment && assignment.status !== "CANCELLED";
+}
+
+function offerCodeIsActive(code, now = Date.now()) {
+    return code && code.status === "UNUSED" && Number.isFinite(Date.parse(code.expiryDate || "")) && now <= Date.parse(code.expiryDate);
+}
+
+function offerCodeEffectiveStatus(code, now = Date.now()) {
+    if (!code) return "INVALID";
+    if (code.status !== "UNUSED") return code.status;
+    return Number.isFinite(Date.parse(code.expiryDate || "")) && now > Date.parse(code.expiryDate)
+        ? "EXPIRED"
+        : "UNUSED";
+}
+
+async function findFirestoreRecordsByField(collectionId, fieldName, fieldValue, env, limit = 500) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:runQuery`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                structuredQuery: {
+                    from: [{ collectionId }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: fieldName },
+                            op: "EQUAL",
+                            value: { stringValue: String(fieldValue) }
+                        }
+                    },
+                    limit
+                }
+            })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore ${collectionId} query failed (${response.status}).`);
+
+    const responseText = await response.text();
+    const results = JSON.parse(responseText);
+
+    return (Array.isArray(results) ? results : [results])
+    .filter(result => result.document)
+    .map(result => firestoreRestDocumentToCustomer(result.document));
+}
+
+async function listFirestoreRecords(collectionId, env, limit = 500) {
+    const accessToken = await getFirestoreRestAccessToken(env);
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents:runQuery`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                structuredQuery: {
+                    from: [{ collectionId }],
+                    limit
+                }
+            })
+        }
+    );
+
+    if (!response.ok) throw new Error(`Firestore ${collectionId} list failed (${response.status}).`);
+
+    const results = JSON.parse(await response.text());
+
+    return (Array.isArray(results) ? results : [results])
+    .filter(result => result.document)
+    .map(result => firestoreRestDocumentToCustomer(result.document));
+}
+
+function offerResponse(record) {
+    const { id, data } = record;
+    return { offerId: data.offerId || id, ...data };
+}
+
+async function writeOfferAuditLog(eventType, adminUid, customerId, details, env) {
+    try {
+        await writeFirestoreRestAuditLog(eventType, adminUid, customerId, details, env);
+    } catch (error) {
+        console.error("Offer audit log write failed.", { eventType, message: error?.message });
+    }
+}
+
+async function createOfferClaimNotification(customer, assignment, offer, env) {
+    const notificationId = offerRandomId("NTF");
+    const createdAt = new Date().toISOString();
+    const viewClaimUrl = new URL(
+        "/admin/offers.html",
+        env.COMPANY_WEBSITE || ORIGIN
+    );
+    viewClaimUrl.searchParams.set("tab", "claims");
+    viewClaimUrl.searchParams.set("assignmentId", assignment.assignmentId);
+
+    const notification = {
+        notificationId,
+        type: "OFFER_CLAIMED",
+        title: "New Offer Claim",
+        message: `${customer.name || "Customer"} claimed ${offer.title || "an offer"}.`,
+        customerId: assignment.customerId,
+        customerName: customer.name || "Customer",
+        offerId: assignment.offerId,
+        offerTitle: offer.title || "Offer",
+        assignmentId: assignment.assignmentId,
+        claimedAt: assignment.claimedAt,
+        read: false,
+        createdAt,
+        link: viewClaimUrl.toString()
+    };
+
+    try {
+        await commitFirestoreWrites([{
+            update: {
+                name: firestoreDocumentName(`adminNotifications/${notificationId}`, env),
+                fields: offerFields(notification)
+            },
+            currentDocument: { exists: false }
+        }], env);
+    } catch (error) {
+        console.error("Offer claim notification write failed.", { message: error?.message });
+    }
+
+    if (!env.ADMIN_NOTIFICATION_EMAIL || !env.BREVO_API_KEY || !env.BREVO_SENDER_EMAIL || !env.BREVO_SENDER_NAME) {
+        console.warn("Offer claim admin email was not sent because notification email configuration is incomplete.");
+        return;
+    }
+
+    const safe = value => String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+    try {
+        const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+            method: "POST",
+            headers: {
+                "api-key": env.BREVO_API_KEY,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL },
+                to: [{ email: env.ADMIN_NOTIFICATION_EMAIL }],
+                subject: `New Offer Claim: ${offer.title || "Offer"}`,
+                htmlContent: `<!doctype html><html><body style="margin:0;background:#f5f8fc;font-family:Arial,sans-serif;color:#1f2937"><div style="max-width:620px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden"><div style="padding:24px;background:#0d6efd;color:#fff"><h2 style="margin:0;font-size:22px">New Offer Claim</h2></div><div style="padding:26px"><p>A customer has submitted an offer claim.</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:8px 0;color:#6b7280">Customer</td><td style="padding:8px 0"><strong>${safe(customer.name)}</strong></td></tr><tr><td style="padding:8px 0;color:#6b7280">Customer ID</td><td style="padding:8px 0">${safe(assignment.customerId)}</td></tr><tr><td style="padding:8px 0;color:#6b7280">Offer</td><td style="padding:8px 0">${safe(offer.title)}</td></tr><tr><td style="padding:8px 0;color:#6b7280">Claimed</td><td style="padding:8px 0">${safe(assignment.claimedAt)}</td></tr><tr><td style="padding:8px 0;color:#6b7280">Status</td><td style="padding:8px 0">CLAIMED</td></tr></table><p style="margin:24px 0 0"><a href="${safe(viewClaimUrl.toString())}" style="display:inline-block;padding:12px 18px;border-radius:8px;background:#0d6efd;color:#fff;text-decoration:none">View Claim</a></p></div></div></body></html>`
+            })
+        });
+
+        if (!response.ok) {
+            console.error("Offer claim admin email failed.", { status: response.status });
+        }
+    } catch (error) {
+        console.error("Offer claim admin email transport failed.", { message: error?.message });
+    }
+}
+
+function offerAssignmentResponse(record, offer = null) {
+    const { id, data } = record;
+    return {
+        assignmentId: data.assignmentId || id,
+        ...data,
+        ...(offer ? { offer: offerResponse(offer) } : {})
+    };
+}
+
+function normalizeOfferInput(input, existing = {}) {
+    const title = String(input.title ?? existing.title ?? "").trim();
+    const startDate = offerDate(input.startDate ?? existing.startDate, "startDate", true);
+    const expiryDate = offerDate(input.expiryDate ?? existing.expiryDate, "expiryDate", true);
+    const offerType = String(input.offerType ?? existing.offerType ?? "CUSTOM").trim();
+    const discountType = String(input.discountType ?? existing.discountType ?? "NONE").trim();
+    const status = String(input.status ?? existing.status ?? "DRAFT").trim();
+
+    if (!title) throw offerError("title is required.");
+    if (!OFFER_TYPES.has(offerType)) throw offerError("offerType is invalid.");
+    if (!OFFER_DISCOUNT_TYPES.has(discountType)) throw offerError("discountType is invalid.");
+    if (!OFFER_STATUSES.has(status)) throw offerError("status is invalid.");
+    if (Date.parse(startDate) > Date.parse(expiryDate)) throw offerError("expiryDate must be after startDate.");
+
+    const numeric = (value, field) => {
+        if (value === undefined || value === null || value === "") return 0;
+        const number = Number(value);
+        if (!Number.isFinite(number) || number < 0) throw offerError(`${field} must be a non-negative number.`);
+        return number;
+    };
+
+    return {
+        title,
+        shortTitle: String(input.shortTitle ?? existing.shortTitle ?? title).trim(),
+        description: String(input.description ?? existing.description ?? "").trim(),
+        productOrService: String(input.productOrService ?? existing.productOrService ?? "").trim(),
+        offerType,
+        discountType,
+        discountValue: numeric(input.discountValue ?? existing.discountValue, "discountValue"),
+        originalPrice: numeric(input.originalPrice ?? existing.originalPrice, "originalPrice"),
+        offerPrice: numeric(input.offerPrice ?? existing.offerPrice, "offerPrice"),
+        termsAndConditions: String(input.termsAndConditions ?? existing.termsAndConditions ?? "").trim(),
+        startDate,
+        expiryDate,
+        status,
+        featured: Boolean(input.featured ?? existing.featured ?? false)
+    };
+}
+
+async function handleAdminOffers(body, admin, env, origin) {
+    const action = String(body.action || "list");
+
+    if (action === "list") {
+        const offers = await listFirestoreRecords("offers", env);
+        const assignments = await listFirestoreRecords("offerAssignments", env);
+        const countsByOffer = new Map();
+
+        assignments.forEach(({ data }) => {
+            const counts = countsByOffer.get(data.offerId) || {
+                assignedCustomerCount: 0,
+                viewedCount: 0,
+                claimedCount: 0,
+                approvedCount: 0,
+                redeemedCount: 0,
+                expiredCount: 0
+            };
+
+            if (data.status !== "CANCELLED") counts.assignedCustomerCount += 1;
+            if (data.viewedAt) counts.viewedCount += 1;
+            if (["CLAIMED", "APPROVED", "REDEEMED"].includes(data.status)) counts.claimedCount += 1;
+            if (["APPROVED", "REDEEMED"].includes(data.status)) counts.approvedCount += 1;
+            if (data.status === "REDEEMED") counts.redeemedCount += 1;
+            if (data.status === "EXPIRED") counts.expiredCount += 1;
+            countsByOffer.set(data.offerId, counts);
+        });
+
+        return json({
+            success: true,
+            offers: offers.map(record => ({
+                ...offerResponse(record),
+                ...(countsByOffer.get(record.data.offerId) || {
+                    assignedCustomerCount: 0,
+                    viewedCount: 0,
+                    claimedCount: 0,
+                    approvedCount: 0,
+                    redeemedCount: 0,
+                    expiredCount: 0
+                })
+            }))
+        }, 200, origin);
+    }
+
+    if (action === "load") {
+        const offerId = offerIdentifier(body.offerId, "offerId");
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${offerId}`, env));
+        if (!offer) return json({ success: false, error: "Offer not found." }, 404, origin);
+        return json({ success: true, offer: offerResponse(offer) }, 200, origin);
+    }
+
+    if (action === "create") {
+        const offerId = offerRandomId("OFR");
+        const offer = normalizeOfferInput(body);
+        const createdAt = new Date().toISOString();
+        const offerData = {
+            offerId,
+            ...offer,
+            createdAt,
+            updatedAt: createdAt,
+            createdBy: admin.uid,
+            updatedBy: admin.uid
+        };
+
+        await commitFirestoreWrites([{
+            update: {
+                name: firestoreDocumentName(`offers/${offerId}`, env),
+                fields: offerFields(offerData)
+            },
+            currentDocument: { exists: false }
+        }], env);
+        await writeOfferAuditLog("offer_created", admin.uid, "", { offerId }, env);
+        return json({ success: true, offer: offerData }, 201, origin);
+    }
+
+    if (action === "update") {
+        const offerId = offerIdentifier(body.offerId, "offerId");
+        const existing = offerRecord(await getFirestoreRestDocument(`offers/${offerId}`, env));
+        if (!existing) return json({ success: false, error: "Offer not found." }, 404, origin);
+        const offer = normalizeOfferInput(body, existing.data);
+        const updatedAt = new Date().toISOString();
+        const fields = {
+            ...offer,
+            updatedAt,
+            updatedBy: admin.uid
+        };
+
+        await commitFirestoreWrites([{
+            update: {
+                name: firestoreDocumentName(`offers/${offerId}`, env),
+                fields: offerFields(fields)
+            },
+            updateMask: { fieldPaths: Object.keys(fields) },
+            currentDocument: { updateTime: existing.document?.updateTime }
+        }], env);
+        await writeOfferAuditLog("offer_updated", admin.uid, "", { offerId }, env);
+        return json({ success: true, offer: { ...existing.data, ...fields } }, 200, origin);
+    }
+
+    return json({ success: false, error: "Unknown offer action." }, 400, origin);
+}
+
+async function handleAdminOfferNotifications(body, env, origin) {
+    const action = String(body.action || "list");
+
+    if (action === "list") {
+        const notifications = await findFirestoreRecordsByField(
+            "adminNotifications",
+            "type",
+            "OFFER_CLAIMED",
+            env,
+            100
+        );
+        const items = notifications
+        .map(record => ({ notificationId: record.id, ...record.data }))
+        .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0));
+        return json({ success: true, notifications: items }, 200, origin);
+    }
+
+    if (action === "mark-read") {
+        const notificationId = offerIdentifier(body.notificationId, "notificationId");
+        const notification = offerRecord(await getFirestoreRestDocument(`adminNotifications/${notificationId}`, env));
+        if (!notification) return json({ success: false, error: "Notification not found." }, 404, origin);
+        if (notification.data.read === true) return json({ success: true }, 200, origin);
+
+        const readAt = new Date().toISOString();
+        await commitFirestoreWrites([{
+            update: {
+                name: firestoreDocumentName(`adminNotifications/${notificationId}`, env),
+                fields: offerFields({ read: true, readAt })
+            },
+            updateMask: { fieldPaths: ["read", "readAt"] },
+            currentDocument: { updateTime: notification.document?.updateTime }
+        }], env);
+        return json({ success: true }, 200, origin);
+    }
+
+    return json({ success: false, error: "Unknown notification action." }, 400, origin);
+}
+
+async function handleAdminOfferAssignments(body, admin, env, origin) {
+    const action = String(body.action || "list");
+
+    if (action === "list") {
+        const records = body.offerId
+            ? await findFirestoreRecordsByField("offerAssignments", "offerId", offerIdentifier(body.offerId, "offerId"), env)
+            : body.customerId
+                ? await findFirestoreRecordsByField("offerAssignments", "customerId", offerIdentifier(body.customerId, "customerId"), env)
+                : await listFirestoreRecords("offerAssignments", env);
+
+        const assignments = [];
+
+        for (const record of records) {
+            const offer = offerRecord(await getFirestoreRestDocument(`offers/${record.data.offerId}`, env));
+            const customer = offerRecord(await getFirestoreRestDocument(`customers/${record.data.customerId}`, env));
+            assignments.push({
+                ...offerAssignmentResponse(record, offer),
+                customer: customer ? safeCustomer(customer.data) : null
+            });
+        }
+
+        return json({ success: true, assignments }, 200, origin);
+    }
+
+    if (action === "load") {
+        const assignmentId = offerIdentifier(body.assignmentId, "assignmentId");
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+        if (!assignment) return json({ success: false, error: "Offer assignment not found." }, 404, origin);
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${assignment.data.offerId}`, env));
+        const customer = offerRecord(await getFirestoreRestDocument(`customers/${assignment.data.customerId}`, env));
+        return json({
+            success: true,
+            assignment: {
+                ...offerAssignmentResponse(assignment, offer),
+                customer: customer ? safeCustomer(customer.data) : null
+            }
+        }, 200, origin);
+    }
+
+    if (action === "assign") {
+        const offerId = offerIdentifier(body.offerId, "offerId");
+        const customerId = offerIdentifier(body.customerId, "customerId");
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${offerId}`, env));
+        const customer = offerRecord(await getFirestoreRestDocument(`customers/${customerId}`, env));
+
+        if (!offer) return json({ success: false, error: "Offer not found." }, 404, origin);
+        if (!customer) return json({ success: false, error: "Customer not found." }, 404, origin);
+
+        const assignmentId = offerRandomId("ASN");
+        const assignedAt = new Date().toISOString();
+        const assignment = {
+            assignmentId,
+            offerId,
+            customerId,
+            status: "ASSIGNED",
+            assignedAt,
+            assignedBy: admin.uid,
+            updatedAt: assignedAt
+        };
+        const indexPath = `system/offerAssignments/index/${offerId}__${customerId}`;
+
+        try {
+            await commitFirestoreWrites([
+                {
+                    update: {
+                        name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                        fields: offerFields(assignment)
+                    },
+                    currentDocument: { exists: false }
+                },
+                {
+                    update: {
+                        name: firestoreDocumentName(indexPath, env),
+                        fields: offerFields({ assignmentId, offerId, customerId, createdAt: assignedAt })
+                    },
+                    currentDocument: { exists: false }
+                }
+            ], env);
+        } catch (error) {
+            if (error.status === 409) return json({ success: false, error: "This offer is already assigned to this customer." }, 409, origin);
+            throw error;
+        }
+
+        await writeOfferAuditLog("offer_assigned", admin.uid, customerId, { offerId, assignmentId }, env);
+        return json({ success: true, assignment }, 201, origin);
+    }
+
+    if (action === "approve") {
+        const assignmentId = offerIdentifier(body.assignmentId, "assignmentId");
+
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+            if (!assignment) return json({ success: false, error: "Offer assignment not found." }, 404, origin);
+            if (assignment.data.status !== "CLAIMED") return json({ success: false, error: "Only a claimed offer can be approved." }, 409, origin);
+
+            const offer = offerRecord(await getFirestoreRestDocument(`offers/${assignment.data.offerId}`, env));
+            if (!offer || !offerIsActive(offer.data)) return json({ success: false, error: "This offer is no longer active." }, 409, origin);
+
+            const offerCode = offerCodeValue();
+            const approvedAt = new Date().toISOString();
+            const code = {
+                offerCode,
+                assignmentId,
+                offerId: assignment.data.offerId,
+                customerId: assignment.data.customerId,
+                status: "UNUSED",
+                generatedAt: approvedAt,
+                approvedAt,
+                expiryDate: offer.data.expiryDate
+            };
+            const assignmentFields = {
+                status: "APPROVED",
+                approvedAt,
+                offerCode,
+                updatedAt: approvedAt
+            };
+
+            try {
+                await commitFirestoreWrites([
+                    {
+                        update: {
+                            name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                            fields: offerFields(assignmentFields)
+                        },
+                        updateMask: { fieldPaths: Object.keys(assignmentFields) },
+                        currentDocument: { updateTime: assignment.document?.updateTime }
+                    },
+                    {
+                        update: {
+                            name: firestoreDocumentName(`offerCodes/${offerCode}`, env),
+                            fields: offerFields(code)
+                        },
+                        currentDocument: { exists: false }
+                    }
+                ], env);
+            } catch (error) {
+                if (error.status === 409) continue;
+                throw error;
+            }
+
+            await writeOfferAuditLog("offer_claim_approved", admin.uid, code.customerId, { offerId: code.offerId, assignmentId, offerCode }, env);
+            return json({ success: true, offerCode: code }, 201, origin);
+        }
+
+        return json({ success: false, error: "Offer approval conflicted. Please retry." }, 409, origin);
+    }
+
+    if (action === "cancel") {
+        const assignmentId = offerIdentifier(body.assignmentId, "assignmentId");
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+
+        if (!assignment) return json({ success: false, error: "Offer assignment not found." }, 404, origin);
+        if (!["ASSIGNED", "VIEWED", "CLAIMED", "APPROVED"].includes(assignment.data.status)) {
+            return json({ success: false, error: "This offer assignment cannot be cancelled." }, 409, origin);
+        }
+
+        const updatedAt = new Date().toISOString();
+        const fields = {
+            status: "CANCELLED",
+            cancelledAt: updatedAt,
+            cancelledBy: admin.uid,
+            updatedAt
+        };
+        const indexPath = `system/offerAssignments/index/${assignment.data.offerId}__${assignment.data.customerId}`;
+        const writes = [{
+            update: {
+                name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                fields: offerFields(fields)
+            },
+            updateMask: { fieldPaths: Object.keys(fields) },
+            currentDocument: { updateTime: assignment.document?.updateTime }
+        }];
+
+        if (assignment.data.status === "APPROVED") {
+            const offerCode = offerIdentifier(assignment.data.offerCode, "offerCode");
+            const code = offerRecord(await getFirestoreRestDocument(`offerCodes/${offerCode}`, env));
+
+            if (!code || code.data.status !== "UNUSED") {
+                return json({ success: false, error: "This approved offer code cannot be cancelled." }, 409, origin);
+            }
+
+            const codeFields = {
+                status: "CANCELLED",
+                cancelledAt: updatedAt,
+                cancelledBy: admin.uid
+            };
+            writes.push({
+                update: {
+                    name: firestoreDocumentName(`offerCodes/${offerCode}`, env),
+                    fields: offerFields(codeFields)
+                },
+                updateMask: { fieldPaths: Object.keys(codeFields) },
+                currentDocument: { updateTime: code.document?.updateTime }
+            });
+        }
+
+        writes.push({ delete: firestoreDocumentName(indexPath, env) });
+        await commitFirestoreWrites(writes, env);
+
+        await writeOfferAuditLog("offer_assignment_cancelled", admin.uid, assignment.data.customerId, { offerId: assignment.data.offerId, assignmentId }, env);
+        return json({ success: true, assignment: { ...assignment.data, ...fields } }, 200, origin);
+    }
+
+    if (action === "verify-code") {
+        const offerCode = offerIdentifier(body.offerCode, "offerCode");
+        const code = offerRecord(await getFirestoreRestDocument(`offerCodes/${offerCode}`, env));
+
+        if (!code) return json({ success: false, error: "Invalid offer code." }, 404, origin);
+
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${code.data.assignmentId}`, env));
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${code.data.offerId}`, env));
+        const customer = offerRecord(await getFirestoreRestDocument(`customers/${code.data.customerId}`, env));
+        const codeStatus = offerCodeEffectiveStatus(code.data);
+
+        return json({
+            success: true,
+            code: {
+                ...code.data,
+                status: codeStatus,
+                customer: customer ? safeCustomer(customer.data) : null,
+                offer: offer ? offerResponse(offer) : null,
+                assignment: assignment ? offerAssignmentResponse(assignment, offer) : null
+            }
+        }, 200, origin);
+    }
+
+    if (action === "redeem") {
+        const offerCode = offerIdentifier(body.offerCode, "offerCode");
+        const code = offerRecord(await getFirestoreRestDocument(`offerCodes/${offerCode}`, env));
+        if (!code) return json({ success: false, error: "Offer code not found." }, 404, origin);
+
+        const codeStatus = offerCodeEffectiveStatus(code.data);
+        if (codeStatus !== "UNUSED") {
+            const errorMessage = codeStatus === "REDEEMED"
+                ? "Offer already redeemed."
+                : codeStatus === "EXPIRED"
+                    ? "Offer code has expired."
+                    : "This offer code is cancelled.";
+            return json({ success: false, error: errorMessage, codeStatus }, 409, origin);
+        }
+
+        const assignmentId = offerIdentifier(code.data.assignmentId, "assignmentId");
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+        if (!assignment || assignment.data.status !== "APPROVED" || assignment.data.offerCode !== offerCode) {
+            return json({ success: false, error: "Offer assignment is not eligible for redemption." }, 409, origin);
+        }
+
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            const redeemedAt = new Date().toISOString();
+            const redemptionId = offerRandomId("RDM");
+            const reference = offerRedemptionReferenceValue();
+            const codeFields = {
+                status: "REDEEMED",
+                redeemedAt,
+                redeemedBy: admin.uid,
+                redemptionReference: reference
+            };
+            const assignmentFields = {
+                status: "REDEEMED",
+                redeemedAt,
+                redeemedBy: admin.uid,
+                updatedAt: redeemedAt
+            };
+            const redemption = {
+                redemptionId,
+                offerCode,
+                offerId: code.data.offerId,
+                assignmentId,
+                customerId: code.data.customerId,
+                redeemedAt,
+                redeemedBy: admin.uid,
+                adminUserId: admin.uid,
+                redemptionReference: reference,
+                previousStatus: "UNUSED",
+                newStatus: "REDEEMED"
+            };
+
+            try {
+                await commitFirestoreWrites([
+                {
+                    update: {
+                        name: firestoreDocumentName(`offerCodes/${offerCode}`, env),
+                        fields: offerFields(codeFields)
+                    },
+                    updateMask: { fieldPaths: Object.keys(codeFields) },
+                    currentDocument: { updateTime: code.document?.updateTime }
+                },
+                {
+                    update: {
+                        name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                        fields: offerFields(assignmentFields)
+                    },
+                    updateMask: { fieldPaths: Object.keys(assignmentFields) },
+                    currentDocument: { updateTime: assignment.document?.updateTime }
+                },
+                {
+                    update: {
+                        name: firestoreDocumentName(`offerRedemptions/${redemptionId}`, env),
+                        fields: offerFields(redemption)
+                    },
+                    currentDocument: { exists: false }
+                },
+                {
+                    update: {
+                        name: firestoreDocumentName(`system/offerRedemptionReferences/entries/${reference}`, env),
+                        fields: offerFields({ redemptionId, offerCode, createdAt: redeemedAt })
+                    },
+                    currentDocument: { exists: false }
+                }
+                ], env);
+            } catch (error) {
+                if (error.status === 409) {
+                    const latestCode = offerRecord(await getFirestoreRestDocument(`offerCodes/${offerCode}`, env));
+                    if (latestCode && offerCodeEffectiveStatus(latestCode.data) !== "UNUSED") {
+                        return json({ success: false, error: "Offer already redeemed or changed.", codeStatus: offerCodeEffectiveStatus(latestCode.data) }, 409, origin);
+                    }
+                    continue;
+                }
+                throw error;
+            }
+
+            await writeOfferAuditLog("offer_redeemed", admin.uid, redemption.customerId, { offerId: redemption.offerId, assignmentId, offerCode, redemptionId, redemptionReference: reference }, env);
+            return json({ success: true, redemption }, 200, origin);
+        }
+
+        return json({ success: false, error: "Redemption conflicted. Please retry." }, 409, origin);
+    }
+
+    return json({ success: false, error: "Unknown offer assignment action." }, 400, origin);
+}
+
+async function handleCustomerOffers(body, session, env, origin) {
+    const action = String(body.action || "list");
+    const customerId = String(session.customer.customerId || "");
+
+    if (!customerId) throw offerError("Customer account is incomplete.", 403);
+
+    if (action === "list") {
+        const assignments = await findFirestoreRecordsByField("offerAssignments", "customerId", customerId, env);
+        const visibleOffers = [];
+
+        for (const assignment of assignments) {
+            if (!offerAssignmentIsVisible(assignment.data)) continue;
+
+            const offer = offerRecord(await getFirestoreRestDocument(`offers/${assignment.data.offerId}`, env));
+            const isHistoricalAssignment = ["APPROVED", "REDEEMED"].includes(assignment.data.status);
+            if (!isHistoricalAssignment && !offerIsActive(offer?.data)) continue;
+
+            visibleOffers.push(offerAssignmentResponse(assignment, offer));
+        }
+
+        return json({ success: true, offers: visibleOffers }, 200, origin);
+    }
+
+    if (action === "claim") {
+        const assignmentId = offerIdentifier(body.assignmentId, "assignmentId");
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+
+        if (!assignment || assignment.data.customerId !== customerId) {
+            return json({ success: false, error: "Offer assignment not found." }, 404, origin);
+        }
+
+        if (!["ASSIGNED", "VIEWED"].includes(assignment.data.status)) {
+            return json({ success: false, error: "This offer cannot be claimed." }, 409, origin);
+        }
+
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${assignment.data.offerId}`, env));
+        if (!offerIsActive(offer?.data)) return json({ success: false, error: "This offer is no longer active." }, 409, origin);
+
+        const claimedAt = new Date().toISOString();
+        const preferredContact = String(body.preferredContact || "").trim().toUpperCase();
+        const additionalNote = String(body.additionalNote || "").trim();
+
+        if (preferredContact && !["CALL", "WHATSAPP"].includes(preferredContact)) {
+            return json({ success: false, error: "Preferred contact is invalid." }, 400, origin);
+        }
+
+        if (additionalNote.length > 1000) {
+            return json({ success: false, error: "Additional note is too long." }, 400, origin);
+        }
+
+        const fields = {
+            status: "CLAIMED",
+            claimedAt,
+            preferredContact,
+            additionalNote,
+            updatedAt: claimedAt
+        };
+
+        try {
+            await commitFirestoreWrites([{
+                update: {
+                    name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                    fields: offerFields(fields)
+                },
+                updateMask: { fieldPaths: Object.keys(fields) },
+                currentDocument: { updateTime: assignment.document?.updateTime }
+            }], env);
+        } catch (error) {
+            if (error.status === 409) return json({ success: false, error: "This offer has already been claimed or updated." }, 409, origin);
+            throw error;
+        }
+
+        const claimedAssignment = { ...assignment.data, ...fields };
+        await writeOfferAuditLog(
+            "offer_claimed",
+            `customer:${customerId}`,
+            customerId,
+            { offerId: assignment.data.offerId, assignmentId },
+            env
+        );
+        await createOfferClaimNotification(
+            session.customer,
+            claimedAssignment,
+            offer.data,
+            env
+        );
+
+        return json({ success: true, assignment: claimedAssignment }, 200, origin);
+    }
+
+    if (action === "view") {
+        const assignmentId = offerIdentifier(body.assignmentId, "assignmentId");
+        const assignment = offerRecord(await getFirestoreRestDocument(`offerAssignments/${assignmentId}`, env));
+
+        if (!assignment || assignment.data.customerId !== customerId) {
+            return json({ success: false, error: "Offer assignment not found." }, 404, origin);
+        }
+
+        if (!offerAssignmentIsVisible(assignment.data)) {
+            return json({ success: false, error: "This offer is not available." }, 409, origin);
+        }
+
+        const offer = offerRecord(await getFirestoreRestDocument(`offers/${assignment.data.offerId}`, env));
+        if (!offerIsActive(offer?.data)) return json({ success: false, error: "This offer is no longer active." }, 409, origin);
+
+        if (assignment.data.viewedAt) return json({ success: true, assignment: assignment.data }, 200, origin);
+
+        const viewedAt = new Date().toISOString();
+        const fields = {
+            status: assignment.data.status === "ASSIGNED" ? "VIEWED" : assignment.data.status,
+            viewedAt,
+            updatedAt: viewedAt
+        };
+
+        try {
+            await commitFirestoreWrites([{
+                update: {
+                    name: firestoreDocumentName(`offerAssignments/${assignmentId}`, env),
+                    fields: offerFields(fields)
+                },
+                updateMask: { fieldPaths: Object.keys(fields) },
+                currentDocument: { updateTime: assignment.document?.updateTime }
+            }], env);
+        } catch (error) {
+            if (error.status === 409) return json({ success: true, assignment: assignment.data }, 200, origin);
+            throw error;
+        }
+
+        return json({ success: true, assignment: { ...assignment.data, ...fields } }, 200, origin);
+    }
+
+    return json({ success: false, error: "Unknown customer offer action." }, 400, origin);
 }
 
 async function createCustomerWithFirestoreRest({ name, mobile, email, address, passwordHash, adminUid }, env, setDiagnosticStep) {
@@ -1050,6 +1960,21 @@ export default { async fetch(request, env) {
             }
         }
 
+        if (path === "/admin/offers") {
+            const admin = await requireAdmin(request, env);
+            return handleAdminOffers(body, admin, env, origin);
+        }
+
+        if (path === "/admin/offer-assignments") {
+            const admin = await requireAdmin(request, env);
+            return handleAdminOfferAssignments(body, admin, env, origin);
+        }
+
+        if (path === "/admin/offer-notifications") {
+            await requireAdmin(request, env);
+            return handleAdminOfferNotifications(body, env, origin);
+        }
+
         const adminPasswordMatch = path.match(
             /^\/admin\/customers\/([^/]+)\/password$/
         );
@@ -1436,6 +2361,9 @@ if (job.status === "Delivered") {
         }
         diagnosticStep = "session_validation";
         const session = await requireSession(request, env);
+        if (path === "/offers") {
+            return handleCustomerOffers(body, session, env, origin);
+        }
         if (path === "/resend-verification-email") {
             if (session.customer.emailVerified) return json({ success: true, message: "Email is already verified." }, 200, origin);
             await sendVerificationEmail(session.customerPath, session.customer, env);
