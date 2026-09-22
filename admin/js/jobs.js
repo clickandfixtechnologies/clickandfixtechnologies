@@ -39,11 +39,7 @@ function generateJobId() {
 
     const today = new Date();
 
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
-
-    const dateCode = `${y}${m}${d}`;
+    const year = today.getFullYear();
 
     const randomValues = new Uint32Array(1);
 
@@ -51,19 +47,17 @@ function generateJobId() {
 
         window.crypto.getRandomValues(randomValues);
 
-    }
-
-    else {
+    } else {
 
         randomValues[0] = Math.floor(Math.random() * 0x100000000);
 
     }
 
     const randomCode = String(
-        1000 + (randomValues[0] % 9000)
-    );
+        randomValues[0] % 100000
+    ).padStart(5, "0");
 
-    return `CF-${dateCode}-${randomCode}`;
+    return `CFX-JOB-${year}-${randomCode}`;
 }
 
 async function createJobWithUniqueId(job, initialJobId) {
