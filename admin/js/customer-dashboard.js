@@ -135,10 +135,7 @@ async function loadDashboard() {
         const result = await workerRequest("/customer-dashboard");
         customer = result.customer;
         jobs = result.jobs || [];
-
         loadCustomerDashboard(jobs);
-        await loadCustomerOffers();
-
         console.info("[Customer Dashboard] Dashboard data loaded.");
     } catch (error) {
         if (isSessionAuthenticationFailure(error)) {
@@ -148,90 +145,26 @@ async function loadDashboard() {
         }
 
         showDashboardLoadError(error);
+        return;
+    }
+
+    try {
+        await loadCustomerOffers();
+        console.info("[Customer Dashboard] Customer offers loaded.");
+    } catch (error) {
+        if (isSessionAuthenticationFailure(error)) {
+            clearCustomerSession();
+            window.location.replace("customer-login.html");
+            return;
+        }
+
+        renderCustomerOffersErrorState(error);
     }
 }
 
 /*=========================================
       LOAD DASHBOARD
 =========================================*/
-
-function loadCustomerDashboard(myJobs){
-
-    /*=========================
-        Welcome
-    =========================*/
-
-    document.getElementById("customerName").textContent =
-        customer.name || "Customer";
-
-    /*=========================
-        Profile
-    =========================*/
-
-    document.getElementById("profileCardCustomerId").textContent =
-customer.customerId || "-";
-
-document.getElementById("customerNameProfile").textContent =
-customer.name || "-";
-
-document.getElementById("profileCardCustomerMobile").textContent =
-customer.mobile || "-";
-
-document.getElementById("profileCardCustomerEmail").textContent =
-customer.email || "-";
-
-document.getElementById("profileCardCustomerAddress").textContent =
-customer.address || "-";
-
-document.getElementById("profileCardCustomerStatus").innerHTML =
-`<span class="badge bg-success">Active</span>`;
-
-        
-  /*=========================
-    Account Status
-=========================*/
-
-document.getElementById("profileCardCustomerStatus").innerHTML = `
-<span class="badge bg-success">
-    Active
-</span>
-`;
-
-document.getElementById("profile2CustomerStatus").innerHTML = `
-<span class="badge bg-success">
-    Active
-</span>
-`; 
-
-function renderEmailVerification() {
-
-    const verified = customer.emailVerified === true;
-    const content = verified
-        ? `<span class="badge bg-success">Verified</span>`
-        : `<span class="badge bg-warning text-dark me-2">Not Verified</span><button class="btn btn-sm btn-outline-success me-1 verifyEmailAction">Verify Email</button><button class="btn btn-sm btn-outline-primary resendVerificationEmail">Resend Verification Email</button>`;
-
-    document.getElementById("profile2EmailVerification").innerHTML = content;
-    document.getElementById("profileCardEmailVerification").innerHTML = content;
-
-    document.querySelectorAll(
-        ".verifyEmailAction, .resendVerificationEmail"
-    ).forEach(button => {
-        button.addEventListener("click", async () => {
-            button.disabled = true;
-            try {
-                await workerRequest("/resend-verification-email");
-                alert("Verification Email Sent Successfully. Please check your inbox.");
-            }
-            catch(error) {
-                alert(error.message || "Verification Email could not be sent.");
-            }
-            finally {
-                button.disabled = false;
-            }
-        });
-    });
-
-}
 
 /*=========================================
         CUSTOMER OFFERS
@@ -301,6 +234,23 @@ async function loadCustomerOffers() {
         const firstIndex = customerOffers.findIndex(assignment => assignment.assignmentId === availableOffers[0].assignmentId);
         window.setTimeout(() => openOfferCenter(Math.max(0, firstIndex)), 350);
     }
+}
+
+function renderCustomerOffersErrorState(error) {
+    const list = document.getElementById("customerOffersList");
+    const badge = document.getElementById("offerBadgeCount");
+
+    if (badge) badge.textContent = "0";
+    if (list) {
+        list.innerHTML = '<div class="col-12 text-center py-4 text-muted">Offers are temporarily unavailable. Please try again shortly.</div>';
+    }
+
+    console.error("[Customer Dashboard] Offers API failure.", {
+        path: error?.path || "/offers",
+        status: error?.status || 0,
+        code: error?.code || "",
+        message: error?.message || ""
+    });
 }
 
 function renderCustomerOffers() {
@@ -459,6 +409,86 @@ document.getElementById("offerClaimForm").addEventListener("submit", async event
     }
 });
 
+
+
+function loadCustomerDashboard(myJobs){
+
+    /*=========================
+        Welcome
+    =========================*/
+
+    document.getElementById("customerName").textContent =
+        customer.name || "Customer";
+
+    /*=========================
+        Profile
+    =========================*/
+
+    document.getElementById("profileCardCustomerId").textContent =
+customer.customerId || "-";
+
+document.getElementById("customerNameProfile").textContent =
+customer.name || "-";
+
+document.getElementById("profileCardCustomerMobile").textContent =
+customer.mobile || "-";
+
+document.getElementById("profileCardCustomerEmail").textContent =
+customer.email || "-";
+
+document.getElementById("profileCardCustomerAddress").textContent =
+customer.address || "-";
+
+document.getElementById("profileCardCustomerStatus").innerHTML =
+`<span class="badge bg-success">Active</span>`;
+
+
+  /*=========================
+    Account Status
+=========================*/
+
+document.getElementById("profileCardCustomerStatus").innerHTML = `
+<span class="badge bg-success">
+    Active
+</span>
+`;
+
+document.getElementById("profile2CustomerStatus").innerHTML = `
+<span class="badge bg-success">
+    Active
+</span>
+`;
+
+function renderEmailVerification() {
+
+    const verified = customer.emailVerified === true;
+    const content = verified
+        ? `<span class="badge bg-success">Verified</span>`
+        : `<span class="badge bg-warning text-dark me-2">Not Verified</span><button class="btn btn-sm btn-outline-success me-1 verifyEmailAction">Verify Email</button><button class="btn btn-sm btn-outline-primary resendVerificationEmail">Resend Verification Email</button>`;
+
+    document.getElementById("profile2EmailVerification").innerHTML = content;
+    document.getElementById("profileCardEmailVerification").innerHTML = content;
+
+    document.querySelectorAll(
+        ".verifyEmailAction, .resendVerificationEmail"
+    ).forEach(button => {
+        button.addEventListener("click", async () => {
+            button.disabled = true;
+            try {
+                await workerRequest("/resend-verification-email");
+                alert("Verification Email Sent Successfully. Please check your inbox.");
+            }
+            catch(error) {
+                alert(error.message || "Verification Email could not be sent.");
+            }
+            finally {
+                button.disabled = false;
+            }
+        });
+    });
+
+}
+
 startSessionExpiryTimer(() => {
     window.location.replace("customer-login.html");
 });
@@ -489,7 +519,7 @@ document.getElementById("profile2CustomerStatus").innerHTML = `
 
 </span>
 
-`; 
+`;
 
   /*=========================
     Customer Jobs
@@ -1335,7 +1365,7 @@ if(sidebarOverlay){
 // Scroll fade-out effect for the mobile menu button
 window.addEventListener("scroll", function() {
     let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     if (mobileMenuBtn) {
         if (scrollTop > 50) {
             mobileMenuBtn.style.opacity = "0";
