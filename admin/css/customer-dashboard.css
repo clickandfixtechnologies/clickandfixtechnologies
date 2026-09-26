@@ -59,7 +59,7 @@ body {
 
     font-family:
         Inter,
-        "Segoe UI",
+        "sans-serif",
         Roboto,
         Helvetica,
         Arial,
@@ -359,7 +359,7 @@ a {
     margin: 0;
 
     font-size: clamp(20px, 2vw, 26px);
-    font-weight: 750;
+    font-weight: 700;
 
     letter-spacing: -0.5px;
 }
@@ -531,14 +531,14 @@ a {
 /* Customer ID */
 
 #profile2CustomerId {
-    font-weight: 750;
+    font-weight: 700;
     color: #20283a;
 }
 
 /* Mobile */
 
 #profile2CustomerMobile {
-    font-weight: 650;
+    font-weight: 600;
 }
 
 /* Email */
@@ -758,7 +758,7 @@ a {
 
 .card-header h5 {
     font-size: 16px;
-    font-weight: 750;
+    font-weight: 700;
 
     color: #252d40;
 }
@@ -803,7 +803,7 @@ a {
     color: #687083;
 
     font-size: 11px;
-    font-weight: 750;
+    font-weight: 700;
 
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -929,7 +929,7 @@ a {
     position: relative;
 
     font-size: 16px;
-    font-weight: 750;
+    font-weight: 700;
 
     color: #252d40;
 }
@@ -958,7 +958,7 @@ a {
 
 .customer-offer-card .btn {
     border-radius: 10px;
-    font-weight: 650;
+    font-weight: 600;
 }
 
 .customer-offer-card .btn-warning {
@@ -1039,7 +1039,7 @@ a {
 
     font-size: 10px;
 
-    font-weight: 750;
+    font-weight: 700;
 
     text-transform: uppercase;
     letter-spacing: 0.45px;
@@ -1152,7 +1152,7 @@ a {
 }
 
 #support h6 {
-    font-weight: 750;
+    font-weight: 700;
 }
 
 /* =========================================================
@@ -1202,7 +1202,7 @@ footer strong {
 }
 
 .modal-title {
-    font-weight: 750;
+    font-weight: 700;
 }
 
 .modal-body {
