@@ -96,33 +96,53 @@ let customer = null;
 loadDashboard();
 
 async function loadDashboard() {
-    try{
+    try {
+        console.log("[Customer Dashboard] Starting session validation...");
+
         const sessionCustomer = await validateCustomerSession();
 
-        if(!sessionCustomer){
+        if (!sessionCustomer) {
+            console.error(
+                "[Customer Dashboard] Session validation failed."
+            );
+
             window.location.replace("customer-login.html");
-
             return;
-
         }
 
+        console.log(
+            "[Customer Dashboard] Session validated successfully."
+        );
+
         const result = await workerRequest("/customer-dashboard");
+
+        console.log(
+            "[Customer Dashboard] Dashboard data loaded successfully."
+        );
+
         customer = result.customer;
         jobs = result.jobs || [];
+
         loadCustomerDashboard(jobs);
+
         await loadCustomerOffers();
+
+    } catch (error) {
+
+        console.error(
+            "[Customer Dashboard] Dashboard loading failed:",
+            error
+        );
+
+        /*
+         * IMPORTANT:
+         * Do NOT clear customerSession here.
+         *
+         * Dashboard API failure and authentication failure
+         * are two different things.
+         */
+        return;
     }
-    catch(error) {
-    console.error(
-        "Customer dashboard loading failed:",
-        error
-    );
-
-    clearCustomerSession();
-
-    window.location.replace("customer-login.html");
-}
-
 }
 
 /*=========================================

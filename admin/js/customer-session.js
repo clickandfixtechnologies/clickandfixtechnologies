@@ -112,32 +112,37 @@ async function validateCustomerSession() {
     const session = getCustomerSession();
 
     if (!session) {
+        console.warn("[Customer Session] No session found.");
         return null;
     }
 
     if (isSessionExpired()) {
-        console.warn("Customer session is expired.");
+        console.warn("[Customer Session] Local JWT is expired.");
         clearCustomerSession();
         return null;
     }
 
     try {
+        console.log("[Customer Session] Validating session with Worker...");
+
         const result = await workerRequest("/session");
 
-        if (!result?.customer) {
-            throw new Error("Customer session validation returned no customer.");
-        }
+        console.log("[Customer Session] Worker session validation success.", {
+            customer: result.customer
+        });
 
-        return result.customer;
-    }
-    catch (error) {
-        console.error(
-            "Customer session validation failed:",
-            error
-        );
+        return result.customer || null;
 
-        clearCustomerSession();
+    } catch (error) {
+        console.error("[Customer Session] Worker session validation failed:", error);
 
+        /*
+         * IMPORTANT:
+         * Do NOT clear the session here.
+         *
+         * A temporary Worker / Firestore / network error must not
+         * destroy an otherwise valid login session.
+         */
         return null;
     }
 }
