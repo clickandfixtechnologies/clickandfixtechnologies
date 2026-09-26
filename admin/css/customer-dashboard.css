@@ -1,7 +1,7 @@
 /* =========================================================
    CLICK & FIX TECHNOLOGIES
    CUSTOMER DASHBOARD - MODERN GLASS UI
-   Version: 2.0
+   Version: 3.0
    ========================================================= */
 
 :root {
@@ -40,6 +40,7 @@
     --sidebar-width: 250px;
 }
 
+
 /* =========================================================
    GLOBAL
    ========================================================= */
@@ -58,8 +59,7 @@ body {
     min-height: 100vh;
 
     font-family:
-        Inter,
-        "sans-serif",
+        "Inter",
         Roboto,
         Helvetica,
         Arial,
@@ -102,6 +102,7 @@ a {
     color: var(--text-main);
 }
 
+
 /* =========================================================
    CUSTOM SCROLLBAR
    ========================================================= */
@@ -115,14 +116,16 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-        180deg,
-        var(--primary),
-        var(--secondary)
-    );
+    background:
+        linear-gradient(
+            180deg,
+            var(--primary),
+            var(--secondary)
+        );
 
     border-radius: 20px;
 }
+
 
 /* =========================================================
    SIDEBAR
@@ -150,7 +153,8 @@ a {
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
 
-    border-right: 1px solid rgba(255, 255, 255, 0.8);
+    border-right:
+        1px solid rgba(255, 255, 255, 0.8);
 
     box-shadow:
         12px 0 40px rgba(31, 41, 55, 0.06);
@@ -181,6 +185,7 @@ a {
 
 .logo-area {
     position: relative;
+
     padding-top: 24px !important;
     padding-bottom: 22px !important;
 }
@@ -210,8 +215,12 @@ a {
 
 .sidebar hr {
     border: 0;
-    border-top: 1px solid rgba(107, 114, 128, 0.12);
-    margin: 5px 5px 18px;
+
+    border-top:
+        1px solid rgba(107, 114, 128, 0.12);
+
+    margin:
+        5px 5px 18px;
 }
 
 .sidebar .nav {
@@ -223,9 +232,11 @@ a {
 
     display: flex;
     align-items: center;
+
     gap: 12px;
 
-    padding: 12px 14px;
+    padding:
+        12px 14px;
 
     color: #596174;
 
@@ -243,11 +254,13 @@ a {
 
 .sidebar .nav-link i {
     width: 22px;
+
     text-align: center;
 
     font-size: 16px;
 
-    transition: transform 0.25s ease;
+    transition:
+        transform 0.25s ease;
 }
 
 .sidebar .nav-link:hover {
@@ -256,11 +269,13 @@ a {
     background:
         rgba(109, 93, 252, 0.08);
 
-    transform: translateX(4px);
+    transform:
+        translateX(4px);
 }
 
 .sidebar .nav-link:hover i {
-    transform: scale(1.12);
+    transform:
+        scale(1.12);
 }
 
 .sidebar .nav-link.active {
@@ -282,8 +297,10 @@ a {
 }
 
 .sidebar .nav-link.text-danger:hover {
-    background: rgba(239, 68, 68, 0.08);
+    background:
+        rgba(239, 68, 68, 0.08);
 }
+
 
 /* =========================================================
    MAIN CONTENT
@@ -300,6 +317,7 @@ a {
         40px;
 }
 
+
 /* =========================================================
    TOPBAR
    ========================================================= */
@@ -313,11 +331,13 @@ a {
 
     gap: 20px;
 
-    padding: 18px 22px;
+    padding:
+        18px 22px;
 
     margin-bottom: 22px;
 
-    border-radius: var(--radius-lg);
+    border-radius:
+        var(--radius-lg);
 
     background:
         rgba(255, 255, 255, 0.70);
@@ -325,9 +345,11 @@ a {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 
-    border: 1px solid rgba(255, 255, 255, 0.78);
+    border:
+        1px solid rgba(255, 255, 255, 0.78);
 
-    box-shadow: var(--shadow-sm);
+    box-shadow:
+        var(--shadow-sm);
 
     overflow: hidden;
 }
@@ -358,7 +380,9 @@ a {
 
     margin: 0;
 
-    font-size: clamp(20px, 2vw, 26px);
+    font-size:
+        clamp(20px, 2vw, 26px);
+
     font-weight: 700;
 
     letter-spacing: -0.5px;
@@ -385,6 +409,7 @@ a {
     margin-top: 3px;
 }
 
+
 /* =========================================================
    MOBILE MENU
    ========================================================= */
@@ -394,17 +419,20 @@ a {
     height: 44px;
 
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    border:
+        1px solid rgba(255, 255, 255, 0.75);
 
     border-radius: 14px;
 
     background:
         rgba(255, 255, 255, 0.68);
 
-    backdrop-filter: blur(15px);
+    backdrop-filter:
+        blur(15px);
 
     color: var(--primary);
 
@@ -413,19 +441,38 @@ a {
 
     font-size: 20px;
 
-    transition: 0.25s ease;
+    transition:
+        0.25s ease;
 }
 
 .mobile-menu-btn:hover {
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
+
     background: #fff;
 }
+
 
 /* =========================================================
    CUSTOMER INFO CARD
    ========================================================= */
 
-.main-content > .card:first-of-type {
+/*
+   HTML structure:
+   1 = Customer ID
+   2 = Mobile
+   3 = Email
+   4 = Address
+   5 = Account Status
+
+   Desktop layout:
+
+   Customer ID     Mobile
+   Address         Account Status
+   Email
+*/
+
+.main-content > .topbar + .card {
     position: relative;
 
     overflow: hidden;
@@ -437,27 +484,32 @@ a {
             rgba(248, 250, 255, 0.68)
         );
 
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
 
     border:
         1px solid rgba(255, 255, 255, 0.80) !important;
 
-    border-radius: var(--radius-lg) !important;
+    border-radius:
+        var(--radius-lg) !important;
 
-    box-shadow: var(--shadow-md) !important;
+    box-shadow:
+        var(--shadow-md) !important;
 }
 
-.main-content > .card:first-of-type::before {
+.main-content > .topbar + .card::before {
     content: "";
 
     position: absolute;
 
-    width: 220px;
-    height: 220px;
+    width: 240px;
+    height: 240px;
 
-    right: -80px;
-    top: -100px;
+    right: -90px;
+    top: -120px;
 
     background:
         radial-gradient(
@@ -465,22 +517,90 @@ a {
             rgba(109, 93, 252, 0.13),
             transparent 70%
         );
+
+    pointer-events: none;
 }
 
-.main-content > .card:first-of-type .card-body {
+.main-content > .topbar + .card .card-body {
     position: relative;
+
     padding: 22px;
 }
 
-/* Information blocks */
 
-.main-content > .card:first-of-type .col-lg-2,
-.main-content > .card:first-of-type .col-lg-3 {
+/* =========================================================
+   CUSTOMER INFO GRID - DESKTOP
+   ========================================================= */
+
+@media (min-width: 992px) {
+
+    .main-content > .topbar + .card .row.g-4 {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 16px !important;
+
+        margin: 0;
+    }
+
+    .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
+        width: auto;
+
+        max-width: none;
+
+        flex: none;
+
+        margin: 0;
+
+        padding: 16px 18px;
+    }
+
+    /* Customer ID */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* Mobile */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Address */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(4) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    /* Account Status */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(5) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    /* Email */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(3) {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+}
+
+
+/* =========================================================
+   CUSTOMER INFO BLOCKS
+   ========================================================= */
+
+.main-content > .topbar + .card .row.g-4 > [class*="col-"] {
     position: relative;
 
-    padding: 16px 18px;
+    padding:
+        16px 18px;
 
-    border-radius: 16px;
+    border-radius:
+        16px;
 
     background:
         rgba(255, 255, 255, 0.48);
@@ -494,9 +614,9 @@ a {
         background 0.25s ease;
 }
 
-.main-content > .card:first-of-type .col-lg-2:hover,
-.main-content > .card:first-of-type .col-lg-3:hover {
-    transform: translateY(-3px);
+.main-content > .topbar + .card .row.g-4 > [class*="col-"]:hover {
+    transform:
+        translateY(-3px);
 
     background:
         rgba(255, 255, 255, 0.82);
@@ -505,78 +625,112 @@ a {
         0 10px 28px rgba(31, 41, 55, 0.08);
 }
 
-.main-content > .card:first-of-type strong {
+
+/* =========================================================
+   CUSTOMER INFO LABEL
+   ========================================================= */
+
+.main-content > .topbar + .card strong {
     display: inline-flex;
+
     align-items: center;
-    gap: 7px;
+
+    gap: 8px;
 
     color: #4d5669;
 
     font-size: 12px;
+
     font-weight: 700;
 
     text-transform: uppercase;
+
     letter-spacing: 0.35px;
 }
 
-.main-content > .card:first-of-type strong::before {
-    font-family: "Font Awesome 6 Free";
+.main-content > .topbar + .card strong::before {
+    font-family:
+        "Font Awesome 6 Free";
+
     font-weight: 900;
 
-    color: var(--primary);
+    color:
+        var(--primary);
 
     font-size: 14px;
+
+    width: 17px;
+
+    text-align: center;
+
+    flex-shrink: 0;
 }
 
-/* Customer ID */
 
-#profile2CustomerId {
-    font-weight: 700;
-    color: #20283a;
+/* =========================================================
+   FONT AWESOME CUSTOMER INFO ICONS
+   ========================================================= */
+
+/* Customer ID */
+.main-content > .topbar + .card .row.g-4 > :nth-child(1) strong::before {
+    content: "\f2bb";
 }
 
 /* Mobile */
+.main-content > .topbar + .card .row.g-4 > :nth-child(2) strong::before {
+    content: "\f3cd";
+}
+
+/* Email */
+.main-content > .topbar + .card .row.g-4 > :nth-child(3) strong::before {
+    content: "\f0e0";
+}
+
+/* Address */
+.main-content > .topbar + .card .row.g-4 > :nth-child(4) strong::before {
+    content: "\f3c5";
+}
+
+/* Account Status */
+.main-content > .topbar + .card .row.g-4 > :nth-child(5) strong::before {
+    content: "\f058";
+}
+
+
+/* =========================================================
+   CUSTOMER INFO VALUES
+   ========================================================= */
+
+.main-content > .topbar + .card span {
+    color: #252d40;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+#profile2CustomerId {
+    font-weight: 700;
+
+    color: #20283a;
+}
 
 #profile2CustomerMobile {
     font-weight: 600;
 }
 
-/* Email */
-
 #profile2CustomerEmail {
     word-break: break-word;
 }
 
-/* Address */
-
 #profile2CustomerAddress {
     color: #4b5563;
+
     line-height: 1.5;
+
+    word-break: break-word;
 }
 
-/* =========================================================
-   FONT AWESOME INFO ICONS
-   ========================================================= */
-
-.main-content > .card:first-of-type .col-lg-2:nth-child(1) strong::before {
-    content: "\f2bb";
-}
-
-.main-content > .card:first-of-type .col-lg-2:nth-child(2) strong::before {
-    content: "\f3cd";
-}
-
-.main-content > .card:first-of-type .col-lg-3:nth-child(3) strong::before {
-    content: "\f0e0";
-}
-
-.main-content > .card:first-of-type .col-lg-3:nth-child(4) strong::before {
-    content: "\f3c5";
-}
-
-.main-content > .card:first-of-type .col-lg-2:nth-child(5) strong::before {
-    content: "\f058";
-}
 
 /* =========================================================
    STATUS BANNER
@@ -603,13 +757,16 @@ a {
 }
 
 .alert-primary i {
-    color: var(--primary);
+    color:
+        var(--primary);
 }
 
 .alert-warning {
     border: 0 !important;
+
     border-radius: 17px;
 }
+
 
 /* =========================================================
    DASHBOARD STAT CARDS
@@ -621,15 +778,20 @@ a {
     border:
         1px solid rgba(255, 255, 255, 0.80) !important;
 
-    border-radius: 20px !important;
+    border-radius:
+        20px !important;
 
     background:
         rgba(255, 255, 255, 0.72);
 
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter:
+        blur(18px);
 
-    box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    box-shadow:
+        var(--shadow-sm);
 
     overflow: hidden;
 
@@ -656,7 +818,8 @@ a {
 }
 
 .dashboard-card:hover {
-    transform: translateY(-7px);
+    transform:
+        translateY(-7px);
 
     box-shadow:
         0 18px 40px rgba(31, 41, 55, 0.12);
@@ -664,11 +827,14 @@ a {
 
 .dashboard-card .card-body {
     position: relative;
-    padding: 22px 12px;
+
+    padding:
+        22px 12px;
 }
 
 .dashboard-card i {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 
@@ -686,16 +852,19 @@ a {
             rgba(139, 92, 246, 0.08)
         );
 
-    color: var(--primary);
+    color:
+        var(--primary);
 }
 
 .dashboard-card h6 {
     color: #687083;
 
     font-size: 12px;
+
     font-weight: 700;
 
     text-transform: uppercase;
+
     letter-spacing: 0.4px;
 }
 
@@ -703,10 +872,12 @@ a {
     margin: 0;
 
     font-size: 28px;
+
     font-weight: 800;
 
     color: #20283a;
 }
+
 
 /* =========================================================
    COMMON GLASS CARDS
@@ -717,15 +888,20 @@ a {
     border:
         1px solid rgba(255, 255, 255, 0.80) !important;
 
-    border-radius: var(--radius-lg) !important;
+    border-radius:
+        var(--radius-lg) !important;
 
     background:
         rgba(255, 255, 255, 0.72);
 
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter:
+        blur(18px);
 
-    box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    box-shadow:
+        var(--shadow-sm);
 
     transition:
         transform 0.25s ease,
@@ -733,15 +909,18 @@ a {
 }
 
 .card.shadow-sm:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow:
+        var(--shadow-md);
 }
+
 
 /* =========================================================
    CARD HEADERS
    ========================================================= */
 
 .card-header.bg-white {
-    padding: 18px 20px;
+    padding:
+        18px 20px;
 
     background:
         rgba(255, 255, 255, 0.52) !important;
@@ -758,15 +937,19 @@ a {
 
 .card-header h5 {
     font-size: 16px;
+
     font-weight: 700;
 
     color: #252d40;
 }
 
 .card-header h5 i {
-    color: var(--primary);
+    color:
+        var(--primary);
+
     margin-right: 8px;
 }
+
 
 /* =========================================================
    REPAIR TABLE
@@ -777,7 +960,8 @@ a {
 }
 
 #repairs .card-body {
-    background: rgba(255, 255, 255, 0.35);
+    background:
+        rgba(255, 255, 255, 0.35);
 }
 
 #repairTableBody tr {
@@ -798,21 +982,25 @@ a {
 #repairs .table thead th {
     border: 0;
 
-    padding: 14px 16px;
+    padding:
+        14px 16px;
 
     color: #687083;
 
     font-size: 11px;
+
     font-weight: 700;
 
     text-transform: uppercase;
+
     letter-spacing: 0.5px;
 
     white-space: nowrap;
 }
 
 #repairs .table tbody td {
-    padding: 15px 16px;
+    padding:
+        15px 16px;
 
     border-color:
         rgba(31, 41, 55, 0.06);
@@ -823,7 +1011,8 @@ a {
 }
 
 #repairs .table tbody strong {
-    color: #252d40;
+    color:
+        #252d40;
 }
 
 #repairs .btn-primary {
@@ -841,15 +1030,18 @@ a {
     box-shadow:
         0 6px 15px rgba(109, 93, 252, 0.20);
 
-    transition: 0.25s ease;
+    transition:
+        0.25s ease;
 }
 
 #repairs .btn-primary:hover {
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 
     box-shadow:
         0 10px 22px rgba(109, 93, 252, 0.30);
 }
+
 
 /* =========================================================
    BADGES
@@ -862,10 +1054,12 @@ a {
         6px 9px;
 
     font-size: 10px;
+
     font-weight: 700;
 
     letter-spacing: 0.2px;
 }
+
 
 /* =========================================================
    OFFERS
@@ -877,7 +1071,9 @@ a {
 
 #offerBadgeCount {
     min-width: 28px;
-    padding: 6px 9px;
+
+    padding:
+        6px 9px;
 
     background:
         linear-gradient(
@@ -919,7 +1115,8 @@ a {
 }
 
 .customer-offer-card:hover {
-    transform: translateY(-6px);
+    transform:
+        translateY(-6px);
 
     box-shadow:
         0 18px 42px rgba(31, 41, 55, 0.12);
@@ -929,15 +1126,18 @@ a {
     position: relative;
 
     font-size: 16px;
+
     font-weight: 700;
 
-    color: #252d40;
+    color:
+        #252d40;
 }
 
 .offer-description {
     position: relative;
 
-    color: #687083;
+    color:
+        #687083;
 
     font-size: 13px;
 
@@ -945,19 +1145,25 @@ a {
 }
 
 .offer-original-price {
-    color: #9ca3af;
-    text-decoration: line-through;
+    color:
+        #9ca3af;
+
+    text-decoration:
+        line-through;
 }
 
 .offer-price {
-    color: var(--primary);
+    color:
+        var(--primary);
 
     font-size: 21px;
+
     font-weight: 800;
 }
 
 .customer-offer-card .btn {
     border-radius: 10px;
+
     font-weight: 600;
 }
 
@@ -981,11 +1187,13 @@ a {
     border:
         1px solid rgba(109, 93, 252, 0.25);
 
-    color: var(--primary);
+    color:
+        var(--primary);
 
     background:
         rgba(109, 93, 252, 0.05);
 }
+
 
 /* =========================================================
    CUSTOMER PROFILE
@@ -999,14 +1207,49 @@ a {
     padding: 24px;
 }
 
+
+/* Desktop 3 x 3 */
+
+@media (min-width: 992px) {
+
+    #profile .row.g-4 {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 16px !important;
+
+        margin: 0;
+    }
+
+    #profile .row.g-4 > [class*="col-"] {
+        width: auto;
+
+        max-width: none;
+
+        flex: none;
+
+        margin: 0;
+
+        padding:
+            15px 17px;
+    }
+}
+
+
+/* Profile blocks */
+
 #profile .col-lg-4,
 #profile .col-lg-8,
 #profile .col-lg-3 {
     position: relative;
 
-    padding: 15px 17px;
+    padding:
+        15px 17px;
 
-    border-radius: 15px;
+    border-radius:
+        15px;
 
     background:
         rgba(255, 255, 255, 0.45);
@@ -1023,7 +1266,8 @@ a {
 #profile .col-lg-4:hover,
 #profile .col-lg-8:hover,
 #profile .col-lg-3:hover {
-    transform: translateY(-3px);
+    transform:
+        translateY(-3px);
 
     background:
         rgba(255, 255, 255, 0.82);
@@ -1034,7 +1278,9 @@ a {
 
 #profile small {
     display: flex;
+
     align-items: center;
+
     gap: 7px;
 
     font-size: 10px;
@@ -1042,21 +1288,35 @@ a {
     font-weight: 700;
 
     text-transform: uppercase;
+
     letter-spacing: 0.45px;
 
-    color: #7a8394 !important;
+    color:
+        #7a8394 !important;
 }
 
 #profile small::before {
-    font-family: "Font Awesome 6 Free";
+    font-family:
+        "Font Awesome 6 Free";
+
     font-weight: 900;
 
-    color: var(--primary);
+    color:
+        var(--primary);
 
     font-size: 12px;
+
+    width: 15px;
+
+    text-align: center;
+
+    flex-shrink: 0;
 }
 
-/* Profile icons */
+
+/* =========================================================
+   PROFILE FONT AWESOME ICONS
+   ========================================================= */
 
 #profile .col-lg-4:nth-child(1) small::before {
     content: "\f2bb";
@@ -1074,7 +1334,7 @@ a {
     content: "\f0e0";
 }
 
-#profile .col-lg-8 small::before {
+#profile .col-lg-8:nth-child(5) small::before {
     content: "\f3c5";
 }
 
@@ -1087,6 +1347,10 @@ a {
 }
 
 #profile .col-lg-3:nth-child(8) small::before {
+    content: "\f3ed";
+}
+
+#profile .col-lg-3:nth-child(9) small::before {
     content: "\f058";
 }
 
@@ -1094,13 +1358,16 @@ a {
     margin:
         7px 0 0;
 
-    color: #252d40;
+    color:
+        #252d40;
 
     font-size: 14px;
+
     font-weight: 700;
 
     word-break: break-word;
 }
+
 
 /* =========================================================
    SUPPORT
@@ -1114,12 +1381,14 @@ a {
     border:
         1px solid rgba(255, 255, 255, 0.78) !important;
 
-    border-radius: 18px !important;
+    border-radius:
+        18px !important;
 
     background:
         rgba(255, 255, 255, 0.46);
 
-    backdrop-filter: blur(10px);
+    backdrop-filter:
+        blur(10px);
 
     transition:
         transform 0.25s ease,
@@ -1128,7 +1397,8 @@ a {
 }
 
 #support .border:hover {
-    transform: translateY(-5px);
+    transform:
+        translateY(-5px);
 
     background:
         rgba(255, 255, 255, 0.78);
@@ -1142,6 +1412,7 @@ a {
     height: 48px;
 
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 
@@ -1155,12 +1426,14 @@ a {
     font-weight: 700;
 }
 
+
 /* =========================================================
    FOOTER
    ========================================================= */
 
 footer {
-    color: #687083;
+    color:
+        #687083;
 }
 
 footer hr {
@@ -1169,8 +1442,10 @@ footer hr {
 }
 
 footer strong {
-    color: #3f4758;
+    color:
+        #3f4758;
 }
+
 
 /* =========================================================
    MODALS
@@ -1179,7 +1454,8 @@ footer strong {
 .modal-content {
     border: 0 !important;
 
-    border-radius: 22px !important;
+    border-radius:
+        22px !important;
 
     overflow: hidden;
 
@@ -1214,7 +1490,8 @@ footer strong {
     border:
         1px solid rgba(31, 41, 55, 0.06) !important;
 
-    border-radius: 17px !important;
+    border-radius:
+        17px !important;
 
     box-shadow:
         0 6px 20px rgba(31, 41, 55, 0.05) !important;
@@ -1233,6 +1510,7 @@ footer strong {
         1px solid rgba(31, 41, 55, 0.06);
 }
 
+
 /* =========================================================
    OFFER CENTER
    ========================================================= */
@@ -1250,7 +1528,8 @@ footer strong {
 
     color: #fff;
 
-    backdrop-filter: blur(25px);
+    backdrop-filter:
+        blur(25px);
 }
 
 .offer-center-modal .modal-header,
@@ -1278,12 +1557,14 @@ footer strong {
     border:
         1px solid rgba(255, 255, 255, 0.10);
 
-    border-radius: 15px;
+    border-radius:
+        15px;
 
     background:
         rgba(255, 255, 255, 0.055);
 
-    backdrop-filter: blur(10px);
+    backdrop-filter:
+        blur(10px);
 }
 
 .offer-center-modal .offer-highlight small {
@@ -1300,6 +1581,7 @@ footer strong {
 .offer-center-modal .offer-highlight strong {
     font-size: 17px;
 }
+
 
 /* =========================================================
    OFFER CLAIM
@@ -1353,7 +1635,8 @@ footer strong {
 .offer-claim-summary {
     padding: 16px;
 
-    border-radius: 16px;
+    border-radius:
+        16px;
 
     background:
         rgba(255, 255, 255, 0.06);
@@ -1364,11 +1647,13 @@ footer strong {
 
 .offer-claim-summary > div {
     display: flex;
+
     justify-content: space-between;
 
     gap: 15px;
 
-    padding: 8px 0;
+    padding:
+        8px 0;
 
     border-bottom:
         1px solid rgba(255, 255, 255, 0.07);
@@ -1383,6 +1668,7 @@ footer strong {
         rgba(255, 255, 255, 0.50);
 }
 
+
 /* =========================================================
    CHANGE PASSWORD
    ========================================================= */
@@ -1391,7 +1677,8 @@ footer strong {
     background:
         rgba(255, 255, 255, 0.94);
 
-    backdrop-filter: blur(20px);
+    backdrop-filter:
+        blur(20px);
 }
 
 #changePasswordModal .input-group .form-control {
@@ -1403,13 +1690,15 @@ footer strong {
 }
 
 #generateDashboardPassword {
-    border-radius: 12px;
+    border-radius:
+        12px;
 }
 
 #updateDashboardPassword {
     border: 0;
 
-    border-radius: 12px;
+    border-radius:
+        12px;
 
     background:
         linear-gradient(
@@ -1418,6 +1707,7 @@ footer strong {
             var(--secondary)
         );
 }
+
 
 /* =========================================================
    WHATSAPP FLOATING BUTTON
@@ -1435,6 +1725,7 @@ footer strong {
     z-index: 1100;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -1481,18 +1772,22 @@ footer strong {
     z-index: 1099;
 
     display: flex;
+
     flex-direction: column;
 
-    padding: 8px 13px;
+    padding:
+        8px 13px;
 
-    border-radius: 12px;
+    border-radius:
+        12px;
 
     background:
         rgba(17, 24, 39, 0.90);
 
     color: #fff;
 
-    backdrop-filter: blur(12px);
+    backdrop-filter:
+        blur(12px);
 
     box-shadow:
         0 10px 28px rgba(15, 23, 42, 0.15);
@@ -1504,13 +1799,16 @@ footer strong {
 
     pointer-events: none;
 
-    transition: 0.25s ease;
+    transition:
+        0.25s ease;
 }
 
 .whatsapp-float:hover + .whatsapp-tooltip,
 .whatsapp-tooltip:hover {
     opacity: 1;
-    transform: translateX(0);
+
+    transform:
+        translateX(0);
 }
 
 .whatsapp-tooltip strong {
@@ -1519,8 +1817,10 @@ footer strong {
 
 .whatsapp-tooltip small {
     opacity: 0.65;
+
     font-size: 10px;
 }
+
 
 /* =========================================================
    SIDEBAR OVERLAY
@@ -1538,12 +1838,14 @@ footer strong {
     background:
         rgba(15, 23, 42, 0.42);
 
-    backdrop-filter: blur(3px);
+    backdrop-filter:
+        blur(3px);
 }
 
 .sidebar-overlay.show {
     display: block;
 }
+
 
 /* =========================================================
    TABLET
@@ -1583,18 +1885,66 @@ footer strong {
     }
 
     .topbar {
-        padding: 16px;
+        padding:
+            16px;
     }
 
     .dashboard-card .card-body {
-        padding: 18px 10px;
+        padding:
+            18px 10px;
     }
 
     .dashboard-card h2 {
         font-size: 25px;
     }
 
+
+    /* -----------------------------------------------------
+       CUSTOMER INFO - TABLET
+       ----------------------------------------------------- */
+
+    .main-content > .topbar + .card .card-body {
+        padding:
+            18px;
+    }
+
+    .main-content > .topbar + .card .row.g-4 {
+        --bs-gutter-x: 12px;
+        --bs-gutter-y: 12px;
+    }
+
+    .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
+        padding:
+            14px;
+    }
+
+
+    /* -----------------------------------------------------
+       PROFILE - TABLET
+       ----------------------------------------------------- */
+
+    #profile .row.g-4 {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 12px !important;
+
+        margin: 0;
+    }
+
+    #profile .row.g-4 > [class*="col-"] {
+        width: auto;
+
+        max-width: none;
+
+        flex: none;
+
+        margin: 0;
+    }
 }
+
 
 /* =========================================================
    MOBILE
@@ -1612,9 +1962,11 @@ footer strong {
     .topbar {
         align-items: flex-start;
 
-        padding: 14px;
+        padding:
+            14px;
 
-        border-radius: 18px;
+        border-radius:
+            18px;
     }
 
     .topbar h3 {
@@ -1629,75 +1981,88 @@ footer strong {
         display: none;
     }
 
+
     /* -----------------------------------------------------
        CUSTOMER INFO
-       Mobile:
-       Row 1 = ID + Mobile + Email
-       Row 2 = Address + Status
+       Mobile layout:
+
+       Customer ID     Mobile
+       Email           Account Status
+       Address         Address
        ----------------------------------------------------- */
 
-    .main-content > .card:first-of-type .card-body {
-        padding: 12px;
-    }
-
-    .main-content > .card:first-of-type .row {
-        --bs-gutter-x: 8px;
-        --bs-gutter-y: 8px;
-    }
-
-    .main-content > .card:first-of-type .col-lg-2,
-    .main-content > .card:first-of-type .col-lg-3 {
+    .main-content > .topbar + .card .card-body {
         padding:
-            12px 10px;
+            12px;
+    }
+
+    .main-content > .topbar + .card .row.g-4 {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 8px !important;
+
+        margin: 0;
+    }
+
+    .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
+        width: auto;
+
+        max-width: none;
+
+        flex: none;
 
         min-width: 0;
+
+        padding:
+            12px 10px;
     }
 
-    /* First 3 blocks */
+    /* Customer ID */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
 
-    .main-content > .card:first-of-type .col-lg-2:nth-child(1),
-    .main-content > .card:first-of-type .col-lg-2:nth-child(2),
-    .main-content > .card:first-of-type .col-lg-3:nth-child(3) {
+    /* Mobile */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
 
-        flex:
-            0 0 33.333333%;
-
-        width:
-            33.333333%;
+    /* Email */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(3) {
+        grid-column: 1 / -1;
+        grid-row: 2;
     }
 
     /* Address */
-
-    .main-content > .card:first-of-type .col-lg-3:nth-child(4) {
-
-        flex:
-            0 0 66.666667%;
-
-        width:
-            66.666667%;
+    .main-content > .topbar + .card .row.g-4 > :nth-child(4) {
+        grid-column: 1 / -1;
+        grid-row: 3;
     }
 
-    /* Account status */
-
-    .main-content > .card:first-of-type .col-lg-2:nth-child(5) {
-
-        flex:
-            0 0 33.333333%;
-
-        width:
-            33.333333%;
+    /* Account Status */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(5) {
+        grid-column: 1 / -1;
+        grid-row: 4;
     }
 
-    .main-content > .card:first-of-type strong {
+    .main-content > .topbar + .card strong {
         font-size: 9px;
-        gap: 4px;
+
+        gap: 5px;
     }
 
-    .main-content > .card:first-of-type strong::before {
+    .main-content > .topbar + .card strong::before {
         font-size: 11px;
+
+        width: 14px;
     }
 
-    .main-content > .card:first-of-type span {
+    .main-content > .topbar + .card span {
         display: block;
 
         font-size: 11px;
@@ -1713,16 +2078,21 @@ footer strong {
 
     #profile2EmailVerification .btn {
         margin-top: 4px;
+
         font-size: 9px;
-        padding: 4px 6px;
+
+        padding:
+            4px 6px;
     }
+
 
     /* -----------------------------------------------------
        DASHBOARD CARDS
        ----------------------------------------------------- */
 
     .dashboard-card {
-        border-radius: 17px !important;
+        border-radius:
+            17px !important;
     }
 
     .dashboard-card .card-body {
@@ -1736,19 +2106,22 @@ footer strong {
 
         font-size: 18px !important;
 
-        border-radius: 13px;
+        border-radius:
+            13px;
     }
 
     .dashboard-card h6 {
         margin-top: 10px !important;
 
         font-size: 9px;
+
         letter-spacing: 0.2px;
     }
 
     .dashboard-card h2 {
         font-size: 22px;
     }
+
 
     /* -----------------------------------------------------
        REPAIR TABLE
@@ -1763,46 +2136,39 @@ footer strong {
             15px 16px;
     }
 
+
     /* -----------------------------------------------------
        PROFILE
-       3 x 3 style grid
        ----------------------------------------------------- */
 
     #profile .card-body {
-        padding: 12px;
+        padding:
+            12px;
     }
 
-    #profile .row {
-        --bs-gutter-x: 8px;
-        --bs-gutter-y: 8px;
+    #profile .row.g-4 {
+        display: grid;
+
+        grid-template-columns:
+            1fr;
+
+        gap: 8px !important;
     }
 
-    #profile .col-lg-4,
-    #profile .col-lg-8,
-    #profile .col-lg-3 {
+    #profile .row.g-4 > [class*="col-"] {
+        width: auto;
 
-        flex:
-            0 0 33.333333%;
+        max-width: none;
 
-        width:
-            33.333333%;
+        flex: none;
 
         padding:
-            12px 9px;
-    }
-
-    /* Address gets 3 columns too */
-
-    #profile .col-lg-8 {
-        flex:
-            0 0 66.666667%;
-
-        width:
-            66.666667%;
+            12px 10px;
     }
 
     #profile small {
         font-size: 8px;
+
         gap: 4px;
     }
 
@@ -1812,20 +2178,25 @@ footer strong {
 
     #profile h6 {
         font-size: 11px;
+
         line-height: 1.4;
     }
+
 
     /* -----------------------------------------------------
        SUPPORT
        ----------------------------------------------------- */
 
     #support .col-lg-4 {
-        margin-bottom: 10px;
+        margin-bottom:
+            10px;
     }
 
     #support .border {
-        padding: 16px !important;
+        padding:
+            16px !important;
     }
+
 
     /* -----------------------------------------------------
        WHATSAPP
@@ -1846,8 +2217,8 @@ footer strong {
     .whatsapp-tooltip {
         display: none;
     }
-
 }
+
 
 /* =========================================================
    SMALL MOBILE
@@ -1861,7 +2232,8 @@ footer strong {
     }
 
     .topbar {
-        border-radius: 16px;
+        border-radius:
+            16px;
     }
 
     .mobile-menu-btn {
@@ -1869,28 +2241,42 @@ footer strong {
         height: 40px;
     }
 
+
     /* Customer information */
 
-    .main-content > .card:first-of-type .col-lg-2,
-    .main-content > .card:first-of-type .col-lg-3 {
+    .main-content > .topbar + .card .row.g-4 {
+        gap: 7px !important;
+    }
+
+    .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
         padding:
             10px 8px;
     }
 
-    .main-content > .card:first-of-type strong {
+    .main-content > .topbar + .card strong {
         font-size: 8px;
     }
 
-    .main-content > .card:first-of-type span {
+    .main-content > .topbar + .card span {
         font-size: 10px;
     }
 
+    .main-content > .topbar + .card strong::before {
+        font-size: 10px;
+
+        width: 13px;
+    }
+
+
     /* Profile */
+
+    #profile .row.g-4 {
+        gap: 7px !important;
+    }
 
     #profile .col-lg-4,
     #profile .col-lg-8,
     #profile .col-lg-3 {
-
         padding:
             10px 7px;
     }
@@ -1903,13 +2289,15 @@ footer strong {
         font-size: 7px;
     }
 
+
     /* Offers */
 
     .customer-offer-card {
-        padding: 16px;
+        padding:
+            16px;
     }
-
 }
+
 
 /* =========================================================
    MODAL MOBILE
@@ -1923,19 +2311,24 @@ footer strong {
     }
 
     .modal-content {
-        border-radius: 18px !important;
+        border-radius:
+            18px !important;
     }
 
     .modal-body {
-        padding: 16px;
+        padding:
+            16px;
     }
 
     .modal-footer {
-        padding: 12px 16px;
+        padding:
+            12px 16px;
     }
 
     .offer-center-modal .modal-footer {
-        flex-direction: column;
+        flex-direction:
+            column;
+
         gap: 10px;
     }
 
@@ -1943,10 +2336,12 @@ footer strong {
         width: 100%;
 
         display: flex;
-        justify-content: space-between;
-    }
 
+        justify-content:
+            space-between;
+    }
 }
+
 
 /* =========================================================
    REDUCED MOTION
@@ -1957,7 +2352,8 @@ footer strong {
     *,
     *::before,
     *::after {
-        scroll-behavior: auto !important;
+        scroll-behavior:
+            auto !important;
 
         transition-duration:
             0.01ms !important;
@@ -1965,5 +2361,4 @@ footer strong {
         animation-duration:
             0.01ms !important;
     }
-
 }
