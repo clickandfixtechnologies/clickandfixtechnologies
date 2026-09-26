@@ -1,7 +1,7 @@
 /* =========================================================
    CLICK & FIX TECHNOLOGIES
    CUSTOMER DASHBOARD - MODERN GLASS UI
-   Version: 3.0
+   Version: 4.0
    ========================================================= */
 
 :root {
@@ -24,14 +24,9 @@
     --card-bg: rgba(255, 255, 255, 0.78);
     --glass-border: rgba(255, 255, 255, 0.72);
 
-    --shadow-sm:
-        0 5px 20px rgba(31, 41, 55, 0.06);
-
-    --shadow-md:
-        0 12px 35px rgba(31, 41, 55, 0.10);
-
-    --shadow-lg:
-        0 20px 55px rgba(31, 41, 55, 0.14);
+    --shadow-sm: 0 5px 20px rgba(31, 41, 55, 0.06);
+    --shadow-md: 0 12px 35px rgba(31, 41, 55, 0.10);
+    --shadow-lg: 0 20px 55px rgba(31, 41, 55, 0.14);
 
     --radius-sm: 12px;
     --radius-md: 18px;
@@ -57,14 +52,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-
-    font-family:
-        "Inter",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-
+    font-family: "Inter", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
 
     background:
@@ -116,13 +104,11 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-    background:
-        linear-gradient(
-            180deg,
-            var(--primary),
-            var(--secondary)
-        );
-
+    background: linear-gradient(
+        180deg,
+        var(--primary),
+        var(--secondary)
+    );
     border-radius: 20px;
 }
 
@@ -153,8 +139,7 @@ a {
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
 
-    border-right:
-        1px solid rgba(255, 255, 255, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.8);
 
     box-shadow:
         12px 0 40px rgba(31, 41, 55, 0.06);
@@ -185,7 +170,6 @@ a {
 
 .logo-area {
     position: relative;
-
     padding-top: 24px !important;
     padding-bottom: 22px !important;
 }
@@ -215,12 +199,8 @@ a {
 
 .sidebar hr {
     border: 0;
-
-    border-top:
-        1px solid rgba(107, 114, 128, 0.12);
-
-    margin:
-        5px 5px 18px;
+    border-top: 1px solid rgba(107, 114, 128, 0.12);
+    margin: 5px 5px 18px;
 }
 
 .sidebar .nav {
@@ -235,8 +215,7 @@ a {
 
     gap: 12px;
 
-    padding:
-        12px 14px;
+    padding: 12px 14px;
 
     color: #596174;
 
@@ -254,9 +233,7 @@ a {
 
 .sidebar .nav-link i {
     width: 22px;
-
     text-align: center;
-
     font-size: 16px;
 
     transition:
@@ -308,7 +285,6 @@ a {
 
 .main-content {
     margin-left: var(--sidebar-width);
-
     min-height: 100vh;
 
     padding:
@@ -331,13 +307,10 @@ a {
 
     gap: 20px;
 
-    padding:
-        18px 22px;
-
+    padding: 18px 22px;
     margin-bottom: 22px;
 
-    border-radius:
-        var(--radius-lg);
+    border-radius: var(--radius-lg);
 
     background:
         rgba(255, 255, 255, 0.70);
@@ -384,7 +357,6 @@ a {
         clamp(20px, 2vw, 26px);
 
     font-weight: 700;
-
     letter-spacing: -0.5px;
 }
 
@@ -431,8 +403,7 @@ a {
     background:
         rgba(255, 255, 255, 0.68);
 
-    backdrop-filter:
-        blur(15px);
+    backdrop-filter: blur(15px);
 
     color: var(--primary);
 
@@ -457,24 +428,8 @@ a {
    CUSTOMER INFO CARD
    ========================================================= */
 
-/*
-   HTML structure:
-   1 = Customer ID
-   2 = Mobile
-   3 = Email
-   4 = Address
-   5 = Account Status
-
-   Desktop layout:
-
-   Customer ID     Mobile
-   Address         Account Status
-   Email
-*/
-
 .main-content > .topbar + .card {
     position: relative;
-
     overflow: hidden;
 
     background:
@@ -484,11 +439,8 @@ a {
             rgba(248, 250, 255, 0.68)
         );
 
-    backdrop-filter:
-        blur(18px);
-
-    -webkit-backdrop-filter:
-        blur(18px);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 
     border:
         1px solid rgba(255, 255, 255, 0.80) !important;
@@ -523,69 +475,83 @@ a {
 
 .main-content > .topbar + .card .card-body {
     position: relative;
-
     padding: 22px;
 }
 
 
 /* =========================================================
-   CUSTOMER INFO GRID - DESKTOP
+   CUSTOMER INFO GRID
    ========================================================= */
 
-@media (min-width: 992px) {
+/*
+   HTML ORDER:
 
-    .main-content > .topbar + .card .row.g-4 {
-        display: grid;
+   1 = Customer ID
+   2 = Mobile
+   3 = Email
+   4 = Address
+   5 = Account Status
 
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+   DESKTOP + MOBILE:
 
-        gap: 16px !important;
+   Customer ID        Mobile
+   Address            Account Status
+   Email              Full Width
+*/
 
-        margin: 0;
-    }
+.main-content > .topbar + .card .row.g-4 {
+    display: grid;
 
-    .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
-        width: auto;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
 
-        max-width: none;
+    gap: 16px !important;
 
-        flex: none;
+    margin: 0;
+}
 
-        margin: 0;
+.main-content > .topbar + .card .row.g-4 > [class*="col-"] {
+    width: auto;
+    max-width: none;
+    flex: none;
+    margin: 0;
 
-        padding: 16px 18px;
-    }
+    min-width: 0;
 
-    /* Customer ID */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(1) {
-        grid-column: 1;
-        grid-row: 1;
-    }
+    padding:
+        16px 18px;
+}
 
-    /* Mobile */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(2) {
-        grid-column: 2;
-        grid-row: 1;
-    }
 
-    /* Address */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(4) {
-        grid-column: 1;
-        grid-row: 2;
-    }
+/* Customer ID */
+.main-content > .topbar + .card .row.g-4 > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
 
-    /* Account Status */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(5) {
-        grid-column: 2;
-        grid-row: 2;
-    }
+/* Mobile */
+.main-content > .topbar + .card .row.g-4 > :nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
 
-    /* Email */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(3) {
-        grid-column: 1 / -1;
-        grid-row: 3;
-    }
+/* Address */
+.main-content > .topbar + .card .row.g-4 > :nth-child(4) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+/* Account Status */
+.main-content > .topbar + .card .row.g-4 > :nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+/* Email */
+.main-content > .topbar + .card .row.g-4 > :nth-child(3) {
+    grid-column: 1 / -1;
+    grid-row: 3;
 }
 
 
@@ -596,11 +562,7 @@ a {
 .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
     position: relative;
 
-    padding:
-        16px 18px;
-
-    border-radius:
-        16px;
+    border-radius: 16px;
 
     background:
         rgba(255, 255, 255, 0.48);
@@ -668,30 +630,25 @@ a {
 
 
 /* =========================================================
-   FONT AWESOME CUSTOMER INFO ICONS
+   CUSTOMER INFO ICONS
    ========================================================= */
 
-/* Customer ID */
 .main-content > .topbar + .card .row.g-4 > :nth-child(1) strong::before {
     content: "\f2bb";
 }
 
-/* Mobile */
 .main-content > .topbar + .card .row.g-4 > :nth-child(2) strong::before {
     content: "\f3cd";
 }
 
-/* Email */
 .main-content > .topbar + .card .row.g-4 > :nth-child(3) strong::before {
     content: "\f0e0";
 }
 
-/* Address */
 .main-content > .topbar + .card .row.g-4 > :nth-child(4) strong::before {
     content: "\f3c5";
 }
 
-/* Account Status */
 .main-content > .topbar + .card .row.g-4 > :nth-child(5) strong::before {
     content: "\f058";
 }
@@ -711,7 +668,6 @@ a {
 
 #profile2CustomerId {
     font-weight: 700;
-
     color: #20283a;
 }
 
@@ -725,10 +681,19 @@ a {
 
 #profile2CustomerAddress {
     color: #4b5563;
-
     line-height: 1.5;
-
     word-break: break-word;
+}
+
+
+/* =========================================================
+   ACCOUNT STATUS
+   ========================================================= */
+
+#profile2CustomerStatus .badge,
+#profile2EmailVerification .badge {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 
@@ -763,7 +728,6 @@ a {
 
 .alert-warning {
     border: 0 !important;
-
     border-radius: 17px;
 }
 
@@ -827,9 +791,7 @@ a {
 
 .dashboard-card .card-body {
     position: relative;
-
-    padding:
-        22px 12px;
+    padding: 22px 12px;
 }
 
 .dashboard-card i {
@@ -860,7 +822,6 @@ a {
     color: #687083;
 
     font-size: 12px;
-
     font-weight: 700;
 
     text-transform: uppercase;
@@ -872,7 +833,6 @@ a {
     margin: 0;
 
     font-size: 28px;
-
     font-weight: 800;
 
     color: #20283a;
@@ -937,9 +897,7 @@ a {
 
 .card-header h5 {
     font-size: 16px;
-
     font-weight: 700;
-
     color: #252d40;
 }
 
@@ -988,7 +946,6 @@ a {
     color: #687083;
 
     font-size: 11px;
-
     font-weight: 700;
 
     text-transform: uppercase;
@@ -1126,7 +1083,6 @@ a {
     position: relative;
 
     font-size: 16px;
-
     font-weight: 700;
 
     color:
@@ -1163,7 +1119,6 @@ a {
 
 .customer-offer-card .btn {
     border-radius: 10px;
-
     font-weight: 600;
 }
 
@@ -1208,37 +1163,53 @@ a {
 }
 
 
-/* Desktop 3 x 3 */
+/*
+   PROFILE ORDER:
 
-@media (min-width: 992px) {
+   1  Customer ID
+   2  Customer Name
+   3  Mobile
 
-    #profile .row.g-4 {
-        display: grid;
+   4  Email
+   5  Address
+   6  Customer Since
 
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
+   7  Total Repairs
+   8  Active Warranty
+   9  Account Status
+*/
 
-        gap: 16px !important;
 
-        margin: 0;
-    }
+/* =========================================================
+   PROFILE - DESKTOP 3 x 3
+   ========================================================= */
 
-    #profile .row.g-4 > [class*="col-"] {
-        width: auto;
+#profile .row.g-4 {
+    display: grid;
 
-        max-width: none;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-        flex: none;
+    gap:
+        16px !important;
 
-        margin: 0;
+    margin: 0;
+}
 
-        padding:
-            15px 17px;
-    }
+#profile .row.g-4 > [class*="col-"] {
+    width: auto;
+    max-width: none;
+    flex: none;
+    margin: 0;
+
+    padding:
+        15px 17px;
 }
 
 
-/* Profile blocks */
+/* =========================================================
+   PROFILE BLOCKS
+   ========================================================= */
 
 #profile .col-lg-4,
 #profile .col-lg-8,
@@ -1315,7 +1286,7 @@ a {
 
 
 /* =========================================================
-   PROFILE FONT AWESOME ICONS
+   PROFILE ICONS
    ========================================================= */
 
 #profile .col-lg-4:nth-child(1) small::before {
@@ -1362,7 +1333,6 @@ a {
         #252d40;
 
     font-size: 14px;
-
     font-weight: 700;
 
     word-break: break-word;
@@ -1817,7 +1787,6 @@ footer strong {
 
 .whatsapp-tooltip small {
     opacity: 0.65;
-
     font-size: 10px;
 }
 
@@ -1895,13 +1864,14 @@ footer strong {
     }
 
     .dashboard-card h2 {
-        font-size: 25px;
+        font-size:
+            25px;
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        CUSTOMER INFO - TABLET
-       ----------------------------------------------------- */
+       ===================================================== */
 
     .main-content > .topbar + .card .card-body {
         padding:
@@ -1909,8 +1879,12 @@ footer strong {
     }
 
     .main-content > .topbar + .card .row.g-4 {
-        --bs-gutter-x: 12px;
-        --bs-gutter-y: 12px;
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+
+        gap:
+            12px !important;
     }
 
     .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
@@ -1919,28 +1893,22 @@ footer strong {
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        PROFILE - TABLET
-       ----------------------------------------------------- */
+       ===================================================== */
 
     #profile .row.g-4 {
-        display: grid;
-
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
 
-        gap: 12px !important;
-
-        margin: 0;
+        gap:
+            12px !important;
     }
 
     #profile .row.g-4 > [class*="col-"] {
         width: auto;
-
         max-width: none;
-
         flex: none;
-
         margin: 0;
     }
 }
@@ -1970,26 +1938,28 @@ footer strong {
     }
 
     .topbar h3 {
-        font-size: 18px;
+        font-size:
+            18px;
     }
 
     .topbar p {
-        font-size: 12px;
+        font-size:
+            12px;
     }
 
     .topbar > .text-end {
-        display: none;
+        display:
+            none;
     }
 
 
-    /* -----------------------------------------------------
-       CUSTOMER INFO
-       Mobile layout:
-
-       Customer ID     Mobile
-       Email           Account Status
-       Address         Address
-       ----------------------------------------------------- */
+    /* =====================================================
+       CUSTOMER INFO - MOBILE
+       
+       Customer ID        Mobile
+       Address            Account Status
+       Email              Full Width
+       ===================================================== */
 
     .main-content > .topbar + .card .card-body {
         padding:
@@ -1997,98 +1967,139 @@ footer strong {
     }
 
     .main-content > .topbar + .card .row.g-4 {
-        display: grid;
+        display:
+            grid;
 
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            minmax(0, 1fr)
+            minmax(0, 1fr);
 
-        gap: 8px !important;
+        gap:
+            8px !important;
 
-        margin: 0;
+        margin:
+            0;
     }
 
     .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
-        width: auto;
+        width:
+            auto;
 
-        max-width: none;
+        max-width:
+            none;
 
-        flex: none;
+        flex:
+            none;
 
-        min-width: 0;
+        min-width:
+            0;
+
+        margin:
+            0;
 
         padding:
             12px 10px;
     }
 
+
     /* Customer ID */
     .main-content > .topbar + .card .row.g-4 > :nth-child(1) {
-        grid-column: 1;
-        grid-row: 1;
+        grid-column:
+            1;
+
+        grid-row:
+            1;
     }
 
     /* Mobile */
     .main-content > .topbar + .card .row.g-4 > :nth-child(2) {
-        grid-column: 2;
-        grid-row: 1;
-    }
+        grid-column:
+            2;
 
-    /* Email */
-    .main-content > .topbar + .card .row.g-4 > :nth-child(3) {
-        grid-column: 1 / -1;
-        grid-row: 2;
+        grid-row:
+            1;
     }
 
     /* Address */
     .main-content > .topbar + .card .row.g-4 > :nth-child(4) {
-        grid-column: 1 / -1;
-        grid-row: 3;
+        grid-column:
+            1;
+
+        grid-row:
+            2;
     }
 
     /* Account Status */
     .main-content > .topbar + .card .row.g-4 > :nth-child(5) {
-        grid-column: 1 / -1;
-        grid-row: 4;
+        grid-column:
+            2;
+
+        grid-row:
+            2;
     }
 
-    .main-content > .topbar + .card strong {
-        font-size: 9px;
+    /* Email */
+    .main-content > .topbar + .card .row.g-4 > :nth-child(3) {
+        grid-column:
+            1 / -1;
 
-        gap: 5px;
+        grid-row:
+            3;
+    }
+
+
+    /* Customer Info typography */
+
+    .main-content > .topbar + .card strong {
+        font-size:
+            9px;
+
+        gap:
+            5px;
     }
 
     .main-content > .topbar + .card strong::before {
-        font-size: 11px;
+        font-size:
+            11px;
 
-        width: 14px;
+        width:
+            14px;
     }
 
     .main-content > .topbar + .card span {
-        display: block;
+        display:
+            block;
 
-        font-size: 11px;
+        font-size:
+            11px;
 
-        line-height: 1.4;
+        line-height:
+            1.4;
 
-        word-break: break-word;
+        word-break:
+            break-word;
     }
 
     #profile2EmailVerification {
-        margin-top: 5px !important;
+        margin-top:
+            5px !important;
     }
 
     #profile2EmailVerification .btn {
-        margin-top: 4px;
+        margin-top:
+            4px;
 
-        font-size: 9px;
+        font-size:
+            9px;
 
         padding:
             4px 6px;
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        DASHBOARD CARDS
-       ----------------------------------------------------- */
+       ===================================================== */
 
     .dashboard-card {
         border-radius:
@@ -2101,34 +2112,43 @@ footer strong {
     }
 
     .dashboard-card i {
-        width: 43px;
-        height: 43px;
+        width:
+            43px;
 
-        font-size: 18px !important;
+        height:
+            43px;
+
+        font-size:
+            18px !important;
 
         border-radius:
             13px;
     }
 
     .dashboard-card h6 {
-        margin-top: 10px !important;
+        margin-top:
+            10px !important;
 
-        font-size: 9px;
+        font-size:
+            9px;
 
-        letter-spacing: 0.2px;
+        letter-spacing:
+            0.2px;
     }
 
     .dashboard-card h2 {
-        font-size: 22px;
+        font-size:
+            22px;
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        REPAIR TABLE
-       ----------------------------------------------------- */
+       ===================================================== */
 
     #repairs .table {
-        min-width: 700px;
+        min-width:
+            700px;
     }
 
     #repairs .card-header {
@@ -2137,9 +2157,9 @@ footer strong {
     }
 
 
-    /* -----------------------------------------------------
-       PROFILE
-       ----------------------------------------------------- */
+    /* =====================================================
+       PROFILE - MOBILE 3 x 3
+       ===================================================== */
 
     #profile .card-body {
         padding:
@@ -2147,45 +2167,76 @@ footer strong {
     }
 
     #profile .row.g-4 {
-        display: grid;
+        display:
+            grid;
 
         grid-template-columns:
-            1fr;
+            repeat(3, minmax(0, 1fr));
 
-        gap: 8px !important;
+        gap:
+            8px !important;
+
+        margin:
+            0;
     }
 
     #profile .row.g-4 > [class*="col-"] {
-        width: auto;
+        width:
+            auto;
 
-        max-width: none;
+        max-width:
+            none;
 
-        flex: none;
+        min-width:
+            0;
+
+        flex:
+            none;
+
+        margin:
+            0;
 
         padding:
-            12px 10px;
+            12px 8px;
     }
 
     #profile small {
-        font-size: 8px;
+        font-size:
+            8px;
 
-        gap: 4px;
+        gap:
+            4px;
+
+        white-space:
+            normal;
     }
 
     #profile small::before {
-        font-size: 10px;
+        font-size:
+            10px;
+
+        width:
+            12px;
     }
 
     #profile h6 {
-        font-size: 11px;
+        font-size:
+            11px;
 
-        line-height: 1.4;
+        line-height:
+            1.4;
+
+        overflow-wrap:
+            anywhere;
+
+        word-break:
+            break-word;
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        SUPPORT
-       ----------------------------------------------------- */
+       ===================================================== */
 
     #support .col-lg-4 {
         margin-bottom:
@@ -2198,24 +2249,32 @@ footer strong {
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        WHATSAPP
-       ----------------------------------------------------- */
+       ===================================================== */
 
     .whatsapp-float {
-        width: 50px;
-        height: 50px;
+        width:
+            50px;
 
-        right: 16px;
-        bottom: 16px;
+        height:
+            50px;
+
+        right:
+            16px;
+
+        bottom:
+            16px;
     }
 
     .whatsapp-float i {
-        font-size: 22px;
+        font-size:
+            22px;
     }
 
     .whatsapp-tooltip {
-        display: none;
+        display:
+            none;
     }
 }
 
@@ -2227,8 +2286,11 @@ footer strong {
 @media (max-width: 480px) {
 
     .main-content {
-        padding-left: 9px;
-        padding-right: 9px;
+        padding-left:
+            9px;
+
+        padding-right:
+            9px;
     }
 
     .topbar {
@@ -2237,15 +2299,25 @@ footer strong {
     }
 
     .mobile-menu-btn {
-        width: 40px;
-        height: 40px;
+        width:
+            40px;
+
+        height:
+            40px;
     }
 
 
-    /* Customer information */
+    /* =====================================================
+       CUSTOMER INFO - SMALL MOBILE
+       ===================================================== */
 
     .main-content > .topbar + .card .row.g-4 {
-        gap: 7px !important;
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+
+        gap:
+            7px !important;
     }
 
     .main-content > .topbar + .card .row.g-4 > [class*="col-"] {
@@ -2254,24 +2326,34 @@ footer strong {
     }
 
     .main-content > .topbar + .card strong {
-        font-size: 8px;
+        font-size:
+            8px;
     }
 
     .main-content > .topbar + .card span {
-        font-size: 10px;
+        font-size:
+            10px;
     }
 
     .main-content > .topbar + .card strong::before {
-        font-size: 10px;
+        font-size:
+            10px;
 
-        width: 13px;
+        width:
+            13px;
     }
 
 
-    /* Profile */
+    /* =====================================================
+       PROFILE - SMALL MOBILE 3 x 3
+       ===================================================== */
 
     #profile .row.g-4 {
-        gap: 7px !important;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap:
+            7px !important;
     }
 
     #profile .col-lg-4,
@@ -2282,15 +2364,19 @@ footer strong {
     }
 
     #profile h6 {
-        font-size: 10px;
+        font-size:
+            10px;
     }
 
     #profile small {
-        font-size: 7px;
+        font-size:
+            7px;
     }
 
 
-    /* Offers */
+    /* =====================================================
+       OFFERS
+       ===================================================== */
 
     .customer-offer-card {
         padding:
@@ -2329,13 +2415,16 @@ footer strong {
         flex-direction:
             column;
 
-        gap: 10px;
+        gap:
+            10px;
     }
 
     .offer-center-modal .modal-footer > div {
-        width: 100%;
+        width:
+            100%;
 
-        display: flex;
+        display:
+            flex;
 
         justify-content:
             space-between;
