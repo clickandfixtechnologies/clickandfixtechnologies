@@ -51,9 +51,15 @@ loginForm.addEventListener("submit", async event => {
             password: password.value,
             turnstileToken
         });
-        saveCustomerSession(result.session);
-        password.value = "";
-        window.location.href = "customer-dashboard.html";
+        if (!result?.success || !result?.session) {
+    throw new Error("Login succeeded but no customer session was received.");
+}
+
+saveCustomerSession(result.session);
+
+password.value = "";
+
+window.location.replace("customer-dashboard.html");
     }
     catch(error){
         errorBox.textContent = "Invalid Mobile Number or Password.";

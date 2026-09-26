@@ -112,10 +112,16 @@ async function loadDashboard() {
         loadCustomerDashboard(jobs);
         await loadCustomerOffers();
     }
-    catch(error){
-        clearCustomerSession();
-        window.location.replace("customer-login.html");
-    }
+    catch(error) {
+    console.error(
+        "Customer dashboard loading failed:",
+        error
+    );
+
+    clearCustomerSession();
+
+    window.location.replace("customer-login.html");
+}
 
 }
 
