@@ -1,6 +1,7 @@
 import {
     clearCustomerSession,
     getCustomerSession,
+    isSessionAuthenticationFailure,
     saveCustomerSession,
     startSessionExpiryTimer,
     validateCustomerSession,
@@ -95,53 +96,58 @@ let customer = null;
 
 loadDashboard();
 
+function showDashboardLoadError(error) {
+    const banner = document.getElementById("statusBanner");
+    const message = "We could not load your dashboard right now. Your session is still active. Please try again shortly.";
+
+    if (banner) {
+        banner.textContent = message;
+        banner.closest(".alert")?.classList.replace("alert-primary", "alert-warning");
+    }
+
+    console.error("[Customer Dashboard] Dashboard API failure.", {
+        path: error?.path || "/customer-dashboard",
+        status: error?.status || 0,
+        code: error?.code || "",
+        message: error?.message || ""
+    });
+}
+
 async function loadDashboard() {
+    let sessionCustomer;
+
     try {
-        console.log("[Customer Dashboard] Starting session validation...");
+        console.info("[Customer Dashboard] Starting session validation.");
+        sessionCustomer = await validateCustomerSession();
+    } catch (error) {
+        showDashboardLoadError(error);
+        return;
+    }
 
-        const sessionCustomer = await validateCustomerSession();
+    if (!sessionCustomer) {
+        console.info("[Customer Dashboard] Session is invalid; redirecting to login.");
+        window.location.replace("customer-login.html");
+        return;
+    }
 
-        if (!sessionCustomer) {
-            console.error(
-                "[Customer Dashboard] Session validation failed."
-            );
-
-            window.location.replace("customer-login.html");
-            return;
-        }
-
-        console.log(
-            "[Customer Dashboard] Session validated successfully."
-        );
-
+    try {
+        console.info("[Customer Dashboard] Session validation succeeded.");
         const result = await workerRequest("/customer-dashboard");
-
-        console.log(
-            "[Customer Dashboard] Dashboard data loaded successfully."
-        );
-
         customer = result.customer;
         jobs = result.jobs || [];
 
         loadCustomerDashboard(jobs);
-
         await loadCustomerOffers();
 
+        console.info("[Customer Dashboard] Dashboard data loaded.");
     } catch (error) {
+        if (isSessionAuthenticationFailure(error)) {
+            clearCustomerSession();
+            window.location.replace("customer-login.html");
+            return;
+        }
 
-        console.error(
-            "[Customer Dashboard] Dashboard loading failed:",
-            error
-        );
-
-        /*
-         * IMPORTANT:
-         * Do NOT clear customerSession here.
-         *
-         * Dashboard API failure and authentication failure
-         * are two different things.
-         */
-        return;
+        showDashboardLoadError(error);
     }
 }
 

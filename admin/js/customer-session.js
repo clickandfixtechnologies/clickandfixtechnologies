@@ -99,13 +99,21 @@ async function workerRequest(path, body = {}) {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || !result.success) {
-        throw new Error(
+        const error = new Error(
             result.error ||
             `Request failed (${response.status}).`
         );
+        error.status = response.status;
+        error.code = result.code || "";
+        error.path = path;
+        throw error;
     }
 
     return result;
+}
+
+function isSessionAuthenticationFailure(error) {
+    return error?.code === "SESSION_INVALID";
 }
 
 async function validateCustomerSession() {
@@ -134,16 +142,19 @@ async function validateCustomerSession() {
         return result.customer || null;
 
     } catch (error) {
-        console.error("[Customer Session] Worker session validation failed:", error);
+        console.error("[Customer Session] Worker session validation failed.", {
+            path: "/session",
+            status: error?.status || 0,
+            code: error?.code || "",
+            message: error?.message || ""
+        });
 
-        /*
-         * IMPORTANT:
-         * Do NOT clear the session here.
-         *
-         * A temporary Worker / Firestore / network error must not
-         * destroy an otherwise valid login session.
-         */
-        return null;
+        if (isSessionAuthenticationFailure(error)) {
+            clearCustomerSession();
+            return null;
+        }
+
+        throw error;
     }
 }
 
@@ -172,6 +183,7 @@ function startSessionExpiryTimer(onExpired) {
 export {
     clearCustomerSession,
     getCustomerSession,
+    isSessionAuthenticationFailure,
     isSessionExpired,
     saveCustomerSession,
     startSessionExpiryTimer,

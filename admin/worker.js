@@ -1511,15 +1511,34 @@ async function signJwt(payload, secret) {
     return `${header}.${content}.${base64Url(signature)}`;
 }
 
+function sessionError(message) {
+    const error = new Error(message);
+    error.status = 401;
+    error.code = "SESSION_INVALID";
+    return error;
+}
+
 async function verifyJwt(token, secret) {
+    if (!token || typeof token !== "string") throw sessionError("Session is required.");
+
     const parts = token.split(".");
-    if (parts.length !== 3) throw new Error("Invalid session.");
+    if (parts.length !== 3) throw sessionError("Invalid session.");
+
     const encode = new TextEncoder();
     const key = await crypto.subtle.importKey("raw", encode.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
-    const valid = await crypto.subtle.verify("HMAC", key, decodeBase64(parts[2]), encode.encode(`${parts[0]}.${parts[1]}`));
-    if (!valid) throw new Error("Invalid session.");
-    const payload = JSON.parse(new TextDecoder().decode(decodeBase64(parts[1])));
-    if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) throw new Error("Session expired.");
+    let signature;
+    let payload;
+
+    try {
+        signature = decodeBase64(parts[2]);
+        payload = JSON.parse(new TextDecoder().decode(decodeBase64(parts[1])));
+    } catch {
+        throw sessionError("Invalid session.");
+    }
+
+    const valid = await crypto.subtle.verify("HMAC", key, signature, encode.encode(`${parts[0]}.${parts[1]}`));
+    if (!valid) throw sessionError("Invalid session.");
+    if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) throw sessionError("Session expired.");
     return payload;
 }
 
@@ -1764,6 +1783,11 @@ async function sendWelcomeEmail(customer, temporaryPassword, emailConfig, env) {
 async function requireSession(request, env) {
     const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") || "";
     const claims = await verifyJwt(token, env.JWT_SECRET);
+
+    if (!claims?.sub || !Number.isFinite(Number(claims.sv ?? 0))) {
+        throw sessionError("Invalid session.");
+    }
+
     const customerPath = `customers/${claims.sub}`;
     console.info("Firestore REST document read.", {
         purpose: "session_validation",
@@ -1773,11 +1797,20 @@ async function requireSession(request, env) {
     const customerRecord = document
         ? firestoreRestDocumentToCustomer(document)
         : null;
+    const jwtSessionVersion = Number(claims.sv ?? 0);
+    const firestoreSessionVersion = Number(customerRecord?.data?.sessionVersion ?? 0);
 
-    if (!customerRecord || Number(customerRecord.data.sessionVersion || 0) !== Number(claims.sv || 0)) {
+    console.info("Customer session validation diagnostic", {
+        customerDocumentId: claims.sub,
+        jwtSessionVersion,
+        firestoreSessionVersion,
+        jwtExpiresAt: Number(claims.exp || 0),
+        currentTimestamp: Math.floor(Date.now() / 1000),
+        customerRecordFound: Boolean(customerRecord)
+    });
 
-        throw new Error("Session expired.");
-
+    if (!customerRecord || firestoreSessionVersion !== jwtSessionVersion) {
+        throw sessionError("Session expired.");
     }
 
     return {
@@ -2400,7 +2433,8 @@ if (job.status === "Delivered") {
             success: false,
             error: error.status === 401 || error.status === 403
                 ? error.message
-                : "Request could not be completed."
+                : "Request could not be completed.",
+            ...(error.code ? { code: error.code } : {})
         }, error.status || 500, origin);
     }
 } };

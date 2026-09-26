@@ -12,6 +12,14 @@ if(getCustomerSession()){
         if(customer){
             window.location.replace("customer-dashboard.html");
         }
+    })
+    .catch(error => {
+        console.error("[Customer Login] Existing session could not be validated.", {
+            path: error?.path || "/session",
+            status: error?.status || 0,
+            code: error?.code || "",
+            message: error?.message || ""
+        });
     });
 }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "click-fix-crm-static-v3";
+const CACHE_NAME = "click-fix-crm-static-v4";
 const STATIC_ASSETS = [
     "./css/admin-shell.css",
     "./css/dashboard.css",
